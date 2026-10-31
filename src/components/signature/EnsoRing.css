@@ -1,0 +1,11 @@
+/* EnsoRing — spec §4.7/§4.8. 600ms draw, honours prefers-reduced-motion. */
+.z-enso { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.z-enso svg { transform: rotate(0deg); }
+.z-enso__arc { transition: stroke-dasharray var(--dur-enso) var(--ease-enter), opacity var(--dur-standard); }
+.z-enso__center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; text-align: center; }
+.z-enso__score { font-family: var(--font-mono); font-weight: 600; font-size: 13px; line-height: 18px; }
+.z-enso__label { font-size: 11px; line-height: 14px; color: var(--text-2); max-width: 72px; }
+.z-enso--rusty .z-enso__arc { opacity: 0.4; }
+.z-enso__seal-dot { fill: var(--seal); }
+.z-enso__warn-dot { fill: var(--warning); }
+@media (prefers-reduced-motion: reduce) { .z-enso__arc { transition: none; } }

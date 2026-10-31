@@ -1,0 +1,16 @@
+/* Coach — spec §5.14. Calm message layout; citations and notices use tokens only. */
+.z-coach { display: flex; flex-direction: column; gap: var(--space-4); }
+.z-coach__history { display: flex; flex-direction: column; gap: var(--space-3); }
+.z-coach__history details { border: 1px solid var(--control-border); border-radius: var(--radius-card); padding: var(--space-3); }
+.z-coach__history summary { cursor: pointer; font-weight: 600; }
+.z-coach__sessions { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.z-coach__meta { color: var(--text-2); font-size: 13px; }
+.z-coach__messages { display: flex; flex-direction: column; gap: var(--space-3); }
+.z-coach__message { border: 1px solid var(--control-border); border-radius: var(--radius-card); padding: var(--space-3); }
+.z-coach__message--user { background: var(--raised); }
+.z-coach__message-role { font-weight: 600; margin: 0 0 var(--space-2); }
+.z-coach__message-body p { margin: 0 0 var(--space-2); }
+.z-coach__message-body p:last-child { margin-bottom: 0; }
+.z-coach__unverified { color: var(--warning); font-size: 13px; }
+.z-coach__citations { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
+.z-coach__ask-form { display: flex; flex-direction: column; gap: var(--space-3); }

@@ -1,0 +1,9 @@
+/* Tabs — spec §4.4 label, §4.12 keyboard operable (roving tabindex). */
+.z-tabs { display: flex; gap: var(--space-1); border-bottom: 1px solid var(--line); overflow-x: auto; }
+.z-tab {
+  min-height: 44px; padding: var(--space-2) var(--space-4); white-space: nowrap;
+  font-size: 13px; line-height: 18px; font-weight: 500; letter-spacing: 0.02em;
+  color: var(--text-2); border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.z-tab[aria-selected="true"] { color: var(--text-1); border-bottom-color: var(--text-1); }
+.z-tab:disabled { opacity: 0.45; }

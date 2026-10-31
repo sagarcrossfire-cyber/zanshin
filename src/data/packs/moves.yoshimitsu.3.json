@@ -1,0 +1,3289 @@
+[
+  {
+    "id": "Yoshimitsu-MED.d",
+    "character": "Yoshimitsu",
+    "input": "MED.d",
+    "aliases": [],
+    "altInputs": [
+      "MED.u"
+    ],
+    "stance": "MED",
+    "hitLevel": "",
+    "damage": "",
+    "startup": "",
+    "recovery": "r15",
+    "notes": "Transitions into sidewalk with held input",
+    "tags": [],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-MED.f",
+    "character": "Yoshimitsu",
+    "input": "MED.f",
+    "aliases": [],
+    "altInputs": [
+      "MED.b"
+    ],
+    "stance": "MED",
+    "hitLevel": "",
+    "damage": "",
+    "startup": "",
+    "recovery": "r7",
+    "notes": "* Transition to BT with 3+4 * Can be cancelled into instant while standing * Closes distance with the opponent",
+    "tags": [],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-MED.n",
+    "character": "Yoshimitsu",
+    "input": "MED.n",
+    "name": "Heal Pulse",
+    "aliases": [],
+    "altInputs": [],
+    "stance": "MED",
+    "hitLevel": "",
+    "damage": "",
+    "startup": "",
+    "recovery": "r30 MED",
+    "notes": "* May be canceled into another MED move * at 26-28 frames into the animation: * Restores recoverable health successively ** +1 health (1st pulse) ** +2 health (2nd pulse) ** +3 health (3rd onward)",
+    "tags": [],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-NSS.1+2+3",
+    "character": "Yoshimitsu",
+    "input": "NSS.1+2+3",
+    "name": "Spirit Spinner",
+    "aliases": [],
+    "altInputs": [],
+    "stance": "NSS",
+    "hitLevel": "h",
+    "damage": "25",
+    "startup": "i22~40",
+    "startupFrame": 22,
+    "block": "-18~+0",
+    "blockMin": -18,
+    "hit": "+26d (-32)",
+    "counterHit": "+16~+34",
+    "recovery": "r30 IND",
+    "total": "70",
+    "notes": "Balcony Break",
+    "tags": [
+      "balcony-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-NSS.1+4",
+    "character": "Yoshimitsu",
+    "input": "NSS.1+4",
+    "name": "Soul Stealer",
+    "aliases": [
+      "NSS Flash"
+    ],
+    "altInputs": [
+      "NSS.FC.D+1+4",
+      "NSS.hFC.D+1+4",
+      "NSS.ws1+4"
+    ],
+    "stance": "NSS",
+    "hitLevel": "m",
+    "damage": "20",
+    "startup": "i8~11",
+    "startupFrame": 8,
+    "block": "-20",
+    "blockMin": -20,
+    "hit": "+14 +64a",
+    "recovery": "r36 1SS",
+    "total": "47",
+    "notes": "* Strong Aerial Tailspin * Weapon * Knockdown against BT opponent, +19a (+9) * 4 chip damage on block * Recovers 1 base health or 6 additional recoverable health on hit * Can be done from Crouch Level 1 * Crumple stun +14~17 after hit * H.1+4: Consumes 300F of remaining Heat time | Role: Flash in NSS, i8; in NSS, per \u00a710.7",
+    "tags": [
+      "panic"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-NSS.BT.d+1",
+    "character": "Yoshimitsu",
+    "input": "NSS.BT.d+1",
+    "aliases": [
+      "BT.NSS.d+1"
+    ],
+    "altInputs": [],
+    "stance": "NSS",
+    "hitLevel": "l",
+    "damage": "15",
+    "startup": "",
+    "notes": "Yoshimitsu remains in NSS",
+    "tags": [],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-NSS.FC.DF+1",
+    "character": "Yoshimitsu",
+    "input": "NSS.FC.DF+1",
+    "aliases": [
+      "FC.NSS.DF+1"
+    ],
+    "altInputs": [
+      "NSS.FC.db,b+1"
+    ],
+    "stance": "NSS",
+    "hitLevel": "l",
+    "damage": "12",
+    "startup": "i25~26",
+    "startupFrame": 25,
+    "block": "-16",
+    "blockMin": -16,
+    "hit": "+27a",
+    "crush": "cs1~34",
+    "recovery": "r34 NSS",
+    "total": "60",
+    "notes": "",
+    "tags": [
+      "high-crush",
+      "launcher"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-NSS.IND.1",
+    "character": "Yoshimitsu",
+    "input": "NSS.IND.1",
+    "aliases": [
+      "IND.NSS.1"
+    ],
+    "altInputs": [],
+    "stance": "NSS",
+    "hitLevel": "M",
+    "damage": "15",
+    "startup": "i48~51",
+    "startupFrame": 48,
+    "block": "-8c",
+    "blockMin": -8,
+    "hit": "+5a",
+    "crush": "* js30~52 * fs53~55",
+    "recovery": "r32 NSS",
+    "total": "88",
+    "notes": "* Floor Break * Same animation as the ending of NSS.qcf+1",
+    "tags": [
+      "low-crush",
+      "floor-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-NSS.KIN.1+4",
+    "character": "Yoshimitsu",
+    "input": "NSS.KIN.1+4",
+    "aliases": [
+      "KIN.NSS.1+4"
+    ],
+    "altInputs": [],
+    "stance": "NSS",
+    "hitLevel": "m",
+    "damage": "20",
+    "startup": "i12~15",
+    "startupFrame": 12,
+    "block": "-20",
+    "blockMin": -20,
+    "hit": "+14 +64a",
+    "recovery": "r36 1SS",
+    "total": "51",
+    "notes": "* Strong Aerial Tailspin * Weapon * Knockdown against BT opponent, +19a (+9) * 4 chip damage on block * Recovers 1 base health or 6 additional recoverable health on hit * Can be done from Crouch Level 1 * Crumple stun +14~17 after hit * H.1+4: Consumes 300F of remaining Heat time",
+    "tags": [],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-NSS.KIN.d+1",
+    "character": "Yoshimitsu",
+    "input": "NSS.KIN.d+1",
+    "aliases": [
+      "KIN.NSS.d+1"
+    ],
+    "altInputs": [],
+    "stance": "NSS",
+    "hitLevel": "L",
+    "damage": "17",
+    "startup": "i23~24",
+    "startupFrame": 23,
+    "block": "-13",
+    "blockMin": -13,
+    "hit": "+3",
+    "counterHit": "+38a",
+    "crush": "cs22~",
+    "recovery": "r31 FC",
+    "total": "55",
+    "notes": "Cancel to r34 FC with DB on frame 16",
+    "tags": [
+      "high-crush",
+      "ch-launcher"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-NSS.KIN.f+1",
+    "character": "Yoshimitsu",
+    "input": "NSS.KIN.f+1",
+    "aliases": [
+      "KIN.NSS.f+1"
+    ],
+    "altInputs": [],
+    "stance": "NSS",
+    "hitLevel": "M,M,M",
+    "damage": "6,6,12",
+    "startup": "i19~20 i6~7 i7~8",
+    "startupFrame": 19,
+    "block": "-5",
+    "blockMin": -5,
+    "hit": "+18a (+11)",
+    "recovery": "r31 1SS",
+    "total": "66",
+    "notes": "* Weapon * Combos from any hit * 8 chip damage on block * Recovers 1 base health or 6 additional recoverable health on hit * Recovers 1 base health when remaining recoverable health is 5 or less * H.KIN.f+1: Consumes 90F of remaining Heat time",
+    "tags": [],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-NSS.KIN.f+1*",
+    "character": "Yoshimitsu",
+    "input": "NSS.KIN.f+1*",
+    "aliases": [
+      "KIN.NSS.f+1*"
+    ],
+    "altInputs": [],
+    "stance": "NSS",
+    "hitLevel": "M,M,M,M,M,M",
+    "damage": "6,6,6,6,6,12",
+    "startup": "i19~20 i6~7 i7~8 i6~7 i7~8 i7~8",
+    "startupFrame": 19,
+    "block": "-9",
+    "blockMin": -9,
+    "hit": "+29a (+14)",
+    "recovery": "r35 1SS",
+    "total": "94",
+    "notes": "* Weapon * Combos from any hit * 14 chip damage on block * Recovers 5 base health or 10 additional recoverable health on hit * Recovers 1 base health on hit when remaining recoverable health is 10-15 * Recovers 2/3/4 base health on hit when remaining recoverable health is 9-8/7-6/5-4 * Recovers 5 base health on hit when remaining recoverable health is 3 or less * H.KIN.f+1*: Consumes 90F of remaining Heat time",
+    "tags": [
+      "launcher"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-NSS.KIN.f+1+2",
+    "character": "Yoshimitsu",
+    "input": "NSS.KIN.f+1+2",
+    "name": "God Slayer",
+    "aliases": [],
+    "altInputs": [],
+    "stance": "NSS",
+    "hitLevel": "m",
+    "damage": "20",
+    "startup": "i24~25",
+    "startupFrame": 24,
+    "block": "+14c",
+    "blockMin": 14,
+    "hit": "+14c",
+    "counterHit": "+49a",
+    "crush": "js8~",
+    "recovery": "r28 1SS",
+    "total": "53",
+    "notes": "* Weapon * Transition to FLE on hit or block only * Recovers 1 base health or 6 additional recoverable health on hit * Recovers 1 base health when remaining recoverable health is 5 or less * H.KIN.f+1+2: Consumes 90F of remaining Heat time",
+    "tags": [
+      "low-crush",
+      "plus-on-block",
+      "ch-launcher"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-NSS.b,B+1+4",
+    "character": "Yoshimitsu",
+    "input": "NSS.b,B+1+4",
+    "name": "Thunder Palm Strike",
+    "aliases": [],
+    "altInputs": [],
+    "stance": "NSS",
+    "hitLevel": "m!",
+    "damage": "40",
+    "startup": "i65~70",
+    "startupFrame": 65,
+    "hit": "-3a (-12)",
+    "counterHit": "+29a (-18)",
+    "recovery": "r42 NSS",
+    "total": "112",
+    "notes": "Balcony Break",
+    "tags": [
+      "unblockable",
+      "ch-launcher",
+      "balcony-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-NSS.b,B+1+4,B",
+    "character": "Yoshimitsu",
+    "input": "NSS.b,B+1+4,B",
+    "name": "Thunder Palm Strike Feint to Soul Stealer",
+    "aliases": [],
+    "altInputs": [],
+    "stance": "NSS",
+    "hitLevel": "m",
+    "damage": "20",
+    "startup": ",i22~25",
+    "startupFrame": 22,
+    "block": "-20",
+    "blockMin": -20,
+    "hit": "+14 +64a",
+    "recovery": "r36 1SS",
+    "total": "86",
+    "notes": "* Strong Aerial Tailspin * Weapon * Knockdown against BT opponent, +19a (+9) * 4 chip damage on block * Recovers 1 base health or 6 additional recoverable health on hit * Can be done from Crouch Level 1 * Crumple stun +14~17 after hit * H.1+4: Consumes 300F of remaining Heat time",
+    "tags": [],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-NSS.d+1",
+    "character": "Yoshimitsu",
+    "input": "NSS.d+1",
+    "name": "Quick Chop",
+    "aliases": [],
+    "altInputs": [],
+    "stance": "NSS",
+    "hitLevel": "M",
+    "damage": "24",
+    "startup": "i24~25",
+    "startupFrame": 24,
+    "block": "-9",
+    "blockMin": -9,
+    "hit": "+16a",
+    "counterHit": "+52a",
+    "recovery": "r33 1SS",
+    "total": "58",
+    "notes": "* Floor Break * Weapon * Recovers 1 base health or 6 additional recoverable health on hit * Recovers 1 base health when remaining recoverable health is 5 or less * 9 chip damage on block * Input can be held to transition to d+1* * H.d+1: Consumes 90F of remaining Heat time",
+    "tags": [
+      "ch-launcher",
+      "floor-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-NSS.d+1+2",
+    "character": "Yoshimitsu",
+    "input": "NSS.d+1+2",
+    "name": "No Sword Stance &gt; Indian Stance",
+    "aliases": [],
+    "altInputs": [],
+    "stance": "NSS",
+    "hitLevel": "",
+    "damage": "",
+    "startup": "",
+    "crush": "* cs7~ * fs7~",
+    "recovery": "r20 IND",
+    "tags": [
+      "high-crush"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-NSS.df+1+4",
+    "character": "Yoshimitsu",
+    "input": "NSS.df+1+4",
+    "name": "Moonlight (Simple Input)",
+    "aliases": [],
+    "altInputs": [
+      "NSS.hFC.df+1+4"
+    ],
+    "stance": "NSS",
+    "hitLevel": "m",
+    "damage": "19",
+    "startup": "i20~21",
+    "startupFrame": 20,
+    "block": "-17",
+    "blockMin": -17,
+    "hit": "+35a (+25)",
+    "crush": "* js20~42 * fs43~45",
+    "recovery": "r41 NSS",
+    "total": "62",
+    "notes": "* Enter KIN r37 with 1+2 * Can be buffered * Can be performed in FC * Power up input NSS.f,n,d,df+1 * Replaced by 1SS.df+1+4 when performed in BT",
+    "tags": [
+      "low-crush",
+      "launcher"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-NSS.f+1+2",
+    "character": "Yoshimitsu",
+    "input": "NSS.f+1+2",
+    "name": "Nine-Headed Dragon",
+    "aliases": [],
+    "altInputs": [],
+    "stance": "NSS",
+    "hitLevel": "M",
+    "damage": "29",
+    "startup": "i20",
+    "startupFrame": 20,
+    "block": "-7",
+    "blockMin": -7,
+    "hit": "+29a (+3)",
+    "recovery": "r37 1SS",
+    "total": "57",
+    "notes": "* Heat Engager * Heat Dash +5, +62a (+42) * Balcony Break * Weapon * 8 chip damage on block * Recovers 1 base health or 6 additional recoverable health on hit * Recovers 1 base health when remaining recoverable health is 5 or less * Extended range * H.f+1+2: Consumes 270F of heat timer during heat * Steel pedal | Role: NSS launcher, i20, -7 on block, +29a on hit; Heat Engager variant per \u00a710.8",
+    "tags": [
+      "balcony-break",
+      "heat-engager",
+      "launcher"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-NSS.f+3+4",
+    "character": "Yoshimitsu",
+    "input": "NSS.f+3+4",
+    "name": "&lt;div class=&quot;dotlist&quot;&gt;\n\n* Bull Rush\n* Chariot Tackle\n&lt;/div&gt;",
+    "aliases": [],
+    "altInputs": [],
+    "stance": "NSS",
+    "hitLevel": "m",
+    "damage": "20",
+    "startup": "i21~25",
+    "startupFrame": 21,
+    "block": "-13~-9",
+    "blockMin": -13,
+    "hit": "+20a (+11)",
+    "recovery": "r33 NSS",
+    "total": "58",
+    "notes": "* Balcony Break * Head * Cancel to r55 BT with b * Enter IND +12a (+3) r29 with d+3+4 on hit * Automatically recovers to r55 IND on self-wallsplat * Recovers 12f faster on hit * +20a on side hit",
+    "tags": [
+      "launcher",
+      "balcony-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-NSS.f,n,d,df+1",
+    "character": "Yoshimitsu",
+    "input": "NSS.f,n,d,df+1",
+    "name": "Moonlight",
+    "aliases": [
+      "NSS.CD+1"
+    ],
+    "altInputs": [
+      "NSS.BT.f,n,d,df+1"
+    ],
+    "stance": "NSS",
+    "hitLevel": "m",
+    "damage": "19",
+    "startup": "i17~18",
+    "startupFrame": 17,
+    "block": "-17",
+    "blockMin": -17,
+    "hit": "+35a (+25a)",
+    "crush": "* js17~39 * fs40~42",
+    "recovery": "r41 NSS",
+    "total": "59",
+    "notes": "* Weapon * Can be buffered * Enter KIN r30 with 1+2 * Can be performed from FC",
+    "tags": [
+      "low-crush",
+      "launcher"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-NSS.qcf+1",
+    "character": "Yoshimitsu",
+    "input": "NSS.qcf+1",
+    "name": "Moonsault",
+    "aliases": [
+      "NSS.d,df,f+1"
+    ],
+    "altInputs": [],
+    "stance": "NSS",
+    "hitLevel": "M",
+    "damage": "30",
+    "startup": "i53~56",
+    "startupFrame": 53,
+    "block": "-8c",
+    "blockMin": -8,
+    "hit": "+5a",
+    "crush": "* js10~55 * fs56~58",
+    "recovery": "r32 NSS",
+    "total": "88",
+    "notes": "* Floor Break * Can be buffered * Can be performed in FC",
+    "tags": [
+      "low-crush",
+      "floor-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-NSS.u+1",
+    "character": "Yoshimitsu",
+    "input": "NSS.u+1",
+    "aliases": [],
+    "altInputs": [],
+    "stance": "NSS",
+    "hitLevel": "m",
+    "damage": "24",
+    "startup": "i25~26",
+    "startupFrame": 25,
+    "block": "-4",
+    "blockMin": -4,
+    "hit": "+5c",
+    "counterHit": "+15a",
+    "crush": "js9~27 fs28~30",
+    "recovery": "r24 NSS",
+    "total": "49",
+    "notes": "Floor Break",
+    "tags": [
+      "low-crush",
+      "floor-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-NSS.ub+1",
+    "character": "Yoshimitsu",
+    "input": "NSS.ub+1",
+    "aliases": [],
+    "altInputs": [],
+    "stance": "NSS",
+    "hitLevel": "m",
+    "damage": "21",
+    "startup": "i25~26",
+    "startupFrame": 25,
+    "block": "-5",
+    "blockMin": -5,
+    "hit": "+4c",
+    "crush": "js9~27 fs28~30",
+    "recovery": "r25 NSS",
+    "total": "50",
+    "notes": "Floor Break",
+    "tags": [
+      "low-crush",
+      "floor-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-NSS.ub+1+3",
+    "character": "Yoshimitsu",
+    "input": "NSS.ub+1+3",
+    "name": "Spinning Finger Stab",
+    "aliases": [],
+    "altInputs": [],
+    "stance": "NSS",
+    "hitLevel": "m!",
+    "damage": "50",
+    "startup": "i51~65",
+    "startupFrame": 51,
+    "hit": "-23",
+    "recovery": "r64 NSS",
+    "total": "129",
+    "notes": "* Punishable on close hit with FUFT.3",
+    "tags": [
+      "unblockable"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-NSS.ub+1+3,1+2",
+    "character": "Yoshimitsu",
+    "input": "NSS.ub+1+3,1+2",
+    "parentId": "Yoshimitsu-NSS.ub+1+3",
+    "name": "Face Slapper",
+    "aliases": [],
+    "altInputs": [],
+    "stance": "NSS",
+    "hitLevel": ",h",
+    "damage": ",15",
+    "startup": ",i18~19",
+    "startupFrame": 51,
+    "block": "-15",
+    "blockMin": -15,
+    "hit": "-4",
+    "counterHit": "+45a",
+    "recovery": "r33 NSS",
+    "total": "72",
+    "notes": "Floor Break",
+    "tags": [
+      "ch-launcher",
+      "floor-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-NSS.ub+1+3,n,1",
+    "character": "Yoshimitsu",
+    "input": "NSS.ub+1+3,n,1",
+    "parentId": "Yoshimitsu-NSS.ub+1+3",
+    "name": "Index Poke Windmill",
+    "aliases": [],
+    "altInputs": [],
+    "stance": "NSS",
+    "hitLevel": ",h!",
+    "damage": ",40",
+    "startup": ",i20~105",
+    "startupFrame": 51,
+    "hit": "-49a (-75)",
+    "recovery": "r30 NSS",
+    "total": "135",
+    "notes": "* Balcony Break * Cancel to r94 with B on frame 64",
+    "tags": [
+      "unblockable",
+      "balcony-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-R.df+1+2",
+    "character": "Yoshimitsu",
+    "input": "R.df+1+2",
+    "name": "Trailokya Pilgrimage",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": "m,t",
+    "damage": "55+",
+    "startup": "i20",
+    "startupFrame": 20,
+    "block": "-18",
+    "blockMin": -18,
+    "hit": "+0d",
+    "crush": "pc8~",
+    "recovery": "r39 1SS",
+    "notes": "* Rage Art * Removes Recoverable Health * Reversal Break * Damage increases with lower health, maximum 82 * Freezes match timer on activation and on hit * Restores recoverable health on hit * Transition to attack throw on hit * Consumes Rage | Role: Power crush; launch punishable",
+    "tags": [
+      "power-crush",
+      "rage-art",
+      "throw"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-b+1",
+    "character": "Yoshimitsu",
+    "input": "b+1",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": "h",
+    "damage": "8",
+    "startup": "i17",
+    "startupFrame": 17,
+    "block": "+1",
+    "blockMin": 1,
+    "hit": "+7",
+    "counterHit": "+12",
+    "recovery": "r18",
+    "total": "35",
+    "notes": "Can transition to Spinning Evade with b+3 or b+4 | Role: Counter hit combos into Flash; frame trap",
+    "tags": [
+      "plus-on-block"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-b+1+2",
+    "character": "Yoshimitsu",
+    "input": "b+1+2",
+    "name": "&lt;div class=&quot;dotlist&quot;&gt;\n\n* No Sword Stance\n* Mutou no Kiwami\n&lt;/div&gt;",
+    "aliases": [],
+    "altInputs": [
+      "BT.b+1+2"
+    ],
+    "hitLevel": "",
+    "damage": "",
+    "startup": "",
+    "crush": "cs8~50",
+    "recovery": "r35 NSS",
+    "notes": "* Cannot block during transition | Role: Enters No Sword Stance (NSS)",
+    "tags": [
+      "high-crush",
+      "stance-entry"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-b+1,1",
+    "character": "Yoshimitsu",
+    "input": "b+1,1",
+    "parentId": "Yoshimitsu-b+1",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": ",h",
+    "damage": ",9",
+    "startup": ",i11~12",
+    "startupFrame": 17,
+    "block": "+4",
+    "blockMin": 4,
+    "hit": "+5",
+    "counterHit": "+10",
+    "recovery": "r14",
+    "total": "43",
+    "notes": "* Combo from 1st hit * Can transition to Spinning Evade with b+3 or b+4 | Role: Plus frames on block (+4); each further ,1 up to the fifth is +4",
+    "tags": [
+      "plus-on-block"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-b+1,1,1",
+    "character": "Yoshimitsu",
+    "input": "b+1,1,1",
+    "parentId": "Yoshimitsu-b+1,1",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": ",h",
+    "damage": ",10",
+    "startup": ",i11~12",
+    "startupFrame": 17,
+    "block": "+4",
+    "blockMin": 4,
+    "hit": "+5",
+    "counterHit": "+10",
+    "recovery": "r14",
+    "total": "55",
+    "notes": "* Combo from 1st hit * Can transition to Spinning Evade with b+3 or b+4",
+    "tags": [
+      "plus-on-block"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-b+1,1,1,1",
+    "character": "Yoshimitsu",
+    "input": "b+1,1,1,1",
+    "parentId": "Yoshimitsu-b+1,1,1",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": ",h",
+    "damage": ",12",
+    "startup": ",i11~12",
+    "startupFrame": 17,
+    "block": "+4",
+    "blockMin": 4,
+    "hit": "+5",
+    "counterHit": "+10",
+    "recovery": "r14",
+    "total": "67",
+    "notes": "* Combo from 3rd CH * Can transition to Spinning Evade with b+3 or b+4",
+    "tags": [
+      "plus-on-block"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-b+1,1,1,1,1",
+    "character": "Yoshimitsu",
+    "input": "b+1,1,1,1,1",
+    "parentId": "Yoshimitsu-b+1,1,1,1",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": ",h",
+    "damage": ",14",
+    "startup": ",i11~12",
+    "startupFrame": 17,
+    "block": "+4",
+    "blockMin": 4,
+    "hit": "+5",
+    "counterHit": "+10",
+    "recovery": "r14",
+    "total": "79",
+    "notes": "* Combo from 4th hit * Combo from 3rd CH * Can transition to Spinning Evade with b+3 or b+4",
+    "tags": [
+      "plus-on-block"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-b+1,1,db+3",
+    "character": "Yoshimitsu",
+    "input": "b+1,1,db+3",
+    "parentId": "Yoshimitsu-b+1,1",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": ",l",
+    "damage": ",7",
+    "startup": ",i13~14",
+    "startupFrame": 17,
+    "block": "-20",
+    "blockMin": -20,
+    "hit": "-9",
+    "crush": " cs10~",
+    "recovery": "r38 FC",
+    "total": "81",
+    "notes": "* Combo from 1st hit * Can combo to DB+3 extensions * Can be performed after one or three b+1",
+    "tags": [
+      "high-crush"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-b+1,1,db+3,3",
+    "character": "Yoshimitsu",
+    "input": "b+1,1,db+3,3",
+    "parentId": "Yoshimitsu-b+1,1,db+3",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": ",l",
+    "damage": ",5",
+    "startup": ",i15~17",
+    "startupFrame": 17,
+    "block": "-19",
+    "blockMin": -19,
+    "hit": "-7",
+    "crush": " cs1~",
+    "recovery": "r38 FC",
+    "total": "98",
+    "notes": "* Combo from 3rd CH * Can combo to db+3 extensions * Enter IND r20 with d+3+4 * Can be performed after one or three b+1",
+    "tags": [
+      "high-crush"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-b+2",
+    "character": "Yoshimitsu",
+    "input": "b+2",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": "m",
+    "damage": "12",
+    "startup": "i14~15",
+    "startupFrame": 14,
+    "block": "-9",
+    "blockMin": -9,
+    "hit": "+2",
+    "recovery": "r27",
+    "total": "42",
+    "notes": "Enter KIN r27 with 1+2",
+    "tags": [],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "aliases": [],
+    "altInputs": [],
+    "character": "Yoshimitsu",
+    "damage": "",
+    "hitLevel": "",
+    "id": "Yoshimitsu-b+2,1,1+2",
+    "input": "b+2,1,1+2",
+    "notes": "Segment of the \u00a710.12 self-damage staple route",
+    "provenance": {
+      "patch": "3.02.02",
+      "source": "seed",
+      "status": "unverified"
+    },
+    "startup": "",
+    "tags": []
+  },
+  {
+    "id": "Yoshimitsu-b+2,NSS.1",
+    "character": "Yoshimitsu",
+    "input": "b+2,NSS.1",
+    "parentId": "Yoshimitsu-b+2",
+    "aliases": [
+      "NSS.b+2,1"
+    ],
+    "altInputs": [],
+    "hitLevel": ",m",
+    "damage": ",17",
+    "startup": ",i27~28",
+    "startupFrame": 14,
+    "block": "-17",
+    "blockMin": -17,
+    "hit": "+28a (+18)",
+    "crush": "* js28~49 * fs50~52",
+    "recovery": "r41 NSS",
+    "total": "84",
+    "notes": "* Enter KIN r30 with 1+2 * Combo from 1st CH with 2f delay * Input can be delayed 14f",
+    "tags": [
+      "low-crush",
+      "launcher"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-b+2,NSS.2",
+    "character": "Yoshimitsu",
+    "input": "b+2,NSS.2",
+    "parentId": "Yoshimitsu-b+2",
+    "aliases": [
+      "NSS.b+2,2"
+    ],
+    "altInputs": [],
+    "hitLevel": ",h",
+    "damage": ",18",
+    "startup": ",i22~23",
+    "startupFrame": 14,
+    "block": "-9",
+    "blockMin": -9,
+    "hit": "+0",
+    "recovery": "r34 NSS",
+    "total": "72",
+    "notes": "* Heat Engager * Heat Dash +5, +43d (+35) * Combo from 1st with 1f delay * Combo from 1st CH with 7f delay * Input can be delayed 14f | Role: Heat Engager variant of b+2,2 in NSS, per \u00a710.8",
+    "tags": [
+      "heat-engager"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-b+3",
+    "character": "Yoshimitsu",
+    "input": "b+3",
+    "aliases": [],
+    "altInputs": [
+      "b+4"
+    ],
+    "hitLevel": "",
+    "damage": "",
+    "startup": "",
+    "recovery": "r31",
+    "notes": "* 8 self-damage * Can be performed from backturn (reverse direction) * i4 startup | Role: Evades almost everything; costs his own health",
+    "tags": [
+      "hp-cost",
+      "panic"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-b+3,3",
+    "character": "Yoshimitsu",
+    "input": "b+3,3",
+    "parentId": "Yoshimitsu-b+3",
+    "aliases": [],
+    "altInputs": [
+      "b+4,4"
+    ],
+    "hitLevel": "",
+    "damage": "",
+    "startup": "",
+    "recovery": "r25",
+    "total": "34",
+    "notes": "* 10 self-damage * 18 self-damage in total",
+    "tags": [
+      "hp-cost"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-b+3,3,3",
+    "character": "Yoshimitsu",
+    "input": "b+3,3,3",
+    "parentId": "Yoshimitsu-b+3,3",
+    "aliases": [],
+    "altInputs": [
+      "b+4,4,4"
+    ],
+    "hitLevel": "",
+    "damage": "",
+    "startup": "",
+    "recovery": "r25",
+    "total": "43",
+    "notes": "* 5 self-damage * 23 self-damage in total",
+    "tags": [
+      "hp-cost"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-b+3,3,3,3",
+    "character": "Yoshimitsu",
+    "input": "b+3,3,3,3",
+    "parentId": "Yoshimitsu-b+3,3,3",
+    "aliases": [],
+    "altInputs": [
+      "b+4,4,4,4"
+    ],
+    "hitLevel": "",
+    "damage": "",
+    "startup": "",
+    "recovery": "r25",
+    "total": "52",
+    "notes": "* 5 self-damage * 28 self-damage in total",
+    "tags": [
+      "hp-cost"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-b+3,3,3,3,3",
+    "character": "Yoshimitsu",
+    "input": "b+3,3,3,3,3",
+    "parentId": "Yoshimitsu-b+3,3,3,3",
+    "aliases": [],
+    "altInputs": [
+      "b+4,4,4,4,4"
+    ],
+    "hitLevel": "",
+    "damage": "",
+    "startup": "",
+    "recovery": "r25",
+    "total": "61",
+    "notes": "* 5 self-damage * 33 self-damage in total",
+    "tags": [
+      "hp-cost"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "aliases": [],
+    "altInputs": [],
+    "character": "Yoshimitsu",
+    "damage": "",
+    "hitLevel": "",
+    "id": "Yoshimitsu-b+4",
+    "input": "b+4",
+    "name": "Manji Spin",
+    "notes": "Evades almost everything; costs his own health",
+    "provenance": {
+      "patch": "3.02.02",
+      "source": "seed",
+      "status": "unverified"
+    },
+    "startup": "",
+    "tags": [
+      "hp-cost",
+      "panic"
+    ]
+  },
+  {
+    "id": "Yoshimitsu-b,B+1+4,B",
+    "character": "Yoshimitsu",
+    "input": "b,B+1+4,B",
+    "name": "Thunder Blade Feint to Soul Stealer",
+    "aliases": [
+      "1SS.b,B+1+4,B"
+    ],
+    "altInputs": [],
+    "hitLevel": "m",
+    "damage": "20",
+    "startup": "i22~25",
+    "startupFrame": 22,
+    "block": "-20",
+    "blockMin": -20,
+    "hit": "+14c",
+    "recovery": "r36",
+    "total": "86",
+    "notes": "* Weapon * 70% proration on standing hit * Recovers 12f faster on hit * Hit vs BT +11d (FDFT) * Power up in NSS or Heat * Can be done from Crouch Level 1",
+    "tags": [],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-d+1*(1),n",
+    "character": "Yoshimitsu",
+    "input": "d+1*(1),n",
+    "name": "Death Slash (1)",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": "M!",
+    "damage": "20",
+    "startup": "i55~56",
+    "startupFrame": 55,
+    "hit": "+4c",
+    "counterHit": "+6a",
+    "recovery": "r33 1SS",
+    "total": "88",
+    "notes": "* Floor Break * Weapon * Slowly realigns while charging * Can be canceled with b*",
+    "tags": [
+      "unblockable",
+      "floor-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-d+1*(2),n",
+    "character": "Yoshimitsu",
+    "input": "d+1*(2),n",
+    "name": "Death Slash (2)",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": "M!",
+    "damage": "25",
+    "startup": "i99~100",
+    "startupFrame": 99,
+    "hit": "+4c",
+    "counterHit": "+6a",
+    "recovery": "r33 1SS",
+    "total": "123",
+    "notes": "* Floor Break * Weapon * Slowly realigns while charging * Can be canceled with b*",
+    "tags": [
+      "unblockable",
+      "floor-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-d+1*(3),n",
+    "character": "Yoshimitsu",
+    "input": "d+1*(3),n",
+    "name": "Death Slash (3)",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": "M!",
+    "damage": "30",
+    "startup": "i130~131",
+    "startupFrame": 130,
+    "hit": "+4c",
+    "counterHit": "+6a",
+    "recovery": "r33 1SS",
+    "total": "158",
+    "notes": "* Floor Break * Weapon * Slowly realigns while charging * Can be canceled with b*",
+    "tags": [
+      "unblockable",
+      "floor-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-d+1*(4),n",
+    "character": "Yoshimitsu",
+    "input": "d+1*(4),n",
+    "name": "Death Slash (4)",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": "M!",
+    "damage": "40",
+    "startup": "i179~180",
+    "startupFrame": 179,
+    "hit": "+16a",
+    "counterHit": "+52a",
+    "recovery": "r33 1SS",
+    "total": "193",
+    "notes": "* Floor Break * Weapon * Slowly realigns while charging * Can be canceled with b*",
+    "tags": [
+      "unblockable",
+      "ch-launcher",
+      "floor-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-d+1*(5),n",
+    "character": "Yoshimitsu",
+    "input": "d+1*(5),n",
+    "name": "Death Slash (5)",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": "M!",
+    "damage": "60",
+    "startup": "i214~215",
+    "startupFrame": 214,
+    "hit": "+16a",
+    "counterHit": "+52a",
+    "recovery": "r33 1SS",
+    "total": "228",
+    "notes": "* Floor Break * Weapon * Slowly realigns while charging * Can be canceled with b*",
+    "tags": [
+      "unblockable",
+      "ch-launcher",
+      "floor-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-d+1+2",
+    "character": "Yoshimitsu",
+    "input": "d+1+2",
+    "name": "Flea",
+    "aliases": [],
+    "altInputs": [
+      "BT.d+1+2"
+    ],
+    "hitLevel": "",
+    "damage": "",
+    "startup": "",
+    "crush": "* js8~17 * fs18~20",
+    "recovery": "r20 FLE",
+    "notes": "* Unavailable in NSS * Cancel to r38 standing with db (FLE.db) | Role: Enters Flea (FLE)",
+    "tags": [
+      "low-crush",
+      "stance-entry"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-d+1+4,B+1",
+    "character": "Yoshimitsu",
+    "input": "d+1+4,B+1",
+    "parentId": "Yoshimitsu-d+1+4",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": ",m!",
+    "damage": ",18",
+    "startup": ",i1~39",
+    "startupFrame": 29,
+    "hit": "-29a",
+    "recovery": "r78 FDFA",
+    "total": "156",
+    "notes": "* Weapon * 6 self damage",
+    "tags": [
+      "unblockable"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-d+1+4,B+1,1",
+    "character": "Yoshimitsu",
+    "input": "d+1+4,B+1,1",
+    "parentId": "Yoshimitsu-d+1+4,B+1",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": ",m!",
+    "damage": ",20",
+    "startup": ",i1~18",
+    "startupFrame": 29,
+    "hit": "-29a",
+    "recovery": "r79 FDFA",
+    "total": "175",
+    "notes": "* Weapon * 6 self damage",
+    "tags": [
+      "unblockable"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-d+1+4,B+1,1,1",
+    "character": "Yoshimitsu",
+    "input": "d+1+4,B+1,1,1",
+    "parentId": "Yoshimitsu-d+1+4,B+1,1",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": ",m!",
+    "damage": ",21",
+    "startup": ",i1~18",
+    "startupFrame": 29,
+    "hit": "-29a",
+    "recovery": "r79 FDFA",
+    "total": "193",
+    "notes": "* Weapon * 10 self damage",
+    "tags": [
+      "unblockable"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-d+1+4,B+1,1,1,1",
+    "character": "Yoshimitsu",
+    "input": "d+1+4,B+1,1,1,1",
+    "parentId": "Yoshimitsu-d+1+4,B+1,1,1",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": ",m!",
+    "damage": ",28",
+    "startup": ",i1~18",
+    "startupFrame": 29,
+    "hit": "-29a",
+    "recovery": "r79 FDFA",
+    "total": "211",
+    "notes": "* Weapon * 12 self damage",
+    "tags": [
+      "unblockable"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-d+2",
+    "character": "Yoshimitsu",
+    "input": "d+2",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": "M",
+    "damage": "12",
+    "startup": "i16~17",
+    "startupFrame": 16,
+    "block": "-9~-8",
+    "blockMin": -9,
+    "hit": "+0~+1",
+    "recovery": "r35",
+    "total": "52",
+    "notes": "Weapon",
+    "tags": [],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-d+2,2",
+    "character": "Yoshimitsu",
+    "input": "d+2,2",
+    "parentId": "Yoshimitsu-d+2",
+    "name": "Heshikirimutou",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": ",m",
+    "damage": ",15",
+    "startup": ",i22~23",
+    "startupFrame": 16,
+    "block": "-12",
+    "blockMin": -12,
+    "hit": "+7g",
+    "counterHit": "+28a (+22)",
+    "recovery": "r30",
+    "total": "76",
+    "notes": "* Weapon * Combo from 1st hit with 13f delay * Input can be delayed 16f * Move can be delayed 10f * In 1SS Enter NSS r31 with B",
+    "tags": [
+      "ch-launcher"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-d+2,2,NSS.1",
+    "character": "Yoshimitsu",
+    "input": "d+2,2,NSS.1",
+    "parentId": "Yoshimitsu-d+2,2",
+    "aliases": [
+      "NSS.d+2,2,1"
+    ],
+    "altInputs": [],
+    "hitLevel": ",h",
+    "damage": ",20",
+    "startup": ",i19~20",
+    "startupFrame": 16,
+    "block": "-9",
+    "blockMin": -9,
+    "hit": "+8a (-1)",
+    "recovery": "r40 NSS",
+    "total": "107",
+    "notes": "* Balcony Break * Input can be delayed 10f * Move can be delayed 9f",
+    "tags": [
+      "balcony-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-d+2,2,NSS.d+1",
+    "character": "Yoshimitsu",
+    "input": "d+2,2,NSS.d+1",
+    "parentId": "Yoshimitsu-d+2,2",
+    "aliases": [
+      "NSS.d+2,2,d+1"
+    ],
+    "altInputs": [],
+    "hitLevel": ",m",
+    "damage": ",17",
+    "startup": ",i29~30",
+    "startupFrame": 16,
+    "block": "-12",
+    "blockMin": -12,
+    "hit": "+2c",
+    "counterHit": "+42a",
+    "recovery": "r32 NSS",
+    "total": "108",
+    "notes": "* Floor Break * Input can be delayed 10f * Move can be delayed 9f",
+    "tags": [
+      "ch-launcher",
+      "floor-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-d+2,NSS.1",
+    "character": "Yoshimitsu",
+    "input": "d+2,NSS.1",
+    "parentId": "Yoshimitsu-d+2",
+    "name": "Heshikirigari",
+    "aliases": [
+      "NSS.d+2,1"
+    ],
+    "altInputs": [],
+    "hitLevel": ",h",
+    "damage": ",18",
+    "startup": ",i27~28",
+    "startupFrame": 16,
+    "block": "-9",
+    "blockMin": -9,
+    "hit": "+10g",
+    "recovery": "r32 NSS",
+    "total": "83?",
+    "notes": "* Balcony Break * Combo from 1st hit with 8f delay * Input can be delayed 16f * Move can be delayed 10f",
+    "tags": [
+      "balcony-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-d+3",
+    "character": "Yoshimitsu",
+    "input": "d+3",
+    "name": "Low Sweep",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": "L",
+    "damage": "12",
+    "startup": "i15~17",
+    "startupFrame": 15,
+    "block": "-18~-16",
+    "blockMin": -18,
+    "hit": "-4~-2",
+    "crush": "cs4~",
+    "recovery": "r32 FC",
+    "total": "49",
+    "notes": "Most commonly impacts on frame 16, except when tracking right",
+    "tags": [
+      "high-crush"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-d+3+4",
+    "character": "Yoshimitsu",
+    "input": "d+3+4",
+    "name": "Indian Stance",
+    "aliases": [],
+    "altInputs": [
+      "BT.d+3+4",
+      "FC.db+3+4",
+      "hFC.d+3+4"
+    ],
+    "hitLevel": "",
+    "damage": "",
+    "startup": "",
+    "crush": "* cs6~ * fs6~",
+    "recovery": "r20 IND",
+    "notes": "* All stance moves are bufferable | Role: Enters Indian Stance (IND)",
+    "tags": [
+      "high-crush",
+      "stance-entry"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-d+4",
+    "character": "Yoshimitsu",
+    "input": "d+4",
+    "name": "Toe Check",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": "l",
+    "damage": "6",
+    "startup": "i12",
+    "startupFrame": 12,
+    "block": "-15",
+    "blockMin": -15,
+    "hit": "-4",
+    "crush": "cs4~",
+    "recovery": "r34 FC",
+    "total": "46",
+    "tags": [
+      "high-crush"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-db+1",
+    "character": "Yoshimitsu",
+    "input": "db+1",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": "L",
+    "damage": "12",
+    "startup": "i26~28",
+    "startupFrame": 26,
+    "block": "-11~-9",
+    "blockMin": -11,
+    "hit": "+4~+6",
+    "counterHit": "+7~+9",
+    "crush": "cs8~",
+    "recovery": "r28 FC",
+    "total": "56",
+    "notes": "Unavailable in NSS",
+    "tags": [
+      "high-crush"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "aliases": [],
+    "altInputs": [],
+    "character": "Yoshimitsu",
+    "damage": "",
+    "hitLevel": "",
+    "id": "Yoshimitsu-db+1+2",
+    "input": "db+1+2",
+    "notes": "Enters Bad Breath stance (BDS)",
+    "provenance": {
+      "patch": "3.02.02",
+      "source": "seed",
+      "status": "unverified"
+    },
+    "startup": "",
+    "tags": [
+      "stance-entry"
+    ]
+  },
+  {
+    "aliases": [],
+    "altInputs": [],
+    "character": "Yoshimitsu",
+    "damage": "",
+    "hitLevel": "",
+    "id": "Yoshimitsu-db+1+2,1+2",
+    "input": "db+1+2,1+2",
+    "notes": "Bad Stomach; used in oki and neutral; dodged by sidewalking left or ducking",
+    "provenance": {
+      "patch": "3.02.02",
+      "source": "seed",
+      "status": "unverified"
+    },
+    "startup": "",
+    "tags": [
+      "oki"
+    ]
+  },
+  {
+    "id": "Yoshimitsu-db+2",
+    "character": "Yoshimitsu",
+    "input": "db+2",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": "m",
+    "damage": "8",
+    "startup": "i15",
+    "startupFrame": 15,
+    "block": "-5",
+    "blockMin": -5,
+    "hit": "+6",
+    "recovery": "r24 FC",
+    "total": "39",
+    "tags": [],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-db+2,2",
+    "character": "Yoshimitsu",
+    "input": "db+2,2",
+    "parentId": "Yoshimitsu-db+2",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": ",m",
+    "damage": ",7",
+    "startup": ",i10~14",
+    "startupFrame": 15,
+    "block": "-9~-5",
+    "blockMin": -9,
+    "hit": "+2~+6",
+    "recovery": "r24 FC",
+    "total": "53",
+    "notes": "Combo from 1st hit",
+    "tags": [],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-db+2,2,2",
+    "character": "Yoshimitsu",
+    "input": "db+2,2,2",
+    "parentId": "Yoshimitsu-db+2,2",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": ",m",
+    "damage": ",6",
+    "startup": ",i10~14",
+    "startupFrame": 15,
+    "block": "-9~-5",
+    "blockMin": -9,
+    "hit": "+2~+6",
+    "recovery": "r24 FC",
+    "total": "68",
+    "notes": "Combo from 1st hit",
+    "tags": [],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-db+2,2,2,2",
+    "character": "Yoshimitsu",
+    "input": "db+2,2,2,2",
+    "parentId": "Yoshimitsu-db+2,2,2",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": ",m",
+    "damage": ",5",
+    "startup": ",i10~14",
+    "startupFrame": 15,
+    "block": "-9~-5",
+    "blockMin": -9,
+    "hit": "+2~+6",
+    "recovery": "r24 FC",
+    "total": "83",
+    "notes": "Combo from 3rd CH",
+    "tags": [],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-db+2,2,2,2,2",
+    "character": "Yoshimitsu",
+    "input": "db+2,2,2,2,2",
+    "parentId": "Yoshimitsu-db+2,2,2,2",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": ",m",
+    "damage": ",4",
+    "startup": ",i10~14",
+    "startupFrame": 15,
+    "block": "-9~-5",
+    "blockMin": -9,
+    "hit": "+2~+6",
+    "recovery": "r24 FC",
+    "total": "98",
+    "notes": "* Combo from 4th hit * Combo from 3rd CH",
+    "tags": [],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-db+3",
+    "character": "Yoshimitsu",
+    "input": "db+3",
+    "aliases": [],
+    "altInputs": [
+      "hFC.db+3"
+    ],
+    "hitLevel": "l",
+    "damage": "8",
+    "startup": "i18~19",
+    "startupFrame": 18,
+    "block": "-25",
+    "blockMin": -25,
+    "hit": "-14",
+    "crush": "cs6~",
+    "recovery": "r43 FC",
+    "total": "62",
+    "tags": [
+      "high-crush"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-db+3,3",
+    "character": "Yoshimitsu",
+    "input": "db+3,3",
+    "parentId": "Yoshimitsu-db+3",
+    "aliases": [],
+    "altInputs": [
+      "hFC.db+3,3"
+    ],
+    "hitLevel": ",l",
+    "damage": ",7",
+    "startup": ",i15~17",
+    "startupFrame": 18,
+    "block": "-19",
+    "blockMin": -19,
+    "hit": "-7",
+    "crush": " cs1~",
+    "recovery": "r35 FC",
+    "total": "72",
+    "notes": "* Combo from 1st hit * Enter IND r20 with d+3+4 | Role: Enters Indian Stance (IND); knowledge-check string with b+1,1",
+    "tags": [
+      "high-crush"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-db+3,3,3",
+    "character": "Yoshimitsu",
+    "input": "db+3,3,3",
+    "parentId": "Yoshimitsu-db+3,3",
+    "aliases": [],
+    "altInputs": [
+      "hFC.db+3,3,3"
+    ],
+    "hitLevel": ",l",
+    "damage": ",7",
+    "startup": ",i15~17",
+    "startupFrame": 18,
+    "block": "-19~-17",
+    "blockMin": -19,
+    "hit": "-7~-5",
+    "crush": " cs1~",
+    "recovery": "r35 FC",
+    "total": "90",
+    "notes": "* Combo from 2nd CH * Enter IND r20 with d+3+4",
+    "tags": [
+      "high-crush"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-db+3,3,3,3",
+    "character": "Yoshimitsu",
+    "input": "db+3,3,3,3",
+    "parentId": "Yoshimitsu-db+3,3,3",
+    "aliases": [],
+    "altInputs": [
+      "hFC.db+3,3,3,3"
+    ],
+    "hitLevel": ",l",
+    "damage": ",5",
+    "startup": ",i15~17",
+    "startupFrame": 18,
+    "block": "-19",
+    "blockMin": -19,
+    "hit": "-7",
+    "crush": " cs1~",
+    "recovery": "r35 FC",
+    "total": "108",
+    "notes": "* Combo from 3rd CH * Enter IND r20 with d+3+4",
+    "tags": [
+      "high-crush"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-db+3,3,3,3,3",
+    "character": "Yoshimitsu",
+    "input": "db+3,3,3,3,3",
+    "parentId": "Yoshimitsu-db+3,3,3,3",
+    "aliases": [],
+    "altInputs": [
+      "hFC.db+3,3,3,3,3"
+    ],
+    "hitLevel": ",l",
+    "damage": ",5",
+    "startup": ",i15~17",
+    "startupFrame": 18,
+    "block": "-19",
+    "blockMin": -19,
+    "hit": "-7",
+    "crush": " cs1~",
+    "recovery": "r35 FC",
+    "total": "126",
+    "notes": "* Combo from 4th CH * Enter IND r20 with d+3+4",
+    "tags": [
+      "high-crush"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-df+1",
+    "character": "Yoshimitsu",
+    "input": "df+1",
+    "name": "Tsuka Atemi",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": "m",
+    "damage": "14",
+    "startup": "i13",
+    "startupFrame": 13,
+    "block": "-4",
+    "blockMin": -4,
+    "hit": "+5",
+    "recovery": "r25",
+    "total": "38",
+    "tags": [],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    },
+    "notes": "Longest df+1 in the game; sets up CD2"
+  },
+  {
+    "id": "Yoshimitsu-df+1+4",
+    "character": "Yoshimitsu",
+    "input": "df+1+4",
+    "name": "Gehosen (Simple Input)",
+    "aliases": [
+      "1SS.df+1+4"
+    ],
+    "altInputs": [
+      "BT.df+1+4",
+      "NSS.BT.df+1+4",
+      "hFC.df+1+4"
+    ],
+    "hitLevel": "M",
+    "damage": "20",
+    "startup": "i20~21",
+    "startupFrame": 20,
+    "block": "-17",
+    "blockMin": -17,
+    "hit": "+35a (+25)",
+    "crush": "js20~42 fs43~45",
+    "recovery": "r41",
+    "total": "62",
+    "notes": "* Weapon * Can be performed in FC * Recovers 7f faster on hit * Transition to r34 KIN with 1+2 * Transition to r30 KIN with 1+2 only when performing KIN.f+2 immediately after * Faster startup and 22 damage with input f,n,d,df+1",
+    "tags": [
+      "low-crush",
+      "launcher"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-df+1,2",
+    "character": "Yoshimitsu",
+    "input": "df+1,2",
+    "parentId": "Yoshimitsu-df+1",
+    "name": "Tsuka Atemi to Back Knuckle",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": ",h",
+    "damage": ",16",
+    "startup": ",i25~26",
+    "startupFrame": 13,
+    "block": "-4",
+    "blockMin": -4,
+    "hit": "+14g",
+    "counterHit": "+39a",
+    "recovery": "r28",
+    "total": "69",
+    "notes": "* Balcony Break * Combo from 1st CH with 2f delay * Interrupt with i5 from 1st block * Move cannot be delayed | Role: Pressure string",
+    "tags": [
+      "balcony-break",
+      "ch-launcher"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-df+1,2,NSS.1",
+    "character": "Yoshimitsu",
+    "input": "df+1,2,NSS.1",
+    "parentId": "Yoshimitsu-df+1,2",
+    "name": "Tsuka Atemi Swipe",
+    "aliases": [
+      "NSS.df+1,2,1"
+    ],
+    "altInputs": [],
+    "hitLevel": ",M",
+    "damage": ",19",
+    "startup": ",i26~27",
+    "startupFrame": 13,
+    "block": "-12",
+    "blockMin": -12,
+    "hit": "+17a (+10)",
+    "recovery": "r32 NSS",
+    "total": "100",
+    "notes": "* Tornado * Combo from 2nd CH",
+    "tags": [
+      "tornado"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-df+2+3",
+    "character": "Yoshimitsu",
+    "input": "df+2+3",
+    "name": "Flashing Steel (Simple Input)",
+    "aliases": [],
+    "altInputs": [
+      "hFC.df+2+3",
+      "BT.df+2+3"
+    ],
+    "hitLevel": "m",
+    "damage": "18",
+    "startup": "i17~18",
+    "startupFrame": 17,
+    "block": "-13",
+    "blockMin": -13,
+    "hit": "+6g",
+    "counterHit": "+58a (+38)",
+    "crush": "cs9~17",
+    "recovery": "r36",
+    "total": "54",
+    "notes": "* Balcony Break * Weapon * Can be performed in FC * Faster startup and 20 damage with input f,n,d,df+2",
+    "tags": [
+      "high-crush",
+      "ch-launcher",
+      "balcony-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-df+3",
+    "character": "Yoshimitsu",
+    "input": "df+3",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": "m",
+    "damage": "10",
+    "startup": "i17~18",
+    "startupFrame": 17,
+    "block": "-4",
+    "blockMin": -4,
+    "hit": "+4",
+    "recovery": "r25 FC",
+    "total": "43",
+    "tags": [],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-df+3,NSS.1",
+    "character": "Yoshimitsu",
+    "input": "df+3,NSS.1",
+    "parentId": "Yoshimitsu-df+3",
+    "name": "Wood Chopper",
+    "aliases": [
+      "NSS.df+3,1"
+    ],
+    "altInputs": [],
+    "hitLevel": ",M",
+    "damage": ",24",
+    "startup": ",i23~24",
+    "startupFrame": 17,
+    "block": "-9",
+    "blockMin": -9,
+    "hit": "+16a",
+    "counterHit": "+52a",
+    "recovery": "r33 1SS",
+    "total": "75",
+    "notes": "* Floor Break * Weapon * Combo from 1st hit * Recovers 1 base health or 6 additional recoverable health on hit * Recovers 1 base health when remaining recoverable health is 5 or less * 9 chip damage on block * Input can be held to transition to d+1* * df+3,H.1: Consumes 90F of remaining Heat time",
+    "tags": [
+      "ch-launcher",
+      "floor-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-df+4",
+    "character": "Yoshimitsu",
+    "input": "df+4",
+    "name": "Side Kick",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": "m",
+    "damage": "15",
+    "startup": "i12",
+    "startupFrame": 12,
+    "block": "-7",
+    "blockMin": -7,
+    "hit": "+4",
+    "recovery": "r28",
+    "total": "40",
+    "notes": "Recovers 2f faster on hit or block | Role: Fastest mid poke in the game",
+    "tags": [
+      "keepout"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-f+2",
+    "character": "Yoshimitsu",
+    "input": "f+2",
+    "name": "Manji Backfist",
+    "aliases": [],
+    "altInputs": [
+      "BT.2"
+    ],
+    "hitLevel": "h",
+    "damage": "18",
+    "startup": "i17~18",
+    "startupFrame": 17,
+    "block": "-4",
+    "blockMin": -4,
+    "hit": "+14g",
+    "counterHit": "+39a",
+    "recovery": "r28",
+    "total": "46",
+    "notes": "Balcony Break",
+    "tags": [
+      "ch-launcher",
+      "balcony-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-f+2,NSS.1",
+    "character": "Yoshimitsu",
+    "input": "f+2,NSS.1",
+    "parentId": "Yoshimitsu-f+2",
+    "name": "Manji Backfist Swipe",
+    "aliases": [
+      "NSS.f+2,1"
+    ],
+    "altInputs": [
+      "BT.2,NSS.1"
+    ],
+    "hitLevel": ",m",
+    "damage": ",21",
+    "startup": ",i26~27",
+    "startupFrame": 17,
+    "block": "-12",
+    "blockMin": -12,
+    "hit": "+17a (+10)",
+    "recovery": "r32 NSS",
+    "total": "77",
+    "notes": "* Tornado * Airborne combo from 1st CH (+66a (+50))",
+    "tags": [
+      "tornado"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-f,F+3+4,1+2",
+    "character": "Yoshimitsu",
+    "input": "f,F+3+4,1+2",
+    "parentId": "Yoshimitsu-f,F+3+4",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": ",m",
+    "damage": ",15",
+    "startup": ",i12~18",
+    "startupFrame": 22,
+    "block": "-31",
+    "blockMin": -31,
+    "hit": "-2a (-12)",
+    "crush": "*  js24~46 * fs47~90",
+    "recovery": "r46",
+    "total": "140",
+    "notes": "* Balcony Break * Combo from 1st CH * Tremendous forward travel * Automatically recovers to r55 IND on self-wallsplat",
+    "tags": [
+      "low-crush",
+      "balcony-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-hFC.1",
+    "character": "Yoshimitsu",
+    "input": "hFC.1",
+    "aliases": [],
+    "altInputs": [
+      "hFC.db+1",
+      "hFC.df+1"
+    ],
+    "stance": "FC",
+    "hitLevel": "sl",
+    "damage": "5",
+    "startup": "i10",
+    "startupFrame": 10,
+    "block": "-5",
+    "blockMin": -5,
+    "hit": "+6",
+    "crush": "cs1~",
+    "recovery": "r24 FC",
+    "total": "34",
+    "notes": "* Transition to r24 with f * Transition input can be delayed 16f | Role: Crouch jab; punishes -10 after blocking a low, per \u00a710.7",
+    "tags": [
+      "high-crush",
+      "punisher-crouching"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-hFC.2",
+    "character": "Yoshimitsu",
+    "input": "hFC.2",
+    "aliases": [],
+    "altInputs": [
+      "hFC.db+2",
+      "hFC.df+2"
+    ],
+    "stance": "FC",
+    "hitLevel": "sl",
+    "damage": "8",
+    "startup": "i11",
+    "startupFrame": 11,
+    "block": "-4",
+    "blockMin": -4,
+    "hit": "+5",
+    "crush": "cs1~",
+    "recovery": "r23 FC",
+    "total": "34",
+    "tags": [
+      "high-crush"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-hFC.d+3",
+    "character": "Yoshimitsu",
+    "input": "hFC.d+3",
+    "aliases": [],
+    "altInputs": [
+      "1SS.hFC.df+3"
+    ],
+    "stance": "FC",
+    "hitLevel": "L",
+    "damage": "10",
+    "startup": "i16",
+    "startupFrame": 16,
+    "block": "-17",
+    "blockMin": -17,
+    "hit": "-6",
+    "crush": "cs1~",
+    "recovery": "r36 FC",
+    "total": "52",
+    "tags": [
+      "high-crush"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-hFC.d+4",
+    "character": "Yoshimitsu",
+    "input": "hFC.d+4",
+    "aliases": [],
+    "altInputs": [
+      "hFC.db+4"
+    ],
+    "stance": "FC",
+    "hitLevel": "l",
+    "damage": "6",
+    "startup": "i12",
+    "startupFrame": 12,
+    "block": "-15",
+    "blockMin": -15,
+    "hit": "-4",
+    "crush": "cs1~",
+    "recovery": "r34 FC",
+    "total": "46",
+    "tags": [
+      "high-crush"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-hFC.db+3",
+    "character": "Yoshimitsu",
+    "input": "hFC.db+3",
+    "aliases": [],
+    "altInputs": [
+      "FC.db+3"
+    ],
+    "stance": "FC",
+    "hitLevel": "l",
+    "damage": "8",
+    "startup": "i18~19",
+    "startupFrame": 18,
+    "block": "-25",
+    "blockMin": -25,
+    "hit": "-14",
+    "crush": "cs1~",
+    "recovery": "r43 FC",
+    "total": "62",
+    "notes": "* Leads to db+3 extensions * Can be done from Crouch Level 1",
+    "tags": [
+      "high-crush"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-u+1+2",
+    "character": "Yoshimitsu",
+    "input": "u+1+2",
+    "name": "Manji Dragonfly",
+    "aliases": [],
+    "altInputs": [
+      "BT.u+1+2"
+    ],
+    "hitLevel": "",
+    "damage": "",
+    "startup": "",
+    "crush": "js8~",
+    "recovery": "r15 DGF",
+    "notes": "* Cancel to r12 with db_d_df (js1~10) * Unavailable in NSS * Actionable after 15 frames, except when using DGF.2 which can be performed after 10 frames | Role: Enters Manji Dragonfly (DGF)",
+    "tags": [
+      "low-crush",
+      "stance-entry"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-ub+1",
+    "character": "Yoshimitsu",
+    "input": "ub+1",
+    "aliases": [
+      "1SS.ub+1"
+    ],
+    "altInputs": [],
+    "hitLevel": "m",
+    "damage": "17",
+    "startup": "i24~25",
+    "startupFrame": 24,
+    "block": "-5",
+    "blockMin": -5,
+    "hit": "+4c",
+    "crush": "js9~27 fs28~30",
+    "recovery": "r25",
+    "total": "50",
+    "notes": "* Floor Break * Weapon * Performs u+1 with a vertical jump",
+    "tags": [
+      "low-crush",
+      "floor-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-ub+4",
+    "character": "Yoshimitsu",
+    "input": "ub+4",
+    "name": "Avoiding the Puddle",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": "m",
+    "damage": "17",
+    "startup": "i20~22",
+    "startupFrame": 20,
+    "block": "-19",
+    "blockMin": -19,
+    "hit": "+12a (+2)",
+    "crush": "js9~32 fs33~35",
+    "recovery": "r36",
+    "total": "58",
+    "notes": "* Balcony Break * Floor Break | Role: Launch punishable at -19, per \u00a710.13; no other values stated in \u00a710",
+    "tags": [
+      "balcony-break",
+      "floor-break",
+      "low-crush"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-uf+1",
+    "character": "Yoshimitsu",
+    "input": "uf+1",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": "m",
+    "damage": "10",
+    "startup": "i17",
+    "startupFrame": 17,
+    "block": "-10",
+    "blockMin": -10,
+    "hit": "+2c",
+    "recovery": "r33 1SS",
+    "total": "50",
+    "notes": "* Weapon * Good right sidestep tracking * Transition to KIN -3 +9 r26 with 1+2 * H.uf+1: Consumes 90F of remaining Heat time",
+    "tags": [],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-uf+1+3,d2",
+    "character": "Yoshimitsu",
+    "input": "uf+1+3<d",
+    "name": "Death Copter Slice (2)",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": "M",
+    "damage": "30",
+    "startup": "i83~84",
+    "startupFrame": 83,
+    "block": "-1",
+    "blockMin": -1,
+    "hit": "+34a",
+    "crush": "js9~80 fs81~83",
+    "recovery": "r25",
+    "total": "109",
+    "notes": "* Floor Break * Weapon * 12 chip damage on block * Input during frames 35-60 of uf+1+3",
+    "tags": [
+      "low-crush",
+      "launcher",
+      "floor-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-uf+1,1",
+    "character": "Yoshimitsu",
+    "input": "uf+1,1",
+    "parentId": "Yoshimitsu-uf+1",
+    "name": "Kasane Kaishaku",
+    "aliases": [
+      "1SS.uf+1,1",
+      "uf+1,1SS.1"
+    ],
+    "altInputs": [],
+    "hitLevel": ",M",
+    "damage": ",17",
+    "startup": ",i29~30",
+    "startupFrame": 17,
+    "block": "-10",
+    "blockMin": -10,
+    "hit": "+9c",
+    "recovery": "r33 1SS",
+    "total": "81",
+    "notes": "* Floor Break * Weapon * Combo from 1st hit with 4f delay * Input can be delayed 4f * Move can be delayed 3f * Interrupt with i6 from 1st block * Transition to FLE on hit only * Power up in NSS or Heat | Role: Enters Flea (FLE) on hit, per \u00a710.5",
+    "tags": [
+      "floor-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-uf+1,NSS.1",
+    "character": "Yoshimitsu",
+    "input": "uf+1,NSS.1",
+    "parentId": "Yoshimitsu-uf+1",
+    "name": "Double Decapitation",
+    "aliases": [
+      "NSS.uf+1,1"
+    ],
+    "altInputs": [],
+    "hitLevel": ",M",
+    "damage": ",22",
+    "startup": ",i29~30",
+    "startupFrame": 17,
+    "block": "-10",
+    "blockMin": -10,
+    "hit": "+9c",
+    "recovery": "r33 1SS",
+    "total": "81",
+    "notes": "* Floor Break * Weapon * Combo from 1st hit with 4f delay * Input can be delayed 4f * Move can be delayed 3f * Interrupt with i6 from 1st block * Transition to FLE on hit only * Good sidestep right tracking * Restores 3 additional recoverable health on hit",
+    "tags": [
+      "floor-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-uf+3+4,1",
+    "character": "Yoshimitsu",
+    "input": "uf+3+4,1",
+    "parentId": "Yoshimitsu-uf+3+4",
+    "name": "Poison Wind Bronze Fist",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": ",h",
+    "damage": ",8",
+    "startup": ",i16~18",
+    "startupFrame": 31,
+    "block": "-1",
+    "blockMin": -1,
+    "hit": "-43",
+    "recovery": "r18",
+    "total": "71",
+    "notes": "* On hit, transitions to r49 backward jump automatically * Combo from 1st hit vs grounded * Combo from 1st hit",
+    "tags": [],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-uf+3+4,1,4",
+    "character": "Yoshimitsu",
+    "input": "uf+3+4,1,4",
+    "parentId": "Yoshimitsu-uf+3+4,1",
+    "name": "Poison Wind Silver Fist",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": ",m",
+    "damage": ",15",
+    "startup": ",i17~28 i28~39",
+    "startupFrame": 31,
+    "block": "-14~+13g",
+    "blockMin": -14,
+    "hit": "+27a (+17a)",
+    "crush": " js29~56 fs57~59",
+    "recovery": "r11",
+    "total": "146",
+    "notes": "Combos from 1st (requires wall)",
+    "tags": [
+      "low-crush",
+      "launcher"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-uf+3+4,1,4,NSS.1",
+    "character": "Yoshimitsu",
+    "input": "uf+3+4,1,4,NSS.1",
+    "parentId": "Yoshimitsu-uf+3+4,1,4",
+    "aliases": [
+      "NSS.uf+3+4,1,4,1"
+    ],
+    "altInputs": [],
+    "hitLevel": ",M",
+    "damage": ",24",
+    "startup": ",i24~25",
+    "startupFrame": 31,
+    "block": "-9",
+    "blockMin": -9,
+    "hit": "+16a",
+    "counterHit": "+52a",
+    "recovery": "r33 1SS",
+    "total": "170",
+    "notes": "* Balcony Break * Floor Break * Weapon * Can transition to d+1*,n * 9 chip damage on block * Recovers 1 base health or 6 additional recoverable health on hit * Recovers 1 base health when remaining recoverable health is 5 or less",
+    "tags": [
+      "ch-launcher",
+      "floor-break",
+      "balcony-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-ws1",
+    "character": "Yoshimitsu",
+    "input": "ws1",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": "m",
+    "damage": "12",
+    "startup": "i13~14",
+    "startupFrame": 13,
+    "block": "-10",
+    "blockMin": -10,
+    "hit": "+1",
+    "counterHit": "+6",
+    "recovery": "r28",
+    "total": "42",
+    "tags": [],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    },
+    "notes": "Root of ws1,2; no frame values stated in \u00a710"
+  },
+  {
+    "id": "Yoshimitsu-ws1,1",
+    "character": "Yoshimitsu",
+    "input": "ws1,1",
+    "parentId": "Yoshimitsu-ws1",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": ",h",
+    "damage": ",12",
+    "startup": ",i18",
+    "startupFrame": 13,
+    "block": "-11",
+    "blockMin": -11,
+    "hit": "+0",
+    "recovery": "r30",
+    "total": "68",
+    "notes": "* Floor Break * Combo from 1st hit with 11f delay * Combo from 1st CH with 13f delay * Input can be delayed 13f * Move can be delayed 8f * Cancel to Spinning Evade -5 -16 r25 with b+3_b+4",
+    "tags": [
+      "floor-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-ws1,1,1",
+    "character": "Yoshimitsu",
+    "input": "ws1,1,1",
+    "parentId": "Yoshimitsu-ws1,1",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": ",h",
+    "damage": ",12",
+    "startup": ",i18",
+    "startupFrame": 13,
+    "block": "-11",
+    "blockMin": -11,
+    "hit": "+0",
+    "recovery": "r30",
+    "total": "86",
+    "notes": "* Floor Break * Combo from 1st CH with 12f delay * Input can be delayed 12f",
+    "tags": [
+      "floor-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-ws1,2",
+    "character": "Yoshimitsu",
+    "input": "ws1,2",
+    "parentId": "Yoshimitsu-ws1",
+    "name": "Door Knocker to Back Knuckle",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": ",h",
+    "damage": ",18",
+    "startup": ",i25~26",
+    "startupFrame": 13,
+    "block": "-4",
+    "blockMin": -4,
+    "hit": "+14g",
+    "counterHit": "+39a",
+    "recovery": "r28",
+    "total": "71",
+    "notes": "* Balcony Break * Combos from 1st hit with 4f delay * Combos from 1st CH with 9f delay * Input can be delayed 15f * Move can be delayed 13f | Role: i13 while-standing punisher; wall splat",
+    "tags": [
+      "balcony-break",
+      "ch-launcher",
+      "punisher-crouching",
+      "wall-splat"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-ws2",
+    "character": "Yoshimitsu",
+    "input": "ws2",
+    "name": "Exorcism Fist",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": "m",
+    "damage": "13",
+    "startup": "i15~16",
+    "startupFrame": 15,
+    "block": "-4",
+    "blockMin": -4,
+    "hit": "+7",
+    "recovery": "r27 BT",
+    "total": "43",
+    "notes": "Balcony Break (airborne)",
+    "tags": [
+      "balcony-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-ws2,NSS.1",
+    "character": "Yoshimitsu",
+    "input": "ws2,NSS.1",
+    "parentId": "Yoshimitsu-ws2",
+    "aliases": [
+      "NSS.ws2,1"
+    ],
+    "altInputs": [],
+    "hitLevel": ",h",
+    "damage": ",16",
+    "startup": ",i23",
+    "startupFrame": 15,
+    "block": "-6",
+    "blockMin": -6,
+    "hit": "+5",
+    "recovery": "r25 BT",
+    "total": "64?",
+    "notes": "* Elbow * Combo from 1st hit * Move cannot be interrupted",
+    "tags": [],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-ws3",
+    "character": "Yoshimitsu",
+    "input": "ws3",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": "m",
+    "damage": "12",
+    "startup": "i16",
+    "startupFrame": 16,
+    "block": "-6",
+    "blockMin": -6,
+    "hit": "+3",
+    "recovery": "r29",
+    "total": "45",
+    "tags": [],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  }
+]

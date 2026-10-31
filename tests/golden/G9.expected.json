@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-30",
+  "dayType": "rest",
+  "budget": 5,
+  "total": 5,
+  "primaryAction": {
+    "kind": "rest-day"
+  },
+  "blocks": [
+    {
+      "kind": "review",
+      "minutes": 5,
+      "reason": "Rest day: optional review, 4 cards due"
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+/* ZANSHIN design system — spec §4.4, §4.5, §4.8, §4.12.
+ * Base reset, focus ring, type scale. CSS approach for the whole system:
+ * plain .css files co-located with each component (NOT CSS Modules),
+ * class names prefixed `z-`, colors ONLY via var(--token). Documented here
+ * as the single styling convention for all components. */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text-1);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 22px;
+  font-feature-settings: 'tnum' 1;
+}
+
+h1, h2, h3, h4, p, ul, ol, figure, blockquote { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: 0; padding: 0; }
+a { color: var(--info); }
+img, svg { display: block; max-width: 100%; }
+
+/* Focus: always visible, 2px --info ring + 2px offset (§4.12). */
+:focus-visible {
+  outline: 2px solid var(--info);
+  outline-offset: 2px;
+  border-radius: var(--radius-chip);
+}
+
+/* Type styles (§4.4). Numbers always tabular. */
+.z-display-xl { font-family: var(--font-display); font-weight: 800; font-size: 48px; line-height: 56px; }
+.z-display-l { font-family: var(--font-display); font-weight: 800; font-size: 36px; line-height: 44px; }
+.z-display-m { font-family: var(--font-display); font-weight: 600; font-size: 28px; line-height: 36px; }
+.z-title { font-family: var(--font-sans); font-weight: 600; font-size: 20px; line-height: 28px; }
+.z-body-l { font-size: 17px; line-height: 26px; }
+.z-body { font-size: 15px; line-height: 22px; }
+.z-label { font-size: 13px; line-height: 18px; font-weight: 500; letter-spacing: 0.02em; }
+.z-caption { font-size: 12px; line-height: 16px; color: var(--text-2); }
+.z-data-l { font-family: var(--font-mono); font-weight: 600; font-size: 28px; line-height: 32px; font-variant-numeric: tabular-nums; }
+.z-data { font-family: var(--font-mono); font-weight: 500; font-size: 15px; line-height: 20px; font-variant-numeric: tabular-nums; }
+.z-data-s { font-family: var(--font-mono); font-weight: 500; font-size: 13px; line-height: 18px; font-variant-numeric: tabular-nums; }
+
+/* Lab Mode (§4.4, §4.13): every type style scales by 1.35, targets 64px. */
+.z-lab { font-size: 20px; }
+.z-lab .z-display-xl { font-size: 65px; line-height: 76px; }
+.z-lab .z-display-l { font-size: 49px; line-height: 59px; }
+.z-lab .z-display-m { font-size: 38px; line-height: 49px; }
+.z-lab .z-title { font-size: 27px; line-height: 38px; }
+.z-lab .z-body-l { font-size: 23px; line-height: 35px; }
+.z-lab .z-body { font-size: 20px; line-height: 30px; }
+.z-lab .z-label { font-size: 18px; line-height: 24px; }
+.z-lab .z-data-l { font-size: 38px; line-height: 43px; }
+.z-lab .z-data { font-size: 20px; line-height: 27px; }
+
+/* Spacing helpers on the 4px grid (§4.5) — use sparingly; components own their padding. */
+.z-stack > * + * { margin-top: var(--space-4); }
+
+/* Reduced motion (§4.8, §4.12): remove non-essential animation. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Safe Mode note (§14.4) — shared by every screen with disabled writes. */
+.z-safe-note { color: var(--text-1); font-size: 14px; line-height: 20px; margin: var(--space-3) 0; }

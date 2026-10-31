@@ -1,0 +1,10 @@
+/* FrameBar — spec §4.7: 3px/frame, steel segments, plain-words marker. */
+.z-frame-bar { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.z-frame-bar__track { display: flex; height: 20px; border-radius: var(--radius-chip); overflow: hidden; border: 1px solid var(--line); max-width: 100%; }
+.z-frame-bar__seg--startup { background: var(--overlay); }
+.z-frame-bar__seg--active { background: var(--text-1); }
+.z-frame-bar__seg--recovery { background: var(--line-strong); }
+.z-frame-bar__legend { display: flex; gap: var(--space-4); flex-wrap: wrap; font-family: var(--font-mono); font-size: 13px; line-height: 18px; color: var(--text-2); }
+.z-frame-bar__swatch { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: var(--space-1); vertical-align: -1px; }
+.z-frame-bar__result { font-size: 15px; line-height: 22px; }
+.z-frame-bar__scale { font-size: 12px; line-height: 16px; color: var(--text-2); }

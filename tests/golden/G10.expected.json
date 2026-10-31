@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-30",
+  "dayType": "full",
+  "budget": 30,
+  "total": 30,
+  "primaryAction": {
+    "kind": "start-session"
+  },
+  "blocks": [
+    {
+      "kind": "review",
+      "minutes": 4,
+      "reason": "13 cards due"
+    },
+    {
+      "kind": "verify",
+      "minutes": 2,
+      "reason": "Verify 2 changed moves: b+2,2",
+      "verifyTaskIds": [
+        "v1",
+        "v2"
+      ]
+    },
+    {
+      "kind": "drill",
+      "drillId": "d3-punish-yoshi",
+      "minutes": 8,
+      "reason": "Missed punishes 2.6 per game vs target 2.0 (last 10 games)"
+    },
+    {
+      "kind": "drill",
+      "drillId": "d3-core",
+      "minutes": 8,
+      "reason": "Ten core moves: mastery 0.62, last practiced 2 days ago"
+    },
+    {
+      "kind": "drill",
+      "drillId": "d3-wall",
+      "minutes": 8,
+      "reason": "Wall and floor enders: mastery 0.70, last practiced 1 day ago"
+    }
+  ]
+}

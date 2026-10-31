@@ -1,0 +1,8 @@
+<!-- Stage 3 Core kit — spec §4.9: one straight stroke with a short crossbar: a drawn line, not a sword. Hand-drawn SVG. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" role="img" aria-label="Stage 3 emblem: a drawn line with a crossbar">
+  <g fill="none" stroke="currentColor" stroke-linecap="round">
+    <path d="M48 14v62" stroke-width="3"/>
+    <path d="M34 30h28" stroke-width="2.5" stroke="#D4AE5F"/>
+    <path d="M40 76h16" stroke-width="2"/>
+  </g>
+</svg>

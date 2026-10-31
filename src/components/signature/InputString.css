@@ -1,0 +1,34 @@
+/* InputString — spec §4.7. Plain .css, var(--token) only. */
+.z-input { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 2px; font-family: var(--font-mono); }
+.z-input--small { font-size: 13px; }
+.z-input--medium { font-size: 15px; }
+.z-input--large { font-size: 18px; }
+.z-input__dir {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 1.6em; height: 1.6em; border: 1.5px solid var(--text-1); border-radius: 4px;
+  font-size: 0.95em; line-height: 1; color: var(--text-1); background: transparent;
+}
+.z-input__dir--hold { background: var(--text-1); color: var(--bg); }
+.z-input__dir--neutral { border-style: dashed; border-color: var(--text-3); color: var(--text-2); }
+.z-input__btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 1.6em; height: 1.6em; padding: 0 0.25em; border-radius: 6px;
+  border: 1.5px solid var(--text-1); color: var(--text-1); font-weight: 600; line-height: 1;
+}
+.z-input__btn--hold { background: var(--text-1); color: var(--bg); }
+.z-input__pill {
+  display: inline-flex; align-items: center; gap: 0; border: 1.5px solid var(--text-1);
+  border-radius: 6px; overflow: hidden;
+}
+.z-input__pill .z-input__btn { border: 0; border-radius: 0; }
+.z-input__pill .z-input__btn + .z-input__btn { border-left: 1px solid var(--line-strong); }
+.z-input__pill .z-input__plus { padding: 0 0.15em; color: var(--text-2); }
+.z-input__gap { width: 6px; flex: none; }
+.z-input__tilde { color: var(--text-2); }
+.z-input__ring { border: 1.5px solid var(--heat); border-radius: var(--radius-pill); padding: 0 0.15em; display: inline-flex; }
+.z-input__colon { color: var(--text-2); letter-spacing: 1px; }
+.z-input__delay { display: inline-flex; align-items: center; color: var(--text-2); }
+.z-input__unknown { font-family: var(--font-mono); text-decoration: underline dotted; text-underline-offset: 3px; color: var(--warning); }
+.z-input__copy { margin-left: var(--space-2); }
+.z-input--large .z-input__dir, .z-input--large .z-input__btn { width: 40px; height: 40px; font-size: 20px; }
+.z-input--small .z-input__dir, .z-input--small .z-input__btn { font-size: 13px; }

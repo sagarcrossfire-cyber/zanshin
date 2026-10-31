@@ -1,0 +1,21 @@
+{
+  "stage1": {
+    "stageId": "stage-1",
+    "state": "passed",
+    "passed": true,
+    "failedCriteria": [],
+    "solidShare": 0.8333333333333334,
+    "viaPlacement": false
+  },
+  "stage2": {
+    "stageId": "stage-2",
+    "state": "open",
+    "passed": false,
+    "failedCriteria": [
+      "solidShare",
+      "whiffPunishSuccess"
+    ],
+    "solidShare": 0,
+    "viaPlacement": false
+  }
+}

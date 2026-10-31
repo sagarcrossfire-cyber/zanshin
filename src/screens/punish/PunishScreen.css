@@ -1,0 +1,73 @@
+/* Punish Trainer screen: stacked sections, large option targets. */
+.z-punish {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--space-4);
+}
+
+.z-punish__quiz {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.z-punish__quiz-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.z-punish__question {
+  font-size: 17px;
+  line-height: 26px;
+}
+
+.z-punish__options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.z-punish__option {
+  min-height: 56px;
+  padding: var(--space-3);
+  border: 1px solid var(--control-border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-1);
+  cursor: pointer;
+  font: inherit;
+}
+
+.z-punish__option:disabled {
+  cursor: default;
+  opacity: 0.85;
+}
+
+.z-punish__option--correct {
+  border-color: var(--fa-plus);
+  outline: 2px solid var(--fa-plus);
+}
+
+.z-punish__option--wrong {
+  border-color: var(--fa-launch);
+  outline: 2px solid var(--fa-launch);
+}
+
+.z-punish__explanation {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  border-top: 1px solid var(--line-strong);
+  padding-top: 12px;
+}
+
+@media (max-width: 600px) {
+  .z-punish__options {
+    grid-template-columns: 1fr;
+  }
+}

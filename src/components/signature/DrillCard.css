@@ -1,0 +1,6 @@
+/* DrillCard — spec §4.7. */
+.z-drill { display: flex; flex-direction: column; gap: var(--space-3); }
+.z-drill__why { color: var(--text-2); }
+.z-drill__row { display: flex; gap: var(--space-4); flex-wrap: wrap; }
+.z-drill__steps { display: flex; flex-direction: column; gap: var(--space-1); padding-left: var(--space-4); list-style: decimal; }
+.z-drill__spark { color: var(--mastery); }

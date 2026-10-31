@@ -1,0 +1,11 @@
+/* HeatGauge — spec §4.7 teaching aid. */
+.z-heat { display: flex; flex-direction: column; gap: var(--space-2); }
+.z-heat__bar { display: flex; gap: 2px; height: 20px; }
+.z-heat__seg { flex: 1; border-radius: 2px; background: var(--overlay); border: 1px solid var(--line); }
+.z-heat__seg--available { background: var(--heat); border-color: transparent; }
+.z-heat__seg--active { background: var(--heat-glow); border-color: transparent; animation: z-heat-drain 2s linear infinite alternate; }
+.z-heat__seg--spent { background: var(--line); }
+@keyframes z-heat-drain { from { opacity: 1; } to { opacity: 0.55; } }
+.z-heat__markers { display: flex; justify-content: space-between; font-size: 12px; line-height: 16px; color: var(--text-2); }
+.z-heat__note { font-size: 12px; line-height: 16px; color: var(--text-2); }
+@media (prefers-reduced-motion: reduce) { .z-heat__seg--active { animation: none; } }

@@ -1,0 +1,5 @@
+.z-count { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: 64px; border-bottom: 1px solid var(--line); padding: var(--space-2) 0; }
+.z-count__label { font-size: 16px; }
+.z-count__controls { display: flex; align-items: center; gap: var(--space-2); }
+.z-count__btn { min-width: 64px; min-height: 64px; font-size: 28px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); }
+.z-count__value { min-width: 48px; text-align: center; font-family: var(--font-mono); font-size: 20px; }

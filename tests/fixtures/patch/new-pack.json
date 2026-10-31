@@ -1,0 +1,127 @@
+[
+  {
+    "id": "Yoshimitsu-b+2,2",
+    "character": "Yoshimitsu",
+    "num": 63,
+    "input": "b+2,2",
+    "parentId": "Yoshimitsu-b+2",
+    "name": "Oma Kugiuchi",
+    "aliases": [
+      "1SS.b+2,2",
+      "b+2,1SS.2"
+    ],
+    "altInputs": [],
+    "hitLevel": ",h",
+    "damage": ",21",
+    "startup": ",i22~23",
+    "startupFrame": 14,
+    "block": "-9",
+    "blockMin": -9,
+    "hit": "+2a",
+    "recovery": "r34",
+    "total": "72",
+    "notes": "* Heat Engager * Heat Dash +43d (+35) * Weapon * Combo from 1st hit with 1f delay * Combo from 1st CH with 7f delay * Interrupt with i3 from 1st block * Input can be delayed 14f | Role: i14 punisher and whiff punisher; Heat Engager",
+    "tags": [
+      "heat-engager",
+      "punisher-standing",
+      "whiff-punisher"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-1",
+    "character": "Yoshimitsu",
+    "input": "1",
+    "name": "Jab",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": "h",
+    "damage": "5",
+    "startup": "i10",
+    "startupFrame": 10,
+    "block": "+1",
+    "blockMin": 1,
+    "hit": "+8",
+    "recovery": "r19",
+    "total": "29",
+    "notes": "Recovers 2f faster on hit or block (t27 r17) | Role: Standard jab",
+    "tags": [
+      "plus-on-block"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-2",
+    "character": "Yoshimitsu",
+    "input": "2",
+    "name": "Right Jab",
+    "aliases": [],
+    "altInputs": [],
+    "hitLevel": "h",
+    "damage": "10",
+    "startup": "i11",
+    "startupFrame": 11,
+    "block": "-1",
+    "blockMin": -1,
+    "hit": "+5",
+    "counterHit": "+8",
+    "recovery": "r20",
+    "total": "31",
+    "tags": [],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  },
+  {
+    "id": "Yoshimitsu-f+2",
+    "character": "Yoshimitsu",
+    "input": "f+2",
+    "name": "Manji Backfist",
+    "aliases": [],
+    "altInputs": [
+      "BT.2"
+    ],
+    "hitLevel": "h",
+    "damage": "18",
+    "startup": "i17~18",
+    "startupFrame": 17,
+    "block": "-4",
+    "blockMin": -4,
+    "hit": "+14g",
+    "counterHit": "+39a",
+    "recovery": "r28",
+    "total": "46",
+    "notes": "Balcony Break",
+    "tags": [
+      "ch-launcher",
+      "balcony-break"
+    ],
+    "provenance": {
+      "source": "wavu",
+      "sourceUrl": "https://wavu.wiki/t/Yoshimitsu_movelist",
+      "sourceRev": "62125",
+      "patch": "3.02.02",
+      "fetchedAt": "2026-10-29T19:34:27.387Z",
+      "status": "sourced"
+    }
+  }
+]

@@ -1,0 +1,7 @@
+<!-- Stage 9 Mastery — spec §4.9: a closed enso. Hand-drawn SVG. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" role="img" aria-label="Stage 9 emblem: closed enso">
+  <g fill="none" stroke-linecap="round">
+    <circle cx="48" cy="48" r="32" stroke="currentColor" stroke-width="5"/>
+    <circle cx="48" cy="48" r="32" stroke="#D4AE5F" stroke-width="2" opacity="0.6" transform="translate(0 1)"/>
+  </g>
+</svg>

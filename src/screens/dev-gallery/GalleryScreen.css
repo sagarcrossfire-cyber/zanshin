@@ -1,0 +1,12 @@
+/* Gallery — spec §4.7/§5.1. Plain .css, var(--token) only. */
+.z-gallery { background: var(--bg); color: var(--text-1); padding: var(--space-6) var(--space-4) var(--space-16); display: flex; flex-direction: column; gap: var(--space-8); max-width: 1100px; margin: 0 auto; }
+.z-gallery__head { display: flex; flex-direction: column; gap: var(--space-2); }
+.z-gallery__ja { font-family: var(--font-display); font-size: 20px; color: var(--text-2); }
+.z-gallery__switchers { display: flex; gap: var(--space-6); flex-wrap: wrap; }
+.z-gallery__switchers > div { display: flex; gap: var(--space-2); }
+.z-gallery__section { display: flex; flex-direction: column; gap: var(--space-3); border-top: 1px solid var(--line); padding-top: var(--space-4); }
+.z-gallery__row { display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: flex-start; }
+.z-gallery__col { display: flex; flex-direction: column; gap: var(--space-2); }
+.z-gallery__icons { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.z-gallery__icon { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; min-width: 72px; }
+.z-gallery__lab { display: flex; flex-direction: column; gap: var(--space-3); border: 1px dashed var(--line-strong); padding: var(--space-4); border-radius: var(--radius-card); }

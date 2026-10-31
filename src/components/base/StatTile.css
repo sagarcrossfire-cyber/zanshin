@@ -1,0 +1,7 @@
+/* StatTile — spec §4.7 supporting component: one number, target, trend. */
+.z-stat-tile { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-card); padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.z-stat-tile__label { font-size: 13px; line-height: 18px; font-weight: 500; letter-spacing: 0.02em; color: var(--text-2); }
+.z-stat-tile__value { font-family: var(--font-mono); font-weight: 600; font-size: 28px; line-height: 32px; font-variant-numeric: tabular-nums; }
+.z-stat-tile__meta { font-size: 12px; line-height: 16px; color: var(--text-2); }
+.z-stat-tile__trend--up { color: var(--fa-plus); }
+.z-stat-tile__trend--down { color: var(--fa-launch); }

@@ -1,0 +1,50 @@
+/* ZANSHIN design system — spec §4.3. Token values verbatim from the spec.
+ * Structural tokens (spacing/radii/motion, §4.5/§4.8) follow the spec blocks;
+ * no other color values exist anywhere in the app outside this file. */
+:root, [data-theme="dark"] {
+  /* surfaces */
+  --bg: #0E0F11;  --surface: #16181B;  --raised: #1E2125;  --overlay: #272B30;
+  --line: #2F343A;           /* decorative hairline only */
+  --line-strong: #4A5059;    /* dividers */
+  --control-border: #6E747E; /* inputs, toggles: >= 3:1 */
+  /* text */
+  --text-1: #ECE7DF;  --text-2: #B9B3A9;  --text-3: #9A948A;
+  --paper: #ECE7DF;   --on-paper: #0E0F11;  /* primary button = paper fill, ink text */
+  /* signals: one meaning each */
+  --fa-plus: #4FD1B5;    /* frame advantage >= +1; success */
+  --fa-punish: #FF9452;  /* -10 to -14: punishable */
+  --fa-launch: #FF5468;  /* -15 or worse: launch punishable; also unblockable, HP cost, danger */
+  --hl-low: #FF7EB6;     /* low hit level */
+  --heat: #9D8CFF;  --heat-glow: #63C7FF;  /* Heat state and Heat-only moves */
+  --mastery: #D4AE5F;    /* brass: the mastery ramp */
+  --info: #7DB7FF;       /* links, info, focus ring */
+  --warning: #E8B04B;    /* unverified or conflicting data, rusty skills */
+  --seal: #E0482F;       /* logo mark and hanko seal ONLY, never semantic */
+
+  /* spacing — 4px grid (§4.5) */
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+  --space-12: 48px; --space-16: 64px;
+  /* radii (§4.5) */
+  --radius-chip: 4px; --radius-control: 8px; --radius-card: 12px;
+  --radius-sheet: 20px; --radius-pill: 999px;
+  /* motion (§4.8) */
+  --dur-press: 120ms; --dur-standard: 200ms; --dur-sheet: 320ms; --dur-enso: 600ms;
+  --ease-enter: cubic-bezier(0.2, 0, 0, 1); --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  /* shadow: modals/sheets only (§4.5) */
+  --shadow-overlay: 0 12px 32px rgb(0 0 0 / 0.35);
+  --scrim: rgb(0 0 0 / 0.55); /* scrim behind modals/sheets (§4.5) */
+  /* font stacks (§4.4) */
+  --font-display: 'Shippori Mincho B1', 'Hiragino Mincho ProN', serif;
+  --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+[data-theme="light"] {
+  --bg: #F4F0E8;  --surface: #FBF9F5;  --raised: #FFFFFF;  --overlay: #EAE5DC;
+  --line: #D9D2C6;  --line-strong: #A89F92;  --control-border: #8A8276;
+  --text-1: #17181B;  --text-2: #4A4741;  --text-3: #66625A;
+  --paper: #17181B;   --on-paper: #F4F0E8;
+  --fa-plus: #08735F;  --fa-punish: #A64714;  --fa-launch: #B8203A;
+  --hl-low: #B02A6E;   --heat: #5B45D6;  --heat-glow: #1A65A3;
+  --mastery: #7D5B1D;  --info: #1D5FBF;  --warning: #8A5E00;  --seal: #C2381F;
+}

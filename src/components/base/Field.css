@@ -1,0 +1,16 @@
+/* Select / TextField — spec §4.3 control-border, §4.4 label. */
+.z-field { display: flex; flex-direction: column; gap: var(--space-1); }
+.z-field__label { font-size: 13px; line-height: 18px; font-weight: 500; letter-spacing: 0.02em; color: var(--text-1); }
+.z-field__hint { font-size: 12px; line-height: 16px; color: var(--text-2); }
+.z-field__error { font-size: 12px; line-height: 16px; color: var(--fa-launch); }
+.z-field__control {
+  min-height: 44px; width: 100%; padding: var(--space-2) var(--space-3);
+  background: var(--surface); color: var(--text-1);
+  border: 1px solid var(--control-border); border-radius: var(--radius-control);
+  font-size: 15px; line-height: 22px;
+}
+.z-field__control::placeholder { color: var(--text-3); }
+.z-field__control[aria-invalid="true"] { border-color: var(--fa-launch); }
+.z-field__control:disabled { opacity: 0.45; }
+select.z-field__control { appearance: none; padding-right: var(--space-8); background-image: linear-gradient(45deg, transparent 50%, var(--text-2) 50%), linear-gradient(135deg, var(--text-2) 50%, transparent 50%); background-position: calc(100% - 20px) 50%, calc(100% - 15px) 50%; background-size: 5px 5px; background-repeat: no-repeat; }
+textarea.z-field__control { min-height: 88px; resize: vertical; }

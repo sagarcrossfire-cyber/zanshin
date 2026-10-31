@@ -1,0 +1,1 @@
+{"diff":{"added":[],"changed":[{"changes":[{"field":"block","newValue":"-9","oldValue":"-13"}],"importance":3,"input":"b+2,2","moveId":"Yoshimitsu-b+2,2","num":12}],"patch":"3.02.03","previousPatch":"3.02.02","removed":[]},"kind":"patch","state":{"cardsByMove":{"Yoshimitsu-b+2,2":["card-punish-14","card-core-b22"]},"provenanceByMove":{"Yoshimitsu-b+2,2":"verified"}}}

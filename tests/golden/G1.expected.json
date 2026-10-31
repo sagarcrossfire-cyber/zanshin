@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-30",
+  "dayType": "full",
+  "budget": 30,
+  "total": 30,
+  "primaryAction": {
+    "kind": "start-session"
+  },
+  "blocks": [
+    {
+      "kind": "drill",
+      "drillId": "d0-notation",
+      "minutes": 15,
+      "reason": "Decode 10 inputs: mastery 0.20, never practiced"
+    },
+    {
+      "kind": "drill",
+      "drillId": "d0-setup",
+      "minutes": 15,
+      "reason": "Frame display and recording: mastery 0.10, never practiced"
+    }
+  ]
+}

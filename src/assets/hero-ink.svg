@@ -1,0 +1,15 @@
+<!-- Hero ink — spec §4.9. Hand-drawn SVG, no generation. Abstract horizontal ink-wash band, three tones, 2-3% grain via feTurbulence, hairlines. No people/text/symbols. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" width="1200" height="320" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Abstract ink wash band">
+  <defs>
+    <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
+    <linearGradient id="wash" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0E0F11"/><stop offset="0.5" stop-color="#1E2125"/><stop offset="1" stop-color="#0E0F11"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="320" fill="url(#wash)"/>
+  <path d="M0 150 C 200 120, 350 190, 600 155 S 1000 120, 1200 160" fill="none" stroke="#9A948A" stroke-width="26" opacity="0.35" stroke-linecap="round"/>
+  <path d="M0 205 C 240 180, 420 230, 680 200 S 1020 175, 1200 205" fill="none" stroke="#4A5059" stroke-width="14" opacity="0.5" stroke-linecap="round"/>
+  <path d="M0 110 C 300 95, 600 125, 900 105 S 1120 115, 1200 108" fill="none" stroke="#ECE7DF" stroke-width="6" opacity="0.28" stroke-linecap="round"/>
+  <g stroke="#2F343A" stroke-width="1"><path d="M0 80h1200M0 240h1200M0 280h1200"/></g>
+  <rect width="1200" height="320" filter="url(#grain)" opacity="0.025"/>
+</svg>

@@ -1,0 +1,44 @@
+{
+  "mastery": {
+    "nodeId": "n3-bnb",
+    "K": 1,
+    "E": 0.22643091606597668,
+    "A": null,
+    "score": 0.44745065433284054,
+    "state": "rusty",
+    "placed": false,
+    "evidenceDays": [
+      "2026-09-30"
+    ],
+    "updatedAt": "2026-10-30"
+  },
+  "plan": {
+    "date": "2026-10-30",
+    "dayType": "full",
+    "budget": 30,
+    "total": 30,
+    "primaryAction": {
+      "kind": "start-session"
+    },
+    "blocks": [
+      {
+        "kind": "warmup",
+        "drillId": "d3-bnb",
+        "minutes": 3,
+        "reason": "Keep BnB fresh: rusty, last practiced 30 days ago"
+      },
+      {
+        "kind": "drill",
+        "drillId": "d3-core",
+        "minutes": 14,
+        "reason": "Ten core moves: mastery 0.60, last practiced 1 day ago"
+      },
+      {
+        "kind": "drill",
+        "drillId": "d3-bnb",
+        "minutes": 13,
+        "reason": "BnB: mastery 0.45, last practiced 30 days ago, rusty"
+      }
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+.z-path { display: flex; flex-direction: column; gap: var(--space-4); }
+.z-path__stages { display: flex; gap: var(--space-4); overflow-x: auto; padding-bottom: var(--space-2); scroll-snap-type: x mandatory; }
+.z-path__stages > * { min-width: 300px; max-width: 360px; flex: 1 0 300px; scroll-snap-align: start; }
+.z-path__nodes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.z-path__node a { display: flex; gap: var(--space-3); align-items: center; }
+.z-path__detail { display: flex; flex-direction: column; gap: var(--space-4); max-width: 860px; margin: 0 auto; }
+@media (min-width: 600px) {
+  .z-path__stages { flex-wrap: wrap; overflow-x: visible; }
+}

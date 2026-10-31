@@ -1,0 +1,23 @@
+.z-progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.z-progress__calendar {
+  display: grid;
+  grid-template-columns: repeat(14, 1fr);
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+.z-progress__day {
+  aspect-ratio: 1;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+}
+
+.z-progress__day--practiced {
+  background: var(--text-1);
+  border-color: var(--text-1);
+}

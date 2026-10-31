@@ -1,0 +1,2 @@
+.z-route-error { padding: var(--space-6) var(--space-4); max-width: 560px; margin: 0 auto; }
+.z-route-error__link { align-self: center; color: var(--info); }

@@ -1,0 +1,13 @@
+/* RepLogger — spec §4.7/§5.5: large buttons, one tap per set, 5s undo. */
+.z-rep { display: flex; flex-direction: column; gap: var(--space-3); }
+.z-rep__meta { display: flex; gap: var(--space-4); flex-wrap: wrap; align-items: baseline; }
+.z-rep__grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--space-2); }
+.z-rep__btn {
+  min-height: 56px; border: 1px solid var(--control-border); border-radius: var(--radius-control);
+  font-family: var(--font-mono); font-weight: 600; font-size: 20px; background: var(--surface); color: var(--text-1);
+}
+.z-rep__btn[aria-pressed="true"] { background: var(--paper); color: var(--on-paper); border-color: transparent; }
+.z-lab .z-rep__btn { min-height: 64px; }
+.z-rep__sides { display: flex; gap: var(--space-2); }
+.z-rep__side { min-height: 44px; padding: var(--space-2) var(--space-4); border: 1px solid var(--control-border); border-radius: var(--radius-pill); font-weight: 600; }
+.z-rep__side[aria-pressed="true"] { background: var(--paper); color: var(--on-paper); border-color: transparent; }

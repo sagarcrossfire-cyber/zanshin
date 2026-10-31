@@ -1,0 +1,10 @@
+/* Card — spec §4.5: no shadow; one surface step + 1px --line border. */
+.z-card {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius-card); padding: var(--space-4);
+}
+.z-card--raised { background: var(--raised); }
+.z-card--interactive { cursor: pointer; text-align: left; width: 100%; }
+.z-card--interactive:hover { border-color: var(--line-strong); }
+.z-card__title { font-family: var(--font-sans); font-weight: 600; font-size: 20px; line-height: 28px; }
+.z-card__header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-2); }

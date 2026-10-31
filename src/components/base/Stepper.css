@@ -1,0 +1,16 @@
+/* Stepper — large variant per spec §4.7/§5.2 (onboarding steps). */
+.z-stepper { display: flex; gap: var(--space-2); align-items: center; }
+.z-stepper__step {
+  display: flex; align-items: center; gap: var(--space-2);
+  min-height: 44px; padding: var(--space-2); border-radius: var(--radius-control); color: var(--text-2);
+}
+.z-stepper__dot {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 32px; height: 32px; border-radius: var(--radius-pill);
+  border: 1px solid var(--control-border); font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+}
+.z-stepper__step[aria-current="step"] { color: var(--text-1); }
+.z-stepper__step[aria-current="step"] .z-stepper__dot { background: var(--paper); color: var(--on-paper); border-color: transparent; }
+.z-stepper__step--done .z-stepper__dot { border-color: var(--fa-plus); color: var(--fa-plus); }
+.z-stepper--large .z-stepper__dot { width: 44px; height: 44px; font-size: 15px; }
+.z-stepper--large .z-stepper__step { min-height: 56px; }

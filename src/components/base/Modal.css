@@ -1,0 +1,15 @@
+/* Modal — spec §4.5 (shadow over scrim), §4.12. Centered dialog; Sheet for phone details. */
+.z-modal-scrim {
+  position: fixed; inset: 0; z-index: 50; background: var(--scrim);
+  display: flex; align-items: center; justify-content: center; padding: var(--space-4);
+}
+.z-modal {
+  width: 100%; max-width: 520px; max-height: 88dvh; overflow-y: auto;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-card);
+  box-shadow: var(--shadow-overlay); padding: var(--space-5);
+  animation: z-modal-in var(--dur-standard) var(--ease-enter);
+}
+@keyframes z-modal-in { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: none; } }
+.z-modal__header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); }
+.z-modal__actions { display: flex; gap: var(--space-3); justify-content: flex-end; margin-top: var(--space-5); flex-wrap: wrap; }
+@media (prefers-reduced-motion: reduce) { .z-modal { animation: none; } }

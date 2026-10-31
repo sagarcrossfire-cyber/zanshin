@@ -1,0 +1,7 @@
+<!-- ZANSHIN seal gate, spec section 4.9. Hand-drawn SVG, no generation. Square hanko frame in the seal token (#C2381F light / #E0482F dark; dark value used), rotated -3 degrees. The stage number is overlaid by the app component, so this asset stays reusable. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" role="img" aria-label="Gate seal frame">
+  <g transform="rotate(-3 48 48)">
+    <rect x="14" y="14" width="68" height="68" fill="none" stroke="#E0482F" stroke-width="4"/>
+    <rect x="22" y="22" width="52" height="52" fill="none" stroke="#E0482F" stroke-width="1.5"/>
+  </g>
+</svg>

@@ -1,0 +1,12 @@
+<!-- ZANSHIN logo mark, spec section 4.9. Hand-drawn SVG, no generation. Brush enso open at 1 o'clock plus square hanko seal in the seal token (#E0482F) bearing the zanshin kanji in white. Hex values match tokens.css (SVG files are not .css/.tsx). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="Zanshin logo mark">
+  <rect width="120" height="120" fill="none"/>
+  <!-- Enso: arc from 1 o'clock around to just short of 1 o'clock, tapered by overlay. -->
+  <path d="M 88 22 A 42 42 0 1 0 96 34" fill="none" stroke="#ECE7DF" stroke-width="9" stroke-linecap="round"/>
+  <path d="M 88 22 A 42 42 0 1 0 96 34" fill="none" stroke="#ECE7DF" stroke-width="4" stroke-linecap="round" opacity="0.55" transform="translate(0 1)"/>
+  <!-- Hanko seal -->
+  <g transform="translate(72 74) rotate(-3 14 14)">
+    <rect x="0" y="0" width="30" height="30" rx="2" fill="#E0482F"/>
+    <text x="15" y="23" text-anchor="middle" font-family="serif" font-size="20" fill="#FFFFFF">残</text>
+  </g>
+</svg>

@@ -1,0 +1,48 @@
+{
+  "placementStage": 4,
+  "statuses": [
+    {
+      "stageId": "stage-0",
+      "state": "passed",
+      "passed": true,
+      "failedCriteria": [],
+      "solidShare": 1,
+      "viaPlacement": true
+    },
+    {
+      "stageId": "stage-1",
+      "state": "passed",
+      "passed": true,
+      "failedCriteria": [],
+      "solidShare": 0.8333333333333334,
+      "viaPlacement": true
+    },
+    {
+      "stageId": "stage-2",
+      "state": "passed",
+      "passed": true,
+      "failedCriteria": [],
+      "solidShare": 0.8,
+      "viaPlacement": true
+    },
+    {
+      "stageId": "stage-3",
+      "state": "passed",
+      "passed": true,
+      "failedCriteria": [],
+      "solidShare": 0.8333333333333334,
+      "viaPlacement": true
+    },
+    {
+      "stageId": "stage-4",
+      "state": "open",
+      "passed": false,
+      "failedCriteria": [
+        "solidShare",
+        "heatComboSuccess"
+      ],
+      "solidShare": 0.3333333333333333,
+      "viaPlacement": false
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+/* DataBadge — spec §4.7: color + icon + label, never color-only. */
+.z-data-badge {
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  min-height: 28px; padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-chip); border: 1px solid var(--line-strong);
+  font-size: 13px; line-height: 18px; font-weight: 500; letter-spacing: 0.02em; white-space: nowrap;
+}
+.z-data-badge--verified { color: var(--fa-plus); border-color: var(--fa-plus); }
+.z-data-badge--sourced { color: var(--info); border-color: var(--info); }
+.z-data-badge--conflicting { color: var(--warning); border-color: var(--warning); }
+.z-data-badge--unverified { color: var(--text-3); border-color: var(--line-strong); }
+button.z-data-badge { min-height: 44px; padding: var(--space-2) var(--space-3); cursor: pointer; }

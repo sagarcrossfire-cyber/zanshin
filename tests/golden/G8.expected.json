@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-30",
+  "dayType": "full",
+  "budget": 20,
+  "total": 20,
+  "primaryAction": {
+    "kind": "start-session"
+  },
+  "blocks": [
+    {
+      "kind": "review",
+      "minutes": 3,
+      "reason": "10 cards due"
+    },
+    {
+      "kind": "application",
+      "minutes": 7,
+      "reason": "Play 5–10 games. Focus: Missed punishes."
+    },
+    {
+      "kind": "drill",
+      "drillId": "d2-whiff",
+      "minutes": 5,
+      "reason": "Punish a whiff: mastery 0.50, last practiced 4 days ago"
+    },
+    {
+      "kind": "drill",
+      "drillId": "d2-sidestep",
+      "minutes": 5,
+      "reason": "Make a linear move whiff: mastery 0.55, last practiced 2 days ago"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+<!-- Stage 5 Panic and keepout — spec §4.9: lightning zigzag inside a circle, for the 6-frame Flash. Hand-drawn SVG. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" role="img" aria-label="Stage 5 emblem: zigzag inside a circle">
+  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="48" cy="48" r="34" stroke-width="2.5"/>
+    <path d="M54 20 38 50h12l-6 26 18-32H50z" stroke="#D4AE5F" stroke-width="2.75"/>
+  </g>
+</svg>

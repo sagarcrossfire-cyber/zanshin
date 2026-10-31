@@ -1,0 +1,6 @@
+.z-today { display: flex; flex-direction: column; gap: var(--space-4); max-width: 860px; margin: 0 auto; }
+.z-today__blocks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.z-today__block { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: var(--space-2); }
+.z-today__reason { max-width: 100%; min-width: 0; }
+.z-today__reason .z-chip { white-space: normal; overflow-wrap: anywhere; }
+.z-today__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }

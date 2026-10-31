@@ -1,0 +1,11 @@
+/* IconButton — spec §4.5, §4.12. */
+.z-icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; border-radius: var(--radius-control);
+  color: var(--text-1); border: 1px solid transparent; flex: none;
+  transition: background var(--dur-press) var(--ease-enter);
+}
+.z-icon-btn:hover { background: var(--raised); }
+.z-icon-btn--outline { border-color: var(--control-border); }
+.z-icon-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.z-icon-btn--lab, .z-lab .z-icon-btn { width: 64px; height: 64px; }

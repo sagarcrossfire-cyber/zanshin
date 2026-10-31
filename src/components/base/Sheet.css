@@ -1,0 +1,16 @@
+/* Sheet — spec §4.5 (20px radius, shadow over scrim), §4.8 320ms, §4.13. */
+.z-scrim {
+  position: fixed; inset: 0; z-index: 50; background: var(--scrim);
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.z-sheet {
+  width: 100%; max-width: 640px; max-height: 88dvh; overflow-y: auto;
+  background: var(--surface); border: 1px solid var(--line); border-bottom: 0;
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  box-shadow: var(--shadow-overlay); padding: var(--space-4) var(--space-4) var(--space-6);
+  animation: z-sheet-in var(--dur-sheet) var(--ease-enter);
+}
+@keyframes z-sheet-in { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+.z-sheet__header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); }
+.z-sheet__grab { width: 40px; height: 4px; border-radius: var(--radius-pill); background: var(--line-strong); margin: 0 auto var(--space-3); }
+@media (prefers-reduced-motion: reduce) { .z-sheet { animation: none; } }

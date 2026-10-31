@@ -1,0 +1,8 @@
+/* EmptyState / ErrorState — spec §4.9 empty-*.svg art, §2.9 every screen has
+ * empty/loading/error states. */
+.z-state { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); text-align: center; padding: var(--space-8) var(--space-4); }
+.z-state__art { width: 96px; height: 96px; color: var(--text-3); }
+.z-state__art img, .z-state__art svg { width: 100%; height: 100%; }
+.z-state__title { font-family: var(--font-sans); font-weight: 600; font-size: 20px; line-height: 28px; }
+.z-state__body { color: var(--text-2); max-width: 40ch; }
+.z-state__actions { display: flex; gap: var(--space-3); flex-wrap: wrap; justify-content: center; }

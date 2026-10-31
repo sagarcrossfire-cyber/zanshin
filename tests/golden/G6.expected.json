@@ -1,0 +1,30 @@
+{
+  "cardsDueToday": [
+    "card-punish-14",
+    "card-core-b22"
+  ],
+  "verifyTasks": [
+    {
+      "moveId": "Yoshimitsu-b+2,2",
+      "input": "b+2,2",
+      "field": "block",
+      "oldValue": "-13",
+      "newValue": "-9",
+      "changes": [
+        {
+          "field": "block",
+          "newValue": "-9",
+          "oldValue": "-13"
+        }
+      ]
+    }
+  ],
+  "provenanceResets": [
+    {
+      "moveId": "Yoshimitsu-b+2,2",
+      "from": "verified",
+      "to": "sourced"
+    }
+  ],
+  "bannerText": "1 Yoshimitsu move changed. b+2,2 on block: -13 → -9."
+}

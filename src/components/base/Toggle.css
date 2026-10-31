@@ -1,0 +1,19 @@
+/* Toggle — spec §4.3 control-border >=3:1, §4.12. Native checkbox, styled track. */
+.z-toggle { display: inline-flex; align-items: center; gap: var(--space-3); min-height: 44px; cursor: pointer; }
+.z-toggle input { position: absolute; opacity: 0; width: 44px; height: 44px; margin: 0; }
+.z-toggle__track {
+  position: relative; flex: none; width: 52px; height: 32px; border-radius: var(--radius-pill);
+  background: var(--raised); border: 1px solid var(--control-border);
+  transition: background var(--dur-standard) var(--ease-enter);
+  pointer-events: none; /* Decorative and aria-hidden: clicks must reach the input. */
+}
+.z-toggle__track::after {
+  content: ''; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px;
+  border-radius: var(--radius-pill); background: var(--text-1);
+  transition: transform var(--dur-standard) var(--ease-enter);
+}
+.z-toggle input:checked + .z-toggle__track { background: var(--paper); border-color: transparent; }
+.z-toggle input:checked + .z-toggle__track::after { background: var(--on-paper); transform: translateX(20px); }
+.z-toggle input:focus-visible + .z-toggle__track { outline: 2px solid var(--info); outline-offset: 2px; }
+.z-toggle input:disabled + .z-toggle__track { opacity: 0.45; }
+.z-toggle__label { font-size: 15px; line-height: 22px; }

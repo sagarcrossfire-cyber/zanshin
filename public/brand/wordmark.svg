@@ -1,0 +1,4 @@
+<!-- ZANSHIN wordmark — spec §4.9. Hand-drawn SVG, no generation. Outlined text, Shippori Mincho B1 800 with serif fallback, tracking 0.12em. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 120" width="640" height="120" role="img" aria-label="ZANSHIN">
+  <text x="320" y="84" text-anchor="middle" font-family="'Shippori Mincho B1', 'Hiragino Mincho ProN', serif" font-size="72" font-weight="800" letter-spacing="0.12em" fill="none" stroke="#ECE7DF" stroke-width="1.5">ZANSHIN</text>
+</svg>

@@ -1,0 +1,8 @@
+<!-- Stage 7 Okizeme — spec §4.9: ground line with a descending stroke stopping just above it. Hand-drawn SVG. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" role="img" aria-label="Stage 7 emblem: descending stroke stopping above a ground line">
+  <g fill="none" stroke="currentColor" stroke-linecap="round">
+    <path d="M14 74h68" stroke-width="2.5"/>
+    <path d="M48 16v48" stroke-width="3" stroke="#D4AE5F"/>
+    <path d="M40 58h16" stroke-width="2"/>
+  </g>
+</svg>

@@ -1,0 +1,49 @@
+/* Flashcards screens: deck list and review. */
+.z-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--space-4);
+}
+
+.z-cards__actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.z-cards__decks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.z-cards__front {
+  font-size: 20px;
+  line-height: 28px;
+  padding: 8px 0;
+}
+
+.z-cards__back {
+  border-top: 1px solid var(--line-strong);
+  margin-top: 12px;
+  padding-top: 12px;
+  font-size: 17px;
+  line-height: 26px;
+}
+
+.z-cards__grades {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.z-cards__announcement {
+  min-height: 22px;
+}

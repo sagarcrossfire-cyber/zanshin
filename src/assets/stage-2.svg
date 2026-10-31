@@ -1,0 +1,8 @@
+<!-- Stage 2 Movement — spec §4.9: two arcs stepping sideways. Hand-drawn SVG. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" role="img" aria-label="Stage 2 emblem: two stepping arcs">
+  <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+    <path d="M16 62a22 22 0 0 1 30-20"/>
+    <path d="M50 62a22 22 0 0 1 30-20" stroke="#D4AE5F"/>
+    <path d="M14 72h68" stroke-width="2"/>
+  </g>
+</svg>

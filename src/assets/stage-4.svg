@@ -1,0 +1,7 @@
+<!-- Stage 4 Heat — spec §4.9: tapering flame drawn in two strokes. Hand-drawn SVG. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" role="img" aria-label="Stage 4 emblem: flame in two strokes">
+  <g fill="none" stroke-linecap="round">
+    <path d="M48 14c6 14-12 20-12 34a12 12 0 0 0 24 0c0-8-5-12-8-16" stroke="currentColor" stroke-width="2.75"/>
+    <path d="M48 78c-9-2-16-8-16-18" stroke="#D4AE5F" stroke-width="2.5"/>
+  </g>
+</svg>

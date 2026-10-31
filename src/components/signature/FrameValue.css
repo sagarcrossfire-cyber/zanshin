@@ -1,0 +1,8 @@
+/* FrameValue — spec §4.7. Tier color + icon cue, never color-only (sign kept). */
+.z-frame-value { font-family: var(--font-mono); font-weight: 500; font-size: 15px; line-height: 20px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.z-frame-value--plus { color: var(--fa-plus); }
+.z-frame-value--punish { color: var(--fa-punish); }
+.z-frame-value--launch { color: var(--fa-launch); }
+.z-frame-value__suffix { font-size: 0.72em; vertical-align: super; text-decoration: underline dotted; text-underline-offset: 2px; }
+.z-frame-value__paren { font-size: 0.85em; color: var(--text-2); }
+.z-frame-value__tier { margin-right: var(--space-1); }

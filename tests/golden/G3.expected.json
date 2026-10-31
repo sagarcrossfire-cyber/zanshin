@@ -1,0 +1,24 @@
+{
+  "progression": {
+    "type": "none",
+    "drillId": "d3-bnb",
+    "note": ""
+  },
+  "regression": {
+    "type": "none",
+    "drillId": "d3-bnb",
+    "note": ""
+  },
+  "plateau": {
+    "type": "plateau",
+    "drillId": "d3-bnb",
+    "spaced": true,
+    "note": "BnB: execution has moved 2 points or less over 5 sessions while below target. Try a different method: record a replay, watch the reference, or split the input. This drill moves to every other session."
+  },
+  "combined": {
+    "type": "plateau",
+    "drillId": "d3-bnb",
+    "spaced": true,
+    "note": "BnB: execution has moved 2 points or less over 5 sessions while below target. Try a different method: record a replay, watch the reference, or split the input. This drill moves to every other session."
+  }
+}

@@ -1,0 +1,11 @@
+/* Skeleton / ProgressLine — spec §4.8 (thin progress line, never a spinner). */
+.z-skeleton {
+  background: var(--overlay); border-radius: var(--radius-chip);
+  animation: z-shimmer var(--dur-sheet) var(--ease-enter) infinite alternate;
+}
+@keyframes z-shimmer { from { opacity: 0.6; } to { opacity: 1; } }
+.z-progress-line { height: 4px; background: var(--line); border-radius: var(--radius-pill); overflow: hidden; }
+.z-progress-line__fill { height: 100%; background: var(--text-1); border-radius: var(--radius-pill); transition: width var(--dur-standard) var(--ease-enter); }
+.z-progress-line__fill--mastery { background: var(--mastery); }
+.z-progress-line__fill--heat { background: var(--heat); }
+@media (prefers-reduced-motion: reduce) { .z-skeleton, .z-progress-line__fill { animation: none; transition: none; } }
