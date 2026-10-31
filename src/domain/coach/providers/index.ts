@@ -1,7 +1,8 @@
 // Spec §8.7 — coach provider types and shared request machinery.
 // No API keys live in this code: keys arrive through provider config only.
 
-export type CoachProviderId = 'none' | 'openai-compatible' | 'anthropic' | 'mock';
+/** 'zanshin' (1.3.0): the site's own intel function; the key stays on the server. */
+export type CoachProviderId = 'none' | 'openai-compatible' | 'anthropic' | 'mock' | 'zanshin';
 
 export interface CoachMessage {
   role: 'user' | 'assistant';

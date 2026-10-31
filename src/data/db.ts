@@ -1,11 +1,11 @@
-// §6.3 — Dexie database 'zanshin', version 4, with the §6.3 tables and indexes
-// plus the Amendment 01B media library tables.
+// §6.3 — Dexie database 'zanshin', version 5, with the §6.3 tables and indexes,
+// the Amendment 01B media library tables and the 1.3.0 research notes table.
 import Dexie, { type Table } from 'dexie';
 import { flushSeed } from './seedState';
 import type {
   Assessment, Card, CardState, CoachMessage, DataConflict, DrillSet, ErrorRecord,
   Mastery, MatchSet, MediaAsset, MediaBlob, MetaRecord, MoveNote, PackRecord, ProblemMove, Profile,
-  ReplayReview, Session, Settings, Snapshot, StageStatus, VerificationRecord,
+  ReplayReview, ResearchNote, Session, Settings, Snapshot, StageStatus, VerificationRecord,
 } from './schemas';
 
 /**
@@ -23,10 +23,13 @@ import type {
  * Version 4 (1.1.0, Amendment 01B): two new tables for the local media
  * library, `media` (one row per imported image or clip) and `mediaBlobs`
  * (their bytes). Additive: no existing table or row changes.
+ * Version 5 (1.3.0): one new table, `research`, for web-sourced notes the
+ * site's intel function returned (answers, matchup primers, patch briefs).
+ * Additive: no existing table or row changes.
  * Keep NEXT_SCHEMA_VERSION in sync with the highest registered version.
  */
-export const SCHEMA_VERSION = 4;
-export const NEXT_SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 5;
+export const NEXT_SCHEMA_VERSION = 6;
 
 /** v1 stores, kept for the v1→v2 migration test. */
 export const V1_STORES: Record<string, string> = {
@@ -68,6 +71,12 @@ export const V4_STORES: Record<string, string> = {
   mediaBlobs: 'key',
 };
 
+/** v5 stores: v4 plus research notes (release 1.3.0). */
+export const V5_STORES: Record<string, string> = {
+  ...V4_STORES,
+  research: 'id, kind, subjectKey, createdAt',
+};
+
 export class ZanshinDb extends Dexie {
   meta!: Table<MetaRecord, string>;
   profile!: Table<Profile, string>;
@@ -91,6 +100,7 @@ export class ZanshinDb extends Dexie {
   errors!: Table<ErrorRecord, string>;
   media!: Table<MediaAsset, string>;
   mediaBlobs!: Table<MediaBlob, string>;
+  research!: Table<ResearchNote, string>;
 
   constructor() {
     super('zanshin');
@@ -98,6 +108,7 @@ export class ZanshinDb extends Dexie {
     this.version(2).stores(V2_STORES);
     this.version(3).stores(V3_STORES);
     this.version(4).stores(V4_STORES);
+    this.version(5).stores(V5_STORES);
   }
 }
 

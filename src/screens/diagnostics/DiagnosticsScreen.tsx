@@ -9,6 +9,7 @@ import { Card } from '../../components/base/Card';
 import { Toggle } from '../../components/base/Toggle';
 import { DATA_PATCH, DATA_SOURCE, PACK_VERSION, loadMovesYoshimitsu, loadRoster } from '../../data/packs';
 import { SCHEMA_VERSION, mediaRepo, type MediaStats } from '../../data/repos';
+import { formatSpend, intelHealth } from '../../services/intel';
 import { MEDIA_KINDS, type MediaKind } from '../../data/schemas';
 import { RANKS } from '../../config/ranks';
 import { isKnownSubject } from '../../domain/media/subjects';
@@ -86,6 +87,8 @@ export function DiagnosticsScreen() {
   const [clockWarning, setClockWarning] = useState<string | null>(null);
   const [storage, setStorage] = useState<StorageInfo | null>(null);
   const [media, setMedia] = useState<MediaInfo | null>(null);
+  const [intel, setIntel] = useState<string>('not checked yet');
+  const [intelChecking, setIntelChecking] = useState(false);
   const [swStatus, setSwStatus] = useState('');
   const [errors, setErrors] = useState<{ at: string; where: string; message: string }[]>([]);
   const [selfTest, setSelfTest] = useState<SelfTestResult[] | null>(null);
@@ -121,6 +124,22 @@ export function DiagnosticsScreen() {
     };
   }, []);
 
+  // On demand, not on load: a site without the function (a local preview)
+  // would otherwise log a failed request every time Diagnostics opens.
+  const checkIntel = async () => {
+    setIntelChecking(true);
+    try {
+      const health = await intelHealth();
+      setIntel(health.keyConfigured
+        ? `reachable; key configured; ${formatSpend(health.today.costUsd, health.capUsd)}, ${health.today.requests} request(s)`
+        : 'reachable, but no Perplexity key is set on the site');
+    } catch (error) {
+      setIntel(`unavailable (${error instanceof Error ? error.message : 'offline'})`);
+    } finally {
+      setIntelChecking(false);
+    }
+  };
+
   const rerunIntegrity = async () => {
     const result = await runIntegrityChecks();
     setChecks(result.checks);
@@ -154,6 +173,7 @@ export function DiagnosticsScreen() {
       `Storage: ${storage?.available ? `${((storage.usage ?? 0) / 1048576).toFixed(1)} MB of ${((storage.quota ?? 0) / 1048576).toFixed(0)} MB` : 'unavailable'}`,
       `Service worker: ${swStatus}`,
       `Media library: ${media ? `${media.count} item(s), ${formatMb(media.bytes)}, ${media.unmatched} not matched` : 'unavailable'}`,
+      `Intelligence function: ${intel}`,
     ];
     setReport(lines.join('\n'));
     try {
@@ -227,6 +247,10 @@ export function DiagnosticsScreen() {
           <p className="z-body-l">Storage estimate unavailable in this environment.</p>
         )}
         <p className="z-body-l">Service worker: {swStatus}</p>
+        <p className="z-body-l" data-testid="diagnostics-intel">Intelligence function: {intel}</p>
+        <Button variant="secondary" onClick={() => void checkIntel()} disabled={intelChecking}>
+          {intelChecking ? 'Checking…' : 'Check intelligence function'}
+        </Button>
       </Card>
 
       <Card title="Media library">

@@ -132,6 +132,7 @@ export function GalleryScreen() {
         <DataBadge status="sourced" detail="Wavu Wiki" />
         <DataBadge status="conflicting" onClick={() => undefined} />
         <DataBadge status="unverified" />
+        <DataBadge status="web" detail="sonar · 2026-10-31" />
       </Section>
 
       <Section title="InputString — all glyph modes, all sizes">

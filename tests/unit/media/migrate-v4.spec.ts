@@ -18,8 +18,8 @@ function memoryStorage(initial?: Record<string, string>): VersionStorage {
 }
 
 describe('schema v4 (media library)', () => {
-  it('is the current schema and only adds the two media stores', () => {
-    expect(SCHEMA_VERSION).toBe(4);
+  it('only adds the two media stores', () => {
+    expect(SCHEMA_VERSION).toBeGreaterThanOrEqual(4);
     expect(V4_STORES).toMatchObject(V3_STORES);
     expect(Object.keys(V4_STORES).filter((k) => !(k in V3_STORES)).sort()).toEqual(['media', 'mediaBlobs']);
   });

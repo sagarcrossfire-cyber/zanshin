@@ -1,0 +1,11 @@
+/* ResearchNoteView — release 1.3.0. Tokens only. */
+.z-research { display: flex; flex-direction: column; gap: var(--space-3); }
+.z-research__question { margin: 0; font-weight: 600; }
+.z-research__badges { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.z-research__meta { color: var(--text-2); font-size: 13px; }
+.z-research__body p { margin: 0 0 var(--space-2); }
+.z-research__body p:last-child { margin-bottom: 0; }
+.z-research__frames { margin: 0; color: var(--warning); font-size: 13px; }
+.z-research__citations { margin: 0; padding-left: var(--space-5); font-size: 13px; display: flex; flex-direction: column; gap: var(--space-1); }
+.z-research__cite-id { font-family: var(--font-mono); color: var(--text-2); }
+.z-research__actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }

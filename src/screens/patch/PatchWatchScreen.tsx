@@ -1,7 +1,9 @@
 // Patch Watch — spec §5.16/§7.7/§9.1. Current data version, check for
 // updates through the shared importer (origin=*), the change list, affected
 // cards/conflicts, and snapshot history with restore. Offline shows the
-// last known state and a retry, never an error page (AC-PATCH-1).
+// last known state and a retry, never an error page (AC-PATCH-1). Release
+// 1.3.0 adds "Explain this update": a web-sourced brief on the changed
+// moves from the site's intel function, kept as a research note.
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
@@ -26,6 +28,9 @@ import {
   type PatchCheckResult,
 } from '../../services/patchWatch';
 import { restoreSnapshot, snapshotPreview } from '../../services/snapshots';
+import { ResearchNoteView } from '../../components/research/ResearchNoteView';
+import { IntelError } from '../../services/intel';
+import { fetchBrief, storedBrief, type BriefView } from '../../services/research';
 import { todayIso } from '../../app/planState';
 import './PatchWatch.css';
 
@@ -49,6 +54,9 @@ export function PatchWatchScreen() {
   const [checkError, setCheckError] = useState('');
   const [restoringId, setRestoringId] = useState<string | null>(null);
   const [restorePreview, setRestorePreview] = useState<Record<string, number> | null>(null);
+  const [brief, setBrief] = useState<BriefView | null>(null);
+  const [briefLoading, setBriefLoading] = useState(false);
+  const [briefError, setBriefError] = useState('');
 
   const load = useCallback(async () => {
     const [storedPack, revision, lastCheck, lastApplied, lastDiff, conflicts, snapshots] = await Promise.all([
@@ -66,8 +74,13 @@ export function PatchWatchScreen() {
   useEffect(() => {
     let cancelled = false;
     void load()
-      .then((loaded) => {
-        if (!cancelled) setState(loaded);
+      .then(async (loaded) => {
+        if (cancelled) return;
+        setState(loaded);
+        if (loaded.lastDiff?.revision) {
+          const kept = await storedBrief(loaded.lastDiff.revision);
+          if (!cancelled) setBrief(kept);
+        }
       })
       .catch((error: unknown) => {
         if (!isDatabaseClosedError(error)) throw error;
@@ -116,6 +129,22 @@ export function PatchWatchScreen() {
     if (!restoringId) return;
     await restoreSnapshot(restoringId);
     window.location.reload();
+  };
+
+  const explainUpdate = async (refresh: boolean) => {
+    const diff = state?.lastDiff;
+    if (!diff || !diff.revision) return;
+    setBriefLoading(true);
+    setBriefError('');
+    try {
+      setBrief(await fetchBrief({ changed: diff.changed, patch: diff.patch, revision: diff.revision }, refresh));
+    } catch (error) {
+      if (error instanceof IntelError && error.capReached) setBriefError(`${error.message} The cap resets at midnight UTC.`);
+      else if (error instanceof IntelError && error.notConfigured) setBriefError('The site has no Perplexity key yet; set PERPLEXITY_API_KEY in Netlify.');
+      else setBriefError(error instanceof Error ? error.message : 'Could not fetch the brief.');
+    } finally {
+      setBriefLoading(false);
+    }
   };
 
   if (!state) return <main><p>Loading…</p></main>;
@@ -196,6 +225,31 @@ export function PatchWatchScreen() {
               <li key={move.id}>Removed: {move.input} ({move.id})</li>
             ))}
           </ul>
+        </Card>
+      )}
+
+      {state.lastDiff && state.lastDiff.revision && state.lastDiff.changed.length > 0 && (
+        <Card title="Explain this update" data-testid="patch-brief-card">
+          <p>
+            What the last applied update means in practice, written by the site’s intelligence function from
+            trusted Tekken sites with sources. Prose only: the numbers above stay the record; re-verify in Practice.
+          </p>
+          {safeMode && <SafeModeNote what="Fetching a brief" />}
+          {brief === null && !briefLoading && (
+            <Button onClick={() => void explainUpdate(false)} disabled={safeMode}>Explain this update</Button>
+          )}
+          {briefLoading && <p aria-live="polite">Fetching the brief — up to ten seconds.</p>}
+          {briefError !== '' && <p role="alert">{briefError}</p>}
+          {brief !== null && !briefLoading && (
+            <ResearchNoteView
+              note={brief.note}
+              frameTokens={brief.frameTokens}
+              meta={brief.fromDevice ? 'kept on this device' : 'from the site'}
+              actions={(
+                <Button variant="secondary" onClick={() => void explainUpdate(true)} disabled={safeMode}>Refresh brief</Button>
+              )}
+            />
+          )}
         </Card>
       )}
 

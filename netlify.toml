@@ -14,5 +14,15 @@
   NODE_VERSION = "22"
   PYTHON_VERSION = "3.12"
 
+# Release 1.3.0 — the intel function (netlify/functions/intel.mts) holds the
+# Perplexity key and answers /.netlify/functions/intel/*. It needs these
+# environment variables on the Netlify site (never in the repo):
+#   PERPLEXITY_API_KEY   the Perplexity key
+#   INTEL_DAILY_CAP_USD  optional daily spend ceiling (default 3)
+# `netlify deploy --no-build` bundles the function from this directory.
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
 # Headers and redirects live in public/_headers and public/_redirects, which
 # ship inside `dist`.

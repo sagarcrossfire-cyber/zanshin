@@ -9,4 +9,6 @@
 .z-data-badge--sourced { color: var(--info); border-color: var(--info); }
 .z-data-badge--conflicting { color: var(--warning); border-color: var(--warning); }
 .z-data-badge--unverified { color: var(--text-3); border-color: var(--line-strong); }
+/* Web-sourced prose (1.3.0): info color like Sourced, dashed so the two read differently without color. */
+.z-data-badge--web { color: var(--info); border-color: var(--info); border-style: dashed; }
 button.z-data-badge { min-height: 44px; padding: var(--space-2) var(--space-3); cursor: pointer; }
