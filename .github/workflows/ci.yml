@@ -38,10 +38,13 @@ concurrency:
 env:
   NODE_VERSION: 22
 
+# Jobs pin ubuntu-24.04: `ubuntu-latest` moved to Ubuntu 26 in October 2026,
+# which Playwright's --with-deps does not support yet.
+
 jobs:
   quick:
     name: Types, lint, unit tests, build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
@@ -66,7 +69,7 @@ jobs:
 
   e2e:
     name: Browser tests (phone and desktop)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     needs: quick
     steps:
@@ -100,7 +103,7 @@ jobs:
 
   media:
     name: Bundled media from Wavu Wiki
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     needs: quick
     if: github.event_name != 'pull_request'
@@ -141,7 +144,7 @@ jobs:
 
   deploy:
     name: Deploy to Netlify
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     needs: [e2e, media]
     if: github.event_name != 'pull_request' && (github.event_name != 'workflow_dispatch' || inputs.deploy)
