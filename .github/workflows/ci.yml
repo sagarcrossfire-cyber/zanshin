@@ -1,0 +1,185 @@
+# ZANSHIN — test, build and deploy.
+#
+# Every push and pull request runs the quick gate (types, lint, unit tests,
+# data validation, build, bundle budget) and the full browser suite. A push
+# to main that passes everything also builds the site's bundled media from
+# Wavu Wiki and deploys the finished `dist` folder to Netlify. The monthly
+# schedule redeploys with refreshed media (new clips after a game patch).
+#
+# Secrets (Repository → Settings → Secrets and variables → Actions):
+#   NETLIFY_AUTH_TOKEN  a Netlify personal access token (User settings →
+#                       Applications → Personal access tokens)
+#   NETLIFY_SITE_ID     the project's Site ID (Project configuration → General)
+# Without them the deploy job prints what is missing and ends green, so the
+# checks still protect main.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Monthly media refresh + redeploy: 1st of the month, 09:17 UTC.
+    - cron: '17 9 1 * *'
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: Deploy to Netlify after the checks pass
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  NODE_VERSION: 22
+
+jobs:
+  quick:
+    name: Types, lint, unit tests, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run validate:data
+      - run: npm run build
+      - run: node scripts/check-bundle.mjs
+      - name: Media pack script self-test
+        run: |
+          pip install pillow
+          python3 scripts/tests/test_media_pack.py
+
+  e2e:
+    name: Browser tests (phone and desktop)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: quick
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - name: Playwright browser cache
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Full suite against the preview server
+        run: npx playwright test
+      - name: Smoke, media and PWA against Netlify-style headers (CSP)
+        run: npx playwright test -c playwright.netlify.config.ts
+      - name: Keep traces and screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+
+  media:
+    name: Bundled media from Wavu Wiki
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    needs: quick
+    if: github.event_name != 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pillow
+      - name: Download cache (files are re-verified against Wavu's checksums each run)
+        uses: actions/cache@v4
+        with:
+          path: .zanshin-media-cache
+          key: zanshin-media-cache-${{ github.run_id }}
+          restore-keys: |
+            zanshin-media-cache-
+      - name: Build the site's media folder
+        run: python3 scripts/make_zanshin_media_pack.py --site-dir public --cache-dir .zanshin-media-cache --delay 0.5
+      - name: Summary
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json, pathlib
+          m = json.load(open('public/media/manifest.json'))
+          by = {}
+          for it in m['items']: by[it['kind']] = by.get(it['kind'], 0) + 1
+          size = sum(p.stat().st_size for p in pathlib.Path('public/media').rglob('*') if p.is_file())
+          print(f"### Bundled media\n\n{len(m['items'])} items, {size/1e6:.1f} MB, pack `{m['packId']}`\n")
+          for k, n in sorted(by.items()): print(f"- {k}: {n}")
+          if m.get('misses'): print(f"\n{len(m['misses'])} not found on Wavu:")
+          for miss in m.get('misses', [])[:30]: print(f"- {miss['subjectKey']} ({miss['title']})")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site-media
+          path: public/media
+          retention-days: 14
+          if-no-files-found: error
+
+  deploy:
+    name: Deploy to Netlify
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [e2e, media]
+    if: github.event_name != 'pull_request' && (github.event_name != 'workflow_dispatch' || inputs.deploy)
+    environment:
+      name: production
+      url: https://glistening-conkies-c028b3.netlify.app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: site-media
+          path: public/media
+      - name: Build with bundled media
+        run: npm run build
+      - name: Checks on the finished site
+        run: |
+          test -f dist/_headers && test -f dist/_redirects
+          test -f dist/media/manifest.json
+          grep -q 'crossorigin="use-credentials"' dist/index.html
+          node -e "const m=require('./dist/media/manifest.json'); if(!m.items.length) { console.error('bundled media is empty'); process.exit(1) } console.log(m.items.length, 'media items,', m.packId)"
+          du -sh dist
+      - name: Deploy
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          if [ -z "$NETLIFY_AUTH_TOKEN" ] || [ -z "$NETLIFY_SITE_ID" ]; then
+            echo "::warning::NETLIFY_AUTH_TOKEN or NETLIFY_SITE_ID is not set; built but not deployed. Add both under Settings → Secrets and variables → Actions, then re-run this workflow."
+            printf '### Not deployed\n\nAdd `NETLIFY_AUTH_TOKEN` and `NETLIFY_SITE_ID` as repository secrets and re-run.\n' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          npx --yes netlify-cli@latest deploy --prod --dir=dist --no-build \
+            --message "GitHub Actions ${GITHUB_SHA::7}: $(git log -1 --pretty=%s)" | tee deploy.log
+          printf '### Deployed\n\n%s\n' "$(grep -Eo 'https://[^ ]+' deploy.log | sort -u | tr '\n' ' ')" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: zanshin-site
+          path: dist
+          retention-days: 14

@@ -48,7 +48,7 @@
   "name": "zanshin",
   "private": true,
   "scripts": {
-    "prebuild": "tsx scripts/rasterize-icons.ts",
+    "prebuild": "tsx scripts/rasterize-icons.ts && node scripts/ensure-media-manifest.mjs",
     "build": "vite build",
     "dev": "vite",
     "import:wavu": "tsx scripts/import-wavu.ts",
@@ -59,6 +59,8 @@
     "test:a11y": "playwright test tests/e2e/a11y.spec.ts",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "test:media-script": "python3 scripts/tests/test_media_pack.py",
+    "media:site": "python3 scripts/make_zanshin_media_pack.py --site-dir public --cache-dir .zanshin-media-cache",
     "typecheck": "tsc --noEmit",
     "validate:data": "tsx scripts/validate-data.ts",
     "verify": "npm run verify:quick && npm run validate:data && npm run build && node scripts/check-bundle.mjs && npm run test:e2e",
@@ -66,5 +68,5 @@
     "build:standalone": "vite build --config vite.standalone.config.ts"
   },
   "type": "module",
-  "version": "1.1.0"
+  "version": "1.2.0"
 }

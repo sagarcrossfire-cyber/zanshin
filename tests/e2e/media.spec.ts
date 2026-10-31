@@ -203,6 +203,79 @@ test('media pack: import, art across the app, stable layout, art off', async ({ 
   await expect(page.locator('.z-art-icon')).toHaveCount(0);
 });
 
+// ---- Bundled media (1.2.0): the site's own /media folder ----------------------
+const SITE_ICON = grayPng(72, 88);
+const SITE_PORTRAIT = grayPng(800, 1000);
+const SITE_ITEMS = [
+  { data: SITE_ICON, kind: 'character-icon', mime: 'image/png', subjectKey: 'character:Jin' },
+  { data: SITE_PORTRAIT, kind: 'character-portrait', mime: 'image/png', subjectKey: 'character:Yoshimitsu' },
+  { data: FAKE_CLIP, kind: 'move-clip', mime: 'video/mp4', subjectKey: 'move:Yoshimitsu-1+4' },
+].map((item) => {
+  const sha256 = createHash('sha256').update(item.data).digest('hex');
+  return { ...item, bytes: item.data.byteLength, file: `media/${item.kind}/${sha256.slice(0, 16)}-test.bin`, sha256 };
+});
+
+async function serveBundledMedia(page: Page) {
+  const manifest = {
+    createdAt: '2026-10-31T09:00:00Z',
+    format: 'zanshin-media-pack',
+    items: SITE_ITEMS.map(({ data: _data, ...item }) => item),
+    packId: 'sha256-e2e',
+    version: 1,
+  };
+  await page.route('**/media/manifest.json', (route) => route.fulfill({ body: JSON.stringify(manifest), contentType: 'application/json', status: 200 }));
+  for (const item of SITE_ITEMS) {
+    await page.route(`**/${item.file}`, (route) => route.fulfill({ body: Buffer.from(item.data), contentType: item.mime, status: 200 }));
+  }
+}
+
+// Playwright cannot route requests the service worker makes, so the seeded
+// test runs without one; the SW's own behaviour is covered by pwa-resilience.
+test.describe('bundled media', () => {
+  test.use({ serviceWorkers: 'block' });
+
+test('bundled media: the site\'s media folder is added to the device on its own', async ({ page }) => {
+  await serveBundledMedia(page);
+  await completeOnboarding(page);
+  // Seeding starts in idle time once the app is up (during onboarding here);
+  // the hero appearing on Today is the durable sign that it finished.
+  await expect(page.locator('.z-hero img.z-hero__img--loaded')).toBeVisible({ timeout: 20000 });
+
+  await page.goto('/matchups');
+  const jinCard = page.locator('.z-card').filter({ has: page.getByRole('heading', { exact: true, name: 'Jin' }) });
+  await expect(jinCard.locator('.z-art-icon img')).toHaveAttribute('src', /^blob:/);
+
+  await page.goto('/settings/media');
+  await expect(page.getByTestId('media-summary')).toContainText('3 items');
+  await expect(page.getByText(/3 items on the site/)).toBeVisible();
+  await page.getByTestId('media-bundled-check').click();
+  await expect(page.getByTestId('media-bundled-notice')).toContainText('Up to date: all 3 items');
+
+  // Switched off, a reload adds nothing new (and deletes nothing).
+  await page.getByLabel("Add the site's images and clips automatically").uncheck();
+  await page.getByLabel('Type DELETE to remove every imported image and clip').fill('DELETE');
+  await page.getByRole('button', { name: 'Delete all media' }).click();
+  await expect(page.getByTestId('media-summary')).toHaveText('No media imported yet.');
+  await page.goto('/today');
+  await page.waitForTimeout(2500);
+  await expect(page.locator('.z-hero')).toHaveCount(0);
+});
+});
+
+test('bundled media: a site without bundled media stays quiet', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
+  await completeOnboarding(page);
+  await page.waitForTimeout(3000);
+  await expect(page.getByText(/from the site/)).toHaveCount(0);
+  await page.goto('/diagnostics');
+  await expect(page.getByText('No errors recorded.')).toBeVisible();
+  expect(errors).toEqual([]);
+  await page.goto('/settings/media');
+  await page.getByTestId('media-bundled-check').click();
+  await expect(page.getByTestId('media-bundled-notice')).toContainText('no bundled media yet');
+});
+
 test('media pack: a file that is not a pack is refused with a clear message', async ({ page }) => {
   await completeOnboarding(page);
   await page.goto('/settings/media');

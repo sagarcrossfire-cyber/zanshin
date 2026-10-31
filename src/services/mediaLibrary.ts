@@ -120,6 +120,8 @@ export interface MediaPrefs {
   autoplay: boolean;
   speedCodex: number;
   speedLab: number;
+  /** Add the site's bundled media automatically (1.2.0). */
+  bundledAuto: boolean;
 }
 
 export function mediaPrefsFrom(settings: Settings | null | undefined): MediaPrefs {
@@ -129,6 +131,7 @@ export function mediaPrefsFrom(settings: Settings | null | undefined): MediaPref
     autoplay: settings?.mediaClipAutoplay ?? true,
     speedCodex: settings?.mediaClipSpeedCodex ?? 1,
     speedLab: settings?.mediaClipSpeedLab ?? 0.5,
+    bundledAuto: settings?.mediaBundledAuto ?? true,
   };
 }
 

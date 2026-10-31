@@ -1,0 +1,34 @@
+# ZANSHIN — response headers on Netlify (release 1.2.0).
+# The app is a local-first PWA: its own scripts, styles and fonts only; images
+# and clips are object URLs (blob:) made from IndexedDB; the only outbound
+# connections are to this site, Wavu Wiki's API, and the AI coach provider
+# Sagar configures (which can be a local server, so http://localhost stays
+# allowed and plain https: hosts are not pinned).
+
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https: http://localhost:* http://127.0.0.1:*; worker-src 'self'; manifest-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self), screen-wake-lock=(self)
+  Cross-Origin-Opener-Policy: same-origin
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+# The shell, the service worker and the manifests must always be revalidated,
+# so a new release is picked up on the next visit.
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+/
+  Cache-Control: public, max-age=0, must-revalidate
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
+/manifest.webmanifest
+  Cache-Control: public, max-age=0, must-revalidate
+/media/manifest.json
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Hashed assets and content-addressed media never change under the same name.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+/media/*
+  Cache-Control: public, max-age=31536000, immutable

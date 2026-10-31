@@ -1,0 +1,12 @@
+# ZANSHIN on Netlify. Deploys come from GitHub Actions (.github/workflows/ci.yml),
+# which runs every test, builds the site with its bundled media, and uploads
+# the finished `dist` folder. Netlify does not build this project itself.
+[build]
+  publish = "dist"
+  command = "echo 'Built and deployed by GitHub Actions; see .github/workflows/ci.yml'"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Headers and redirects live in public/_headers and public/_redirects, which
+# ship inside `dist`.

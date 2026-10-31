@@ -107,6 +107,9 @@ export default defineConfig({
       registerType: 'prompt',
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff,woff2,json}'],
+        // Bundled media (1.2.0) is seeded into IndexedDB by the app, not
+        // precached: tens of megabytes do not belong in the service worker.
+        globIgnores: ['media/**'],
         navigateFallback: 'index.html',
         runtimeCaching: [
           {

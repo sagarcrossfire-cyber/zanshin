@@ -498,6 +498,9 @@ export const settingsSchema = z.object({
   mediaClipAutoplay: z.boolean().optional(), // default true (never under reduced motion)
   mediaClipSpeedCodex: z.number().positive().max(1).optional(), // default 1
   mediaClipSpeedLab: z.number().positive().max(1).optional(), // default 0.5
+  /** Add the images and clips the site itself serves (its /media folder) on
+   * this device automatically; default true. Release 1.2.0. */
+  mediaBundledAuto: z.boolean().optional(),
 });
 export type Settings = z.infer<typeof settingsSchema>;
 
@@ -580,7 +583,8 @@ export const mediaAssetSchema = z.object({
   height: z.number().int().positive().optional(),
   blobKey: z.string().min(1),
   variants: z.array(mediaVariantSchema).optional(),
-  origin: z.enum(['pack', 'file']),
+  /** pack: a media pack Sagar imported; file: a single file he added; site: the site's bundled media. */
+  origin: z.enum(['pack', 'file', 'site']),
   sourcePage: z.string().optional(),
   credit: z.string().optional(),
   importedAt: isoDateTimeSchema,

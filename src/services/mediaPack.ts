@@ -1,12 +1,14 @@
-// Amendment 01B — importing and exporting the local media library. Only the
-// Media screen loads this module (it carries the zip code). Nothing here
-// touches the network: media enters only from files Sagar picks.
+// Amendment 01B — importing and exporting the local media library. Media
+// enters from two places only: a media pack Sagar picks (this module, loaded
+// with the Media screen because it carries the zip code) and the site's own
+// bundled media folder (services/bundledMedia.ts, same manifest format,
+// fetched from this origin). Both go through importMediaItems below.
 //
-// Media pack format (zanshin-media-pack, version 1): a zip holding
-// manifest.json plus the files its items list. Each item names its kind,
-// subjectKey, MIME type, byte count and SHA-256; unknown fields are ignored.
-// Items are verified one at a time and unzipped one at a time, so a large
-// pack never needs every file in memory at once.
+// Media pack format (zanshin-media-pack, version 1): a manifest.json plus the
+// files its items list. Each item names its kind, subjectKey, MIME type, byte
+// count and SHA-256; unknown fields are ignored. Items are verified one at a
+// time and read one at a time, so a large pack never needs every file in
+// memory at once.
 import { unzipSync, zipSync, type Zippable } from 'fflate';
 import { mediaAssetId, mediaRepo } from '../data/repos';
 import {
@@ -15,6 +17,7 @@ import {
   type MediaBlob,
   type MediaKind,
   type MediaPackItem,
+  type MediaPackManifest,
   type MediaVariant,
 } from '../data/schemas';
 import { extensionForMime, kindFitsSubject, mimeFitsKind } from '../domain/media/subjects';
@@ -44,6 +47,8 @@ export interface MediaImportReport {
   total: number;
   imported: number;
   replaced: number;
+  /** Items already stored with the same bytes, left as they were. */
+  unchanged: number;
   failed: MediaImportFailure[];
   importedIds: string[];
 }
@@ -54,6 +59,10 @@ export interface MediaImportOptions {
   nowIso?: () => string;
   /** Make downscaled copies of portraits and key art (browser only). */
   makeVariants?: boolean;
+  /** Where the bytes came from, recorded on each row. Defaults to 'pack'. */
+  origin?: MediaAsset['origin'];
+  /** Stop after the current item (a page closing, a user cancelling). */
+  signal?: AbortSignal;
 }
 
 /** SHA-256 of raw bytes as lowercase hex (Web Crypto, else the pure-TS fallback). */
@@ -211,7 +220,8 @@ async function storeItem(args: {
   return { id, replaced: existing !== undefined };
 }
 
-function validateItem(item: MediaPackItem): string | null {
+/** Why a manifest item cannot be stored, or null when it can. */
+export function mediaItemProblem(item: MediaPackItem): string | null {
   if (!kindFitsSubject(item.kind, item.subjectKey)) return `${item.kind} cannot belong to ${item.subjectKey}`;
   if (!mimeFitsKind(item.kind, item.mime)) return `${item.mime} is not allowed for ${item.kind}`;
   if (item.bytes > MAX_MEDIA_FILE_BYTES) return 'file is larger than 300 MB';
@@ -224,10 +234,106 @@ function readEntry(zip: Uint8Array, name: string): Uint8Array | undefined {
   return files[name];
 }
 
+/** Parses manifest JSON text into a media pack manifest, or throws MediaImportError. */
+export function parseMediaManifest(text: string, what = 'manifest.json'): MediaPackManifest {
+  let json: unknown;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    throw new MediaImportError(`${what} is not valid JSON.`);
+  }
+  const parsed = mediaPackManifestSchema.safeParse(json);
+  if (!parsed.success) {
+    const first = parsed.error.issues[0];
+    throw new MediaImportError(
+      `${what} does not match the media pack format${first ? ` (${first.path.join('.') || 'root'}: ${first.message})` : ''}.`,
+    );
+  }
+  return parsed.data;
+}
+
+/** Reads one item's bytes; undefined when the file is missing. May throw on read errors. */
+export type MediaItemReader = (item: MediaPackItem) => Promise<Uint8Array | undefined>;
+
 /**
- * Imports a media pack. Throws MediaImportError when the zip or its
- * manifest is unusable (nothing is changed then). Individual items that
- * fail verification are skipped and reported; every other item is stored.
+ * Imports manifest items from any source. Each item is validated (kind,
+ * subject, MIME, size, SHA-256) before it is stored; failures are skipped
+ * and reported, and an item already stored with the same bytes is left
+ * alone and counted as unchanged. The media index is refreshed at the end.
+ */
+export async function importMediaItems(
+  items: MediaPackItem[],
+  read: MediaItemReader,
+  options: MediaImportOptions = {},
+): Promise<MediaImportReport> {
+  const now = options.nowIso ?? (() => new Date().toISOString());
+  const makeVariants = options.makeVariants ?? true;
+  const origin = options.origin ?? 'pack';
+  const report: MediaImportReport = { failed: [], imported: 0, importedIds: [], replaced: 0, total: items.length, unchanged: 0 };
+  let done = 0;
+  try {
+    for (const item of items) {
+      if (options.signal?.aborted) break;
+      const problem = mediaItemProblem(item);
+      if (problem !== null) {
+        report.failed.push({ file: item.file, reason: problem, subjectKey: item.subjectKey });
+      } else {
+        const existing = await mediaRepo.get(mediaAssetId(item.kind, item.subjectKey));
+        if (existing && existing.sha256 === item.sha256.toLowerCase() && existing.bytes === item.bytes) {
+          report.unchanged += 1;
+        } else {
+          let data: Uint8Array | undefined;
+          let readError: string | null = null;
+          try {
+            data = await read(item);
+          } catch (error) {
+            readError = error instanceof Error ? error.message : 'could not be read';
+          }
+          if (readError !== null) {
+            report.failed.push({ file: item.file, reason: readError, subjectKey: item.subjectKey });
+          } else if (!data) {
+            report.failed.push({ file: item.file, reason: 'file listed in the manifest is missing', subjectKey: item.subjectKey });
+          } else if (data.byteLength !== item.bytes) {
+            report.failed.push({ file: item.file, reason: `size is ${data.byteLength} bytes, manifest says ${item.bytes}`, subjectKey: item.subjectKey });
+          } else {
+            const sha256 = await sha256BytesHex(data);
+            if (sha256 !== item.sha256.toLowerCase()) {
+              report.failed.push({ file: item.file, reason: 'SHA-256 does not match the manifest', subjectKey: item.subjectKey });
+            } else {
+              const stored = await storeItem({
+                credit: item.credit ?? undefined,
+                data,
+                height: item.height ?? undefined,
+                importedAt: now(),
+                kind: item.kind,
+                makeVariants,
+                mime: item.mime.toLowerCase(),
+                origin,
+                sha256,
+                sourcePage: item.sourcePage ?? undefined,
+                subjectKey: item.subjectKey,
+                width: item.width ?? undefined,
+              });
+              report.imported += 1;
+              if (stored.replaced) report.replaced += 1;
+              report.importedIds.push(stored.id);
+            }
+          }
+        }
+      }
+      done += 1;
+      options.onProgress?.(done, items.length);
+    }
+  } finally {
+    await refreshMediaIndex();
+  }
+  return report;
+}
+
+/**
+ * Imports a media pack zip. Throws MediaImportError when the zip or its
+ * manifest is unusable (nothing is changed then); see importMediaItems for
+ * how individual items are handled.
  */
 export async function importMediaPack(
   input: Blob | ArrayBuffer | Uint8Array,
@@ -241,69 +347,8 @@ export async function importMediaPack(
     throw new MediaImportError('This file is not a readable zip.');
   }
   if (!manifestBytes) throw new MediaImportError('The zip has no manifest.json, so it is not a ZANSHIN media pack.');
-  let manifestJson: unknown;
-  try {
-    manifestJson = JSON.parse(new TextDecoder().decode(manifestBytes));
-  } catch {
-    throw new MediaImportError('manifest.json is not valid JSON.');
-  }
-  const parsed = mediaPackManifestSchema.safeParse(manifestJson);
-  if (!parsed.success) {
-    const first = parsed.error.issues[0];
-    throw new MediaImportError(
-      `manifest.json does not match the media pack format${first ? ` (${first.path.join('.') || 'root'}: ${first.message})` : ''}.`,
-    );
-  }
-  const items = parsed.data.items;
-  const now = options.nowIso ?? (() => new Date().toISOString());
-  const makeVariants = options.makeVariants ?? true;
-  const report: MediaImportReport = { failed: [], imported: 0, importedIds: [], replaced: 0, total: items.length };
-  let done = 0;
-  for (const item of items) {
-    const problem = validateItem(item);
-    let data: Uint8Array | undefined;
-    if (problem === null) {
-      try {
-        data = readEntry(zip, item.file);
-      } catch {
-        data = undefined;
-      }
-    }
-    if (problem !== null) {
-      report.failed.push({ file: item.file, reason: problem, subjectKey: item.subjectKey });
-    } else if (!data) {
-      report.failed.push({ file: item.file, reason: 'file listed in the manifest is missing from the zip', subjectKey: item.subjectKey });
-    } else if (data.byteLength !== item.bytes) {
-      report.failed.push({ file: item.file, reason: `size is ${data.byteLength} bytes, manifest says ${item.bytes}`, subjectKey: item.subjectKey });
-    } else {
-      const sha256 = await sha256BytesHex(data);
-      if (sha256 !== item.sha256.toLowerCase()) {
-        report.failed.push({ file: item.file, reason: 'SHA-256 does not match the manifest', subjectKey: item.subjectKey });
-      } else {
-        const stored = await storeItem({
-          credit: item.credit ?? undefined,
-          data,
-          height: item.height ?? undefined,
-          importedAt: now(),
-          kind: item.kind,
-          makeVariants,
-          mime: item.mime.toLowerCase(),
-          origin: 'pack',
-          sha256,
-          sourcePage: item.sourcePage ?? undefined,
-          subjectKey: item.subjectKey,
-          width: item.width ?? undefined,
-        });
-        report.imported += 1;
-        if (stored.replaced) report.replaced += 1;
-        report.importedIds.push(stored.id);
-      }
-    }
-    done += 1;
-    options.onProgress?.(done, items.length);
-  }
-  await refreshMediaIndex();
-  return report;
+  const manifest = parseMediaManifest(new TextDecoder().decode(manifestBytes));
+  return importMediaItems(manifest.items, async (item) => readEntry(zip, item.file), options);
 }
 
 /** Adds one image or clip picked by Sagar, assigned to a kind and subject. */

@@ -8,6 +8,7 @@ import { Toast } from '../components/base/Toast';
 import { isSafeMode, setSafeMode } from '../config/safeMode';
 import { DATA_PATCH, DATA_SOURCE } from '../data/packs';
 import { runIntegrityChecks } from '../services/diagnostics';
+import { seedBundledMedia } from '../services/bundledMedia';
 import { releaseWakeLock } from '../services/labMode';
 import {
   mayShowUpdateToast,
@@ -58,6 +59,7 @@ export function AppLayout() {
   const titleRef = useRef<HTMLHeadingElement | null>(null);
   const updateToastIdRef = useRef<string | null>(null);
   const integrityRanRef = useRef(false);
+  const bundledRanRef = useRef(false);
   const safeMode = isSafeMode();
 
   // Startup integrity checks (§14.2): idle time only, never delaying the
@@ -87,6 +89,40 @@ export function AppLayout() {
       window.setTimeout(run, 0);
     }
   }, [ready, navigate, pushToast]);
+
+  // Bundled media (1.2.0): once the app is up and idle, add any images and
+  // clips the site serves that this device lacks. Quiet unless something
+  // new arrived; never in Safe Mode; Settings → Images and clips can turn
+  // it off. Runs again when the device comes back online.
+  const settingsRef = useRef(useAppStore.getState().settings);
+  settingsRef.current = useAppStore((s) => s.settings);
+  useEffect(() => {
+    if (!ready || safeMode || bundledRanRef.current) return;
+    bundledRanRef.current = true;
+    const controller = new AbortController();
+    const run = () => {
+      void seedBundledMedia({ enabled: settingsRef.current?.mediaBundledAuto !== false, signal: controller.signal })
+        .then((result) => {
+          if (result.status === 'done' && result.report.imported > 0) {
+            pushToast(`Added ${result.report.imported} image${result.report.imported === 1 ? '' : 's'} and clips from the site.`);
+          }
+        })
+        .catch(() => {
+          // Seeding never breaks startup; Diagnostics records failures.
+        });
+    };
+    const idle = typeof window.requestIdleCallback === 'function'
+      ? window.requestIdleCallback(run, { timeout: 15000 })
+      : window.setTimeout(run, 2000);
+    const onOnline = () => run();
+    window.addEventListener('online', onOnline);
+    return () => {
+      controller.abort();
+      window.removeEventListener('online', onOnline);
+      if (typeof window.cancelIdleCallback === 'function') window.cancelIdleCallback(idle as number);
+      else window.clearTimeout(idle as number);
+    };
+  }, [ready, safeMode, pushToast]);
 
   useEffect(() => {
     const onOnline = () => setOnline(true);

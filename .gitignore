@@ -7,3 +7,7 @@ playwright-report/
 test-results/
 *.log
 checkpoints/
+# Generated at build time (npm run build renders icons; the deploy pipeline builds media)
+public/icons/
+public/media/
+.zanshin-media-cache/

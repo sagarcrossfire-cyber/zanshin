@@ -444,9 +444,9 @@ export function SettingsScreen() {
           personal training tool, not affiliated with or endorsed by Bandai Namco.
         </p>
         <p className="z-body-l">
-          Frame data: Wavu Wiki (CC0). The app itself ships only original ink-style SVG art; the images and clips you
-          import stay on this device. Character art and move clips © Bandai Namco Entertainment Inc. Portraits,
-          icons and clips via Wavu Wiki.
+          Frame data: Wavu Wiki (CC0). The app&apos;s own interface art is original ink-style SVG; the images and clips
+          it shows come from this site&apos;s media folder and from files you import, and are stored on this device.
+          Character art and move clips © Bandai Namco Entertainment Inc. Portraits, icons and clips via Wavu Wiki.
         </p>
         <p className="z-body-l">Licenses: IBM Plex Sans / IBM Plex Mono and Shippori Mincho B1 are licensed under the SIL Open Font License 1.1.</p>
       </Card>

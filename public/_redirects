@@ -1,3 +1,6 @@
-# Netlify: serve the app for every path, so a reload on /today or a shared
-# deep link opens the app instead of a 404. Real files are served first.
-/*    /index.html    200
+# Netlify routing (release 1.2.0).
+# A missing media file answers 404 (the app treats that as "no bundled
+# media"); every other unknown path opens the app, so a reload on /today or a
+# deep link works before the service worker is installed. Real files win.
+/media/*    /index.html    404
+/*          /index.html    200

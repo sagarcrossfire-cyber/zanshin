@@ -26,7 +26,7 @@ import type { Profile, Settings } from '../data/schemas';
 
 export const BACKUP_FORMAT = 'zanshin-backup';
 export const BACKUP_SCHEMA_VERSION = 1;
-export const APP_VERSION = '1.1.0';
+export const APP_VERSION = '1.2.0';
 
 /** Tables included in every backup, in canonical order. */
 export const BACKUP_TABLES = [

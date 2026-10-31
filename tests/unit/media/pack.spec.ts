@@ -110,7 +110,7 @@ describe('importMediaPack', () => {
     expect(report.imported).toBe(1);
     expect(report.failed.map((f) => f.reason)).toEqual([
       'SHA-256 does not match the manifest',
-      'file listed in the manifest is missing from the zip',
+      'file listed in the manifest is missing',
       'size is 64 bytes, manifest says 5',
       'move-clip cannot belong to character:Paul',
       'image/gif is not allowed for move-clip',
@@ -123,10 +123,32 @@ describe('importMediaPack', () => {
     await importMediaPack(makePack([CLIP]), { makeVariants: false, nowIso: NOW });
     const newer: ItemSpec = { ...CLIP, data: fakeBytes(7, 300) };
     const report = await importMediaPack(makePack([newer]), { makeVariants: false, nowIso: () => '2026-10-31T10:00:00.000Z' });
-    expect(report).toMatchObject({ imported: 1, replaced: 1 });
+    expect(report).toMatchObject({ imported: 1, replaced: 1, unchanged: 0 });
     expect(await db.mediaBlobs.count()).toBe(1);
     const clip = await mediaRepo.find('move-clip', 'move:Yoshimitsu-1,2');
     expect(clip?.bytes).toBe(300);
+  });
+
+  it('leaves an item alone when the same bytes are already stored', async () => {
+    await importMediaPack(makePack([CLIP, ICON]), { makeVariants: false, nowIso: NOW });
+    const before = await mediaRepo.find('move-clip', 'move:Yoshimitsu-1,2');
+    const report = await importMediaPack(makePack([CLIP, ICON]), { makeVariants: false, nowIso: () => '2026-10-31T10:00:00.000Z' });
+    expect(report).toMatchObject({ imported: 0, replaced: 0, unchanged: 2 });
+    const after = await mediaRepo.find('move-clip', 'move:Yoshimitsu-1,2');
+    expect(after?.importedAt).toBe(before?.importedAt);
+    expect(await db.mediaBlobs.count()).toBe(2);
+  });
+
+  it('stops after the current item when aborted', async () => {
+    const controller = new AbortController();
+    const report = await importMediaPack(makePack([CLIP, ICON, PORTRAIT]), {
+      makeVariants: false,
+      nowIso: NOW,
+      onProgress: (done) => { if (done === 1) controller.abort(); },
+      signal: controller.signal,
+    });
+    expect(report.imported).toBe(1);
+    expect(await mediaRepo.all()).toHaveLength(1);
   });
 
   it('accepts unknown manifest fields and null optional fields (forward compatible)', async () => {

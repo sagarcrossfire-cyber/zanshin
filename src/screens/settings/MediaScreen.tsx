@@ -24,6 +24,7 @@ import {
   rankSubject,
   subjectLabel,
 } from '../../domain/media/subjects';
+import { bundledMediaRecord, seedBundledMedia, type BundledMediaRecord } from '../../services/bundledMedia';
 import { mediaPrefsFrom, useMediaLibraryVersion } from '../../services/mediaLibrary';
 import {
   addMediaFile,
@@ -107,15 +108,50 @@ export function MediaScreen() {
   const packRef = useRef<HTMLInputElement | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
 
+  const [bundled, setBundled] = useState<BundledMediaRecord | null>(null);
+  const [bundledNotice, setBundledNotice] = useState('');
+
   const reload = useCallback(async () => {
     try {
-      const [all, totals] = await Promise.all([mediaRepo.all(), mediaRepo.stats()]);
+      const [all, totals, record] = await Promise.all([mediaRepo.all(), mediaRepo.stats(), bundledMediaRecord()]);
       setAssets(all);
       setStats(totals);
+      setBundled(record);
     } catch (error) {
       if (!isDatabaseClosedError(error)) throw error;
     }
   }, []);
+
+  const runBundledCheck = async (): Promise<void> => {
+    setBusy(true);
+    setBundledNotice('Checking the site for images and clips…');
+    try {
+      const result = await seedBundledMedia({
+        enabled: true,
+        force: true,
+        onProgress: (done, total) => setBundledNotice(`Checking ${done} of ${total}…`),
+      });
+      if (result.status === 'done') {
+        const { report } = result;
+        setBundledNotice(
+          report.total === 0
+            ? 'This site has no bundled media yet.'
+            : report.imported > 0
+              ? `Added ${report.imported} of ${report.total} items from the site${report.failed.length > 0 ? `; ${report.failed.length} skipped` : ''}.`
+              : `Up to date: all ${report.total} items from the site are on this device${report.failed.length > 0 ? ` (${report.failed.length} skipped)` : ''}.`,
+        );
+      } else if (result.status === 'none') {
+        setBundledNotice('This site has no bundled media yet.');
+      } else if (result.status === 'error') {
+        setBundledNotice(result.message);
+      } else {
+        setBundledNotice(result.reason === 'offline' ? 'You are offline; try again when connected.' : 'Bundled media is off right now.');
+      }
+    } finally {
+      setBusy(false);
+      await reload();
+    }
+  };
 
   useEffect(() => {
     void reload();
@@ -246,10 +282,11 @@ export function MediaScreen() {
 
       <Card title="Your media library">
         <p className="z-body-l">
-          Character art, move clips, rank badges and the game logo that you import show up across the app: icons
-          beside character names, portraits on Today and character pages, clips in the Codex, Lab drills, the Punish
-          Trainer and flashcards, rank badges on Progress and the logo in About. Everything stays in this browser on
-          this device. The app never downloads media and ships none of its own.
+          Character art, move clips, rank badges and the game logo show up across the app: icons beside character
+          names, portraits on Today and character pages, clips in the Codex, Lab drills, the Punish Trainer and
+          flashcards, rank badges on Progress and the logo in About. They come from this site&apos;s own media folder
+          (built from Wavu Wiki when the site is deployed) and from packs or files you import, and they are stored in
+          this browser on this device. The app never fetches media from any other site.
         </p>
         {stats && stats.count > 0 ? (
           <>
@@ -264,6 +301,25 @@ export function MediaScreen() {
         ) : (
           <p className="z-body-l" data-testid="media-summary">No media imported yet.</p>
         )}
+      </Card>
+
+      <Card title="From this site">
+        <p className="z-body-l">
+          {bundled === null
+            ? 'Not checked yet. The app checks when it starts and after it comes back online.'
+            : bundled.total === 0
+              ? `Last checked ${new Date(bundled.checkedAt).toLocaleString()}: this site has no bundled media yet.`
+              : `Last checked ${new Date(bundled.checkedAt).toLocaleString()}: ${bundled.total} items on the site${bundled.createdAt ? `, built ${new Date(bundled.createdAt).toLocaleDateString()}` : ''}${bundled.failed > 0 ? `, ${bundled.failed} skipped` : ''}.`}
+        </p>
+        <Toggle
+          label="Add the site's images and clips automatically"
+          checked={prefs.bundledAuto}
+          onChange={(checked) => savePref({ mediaBundledAuto: checked })}
+        />
+        <Button variant="secondary" onClick={() => void runBundledCheck()} disabled={busy || safeMode} data-testid="media-bundled-check">
+          Check now
+        </Button>
+        {bundledNotice !== '' && <p role="status" data-testid="media-bundled-notice">{bundledNotice}</p>}
       </Card>
 
       <Card title="Import a media pack">
@@ -291,6 +347,7 @@ export function MediaScreen() {
           <div role="status" data-testid="media-import-report">
             <p className="z-body-l">
               Imported {report.imported} of {report.total} items{report.replaced > 0 ? ` (${report.replaced} replaced earlier ones)` : ''}.
+              {report.unchanged > 0 ? ` ${report.unchanged} already up to date.` : ''}
               {report.failed.length > 0 ? ` ${report.failed.length} skipped.` : ''}
             </p>
             {report.failed.length > 0 && (
