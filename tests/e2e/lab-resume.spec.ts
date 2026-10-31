@@ -29,6 +29,9 @@ async function runThreeBlockSession(page: Page) {
   await expect(page.getByText(/Block 1 of 3/)).toBeVisible();
   await page.getByRole('button', { name: /Log 8 of/ }).click();
   await expect(page.getByText(/Logged 8 of/)).toBeVisible();
+  // The toast is optimistic; the set label only moves on once the set is in
+  // the database, and a reload before that would lose it.
+  await expect(page.getByText(/Set 2 of/)).toBeVisible();
   await page.reload();
   await expect(page.getByText(/Block 1 of 3/)).toBeVisible();
   await expect(page.locator('[role="timer"]')).toHaveText(/\d+:\d{2}/);

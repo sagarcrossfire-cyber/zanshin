@@ -111,13 +111,12 @@ export default defineConfig({
         // precached: tens of megabytes do not belong in the service worker.
         globIgnores: ['media/**'],
         navigateFallback: 'index.html',
-        runtimeCaching: [
-          {
-            handler: 'NetworkFirst',
-            options: { cacheName: 'zanshin-api', networkTimeoutSeconds: 5 },
-            urlPattern: /^https:\/\/wavu\.wiki\/w\/api\.php/,
-          },
-        ],
+        // No runtime caching of Wavu's API (1.2.0): the app keeps its own
+        // last-known state for Patch Watch and the importer, and a stale
+        // cached API answer offline would make "Check for updates" claim the
+        // data is current. Requests the worker does not handle are made by
+        // the page itself, which also keeps them visible to tests.
+        runtimeCaching: [],
       },
     }),
   ],

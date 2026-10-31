@@ -125,7 +125,7 @@ jobs:
       - name: Summary
         run: |
           python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
-          import json, pathlib
+          import json, pathlib, sys
           m = json.load(open('public/media/manifest.json'))
           by = {}
           for it in m['items']: by[it['kind']] = by.get(it['kind'], 0) + 1
@@ -134,6 +134,12 @@ jobs:
           for k, n in sorted(by.items()): print(f"- {k}: {n}")
           if m.get('misses'): print(f"\n{len(m['misses'])} not found on Wavu:")
           for miss in m.get('misses', [])[:30]: print(f"- {miss['subjectKey']} ({miss['title']})")
+          # The same facts as annotations, readable through the API.
+          kinds = ', '.join(f"{n} {k}" for k, n in sorted(by.items()))
+          print(f"::notice title=Bundled media::{len(m['items'])} items, {size/1e6:.1f} MB, {m['packId']}: {kinds}", file=sys.stderr)
+          if m.get('misses'):
+              names = '; '.join(x['subjectKey'] for x in m['misses'][:20])
+              print(f"::notice title=Not found on Wavu ({len(m['misses'])})::{names}", file=sys.stderr)
           PY
       - uses: actions/upload-artifact@v4
         with:

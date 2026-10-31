@@ -19,6 +19,7 @@ Base: 1.1.0 (`bfeb86d`, Amendment 01B). Schema stays at v4.
 - `public/_redirects`: a missing `/media/*` answers 404 (the app reads that as "no bundled media"); every other unknown path opens the app.
 - `scripts/serve-dist.mjs` serves `dist` the way Netlify does (static first, `_redirects`, `_headers`) and `playwright.netlify.config.ts` runs smoke, media, PWA and Today specs against it, so a header that would break the app fails CI rather than production.
 - The service worker ignores `media/**` (`globIgnores`): tens of megabytes do not belong in the precache; IndexedDB holds them.
+- The service worker no longer runtime-caches Wavu's API (the 1.0.0 `NetworkFirst` route). Patch Watch and the importer keep their own last-known state, and a cached API answer served offline would have let "Check for updates" claim the data was current. Requests the worker does not handle are made by the page, which is also what makes the end-to-end mocks deterministic: in CI, where the runner can reach Wavu, the worker was answering the mocked requests for real.
 
 ## Decisions
 
