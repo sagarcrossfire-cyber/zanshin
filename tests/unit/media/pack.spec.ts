@@ -13,10 +13,9 @@ import {
   blobBytes,
   deleteAllMedia,
   deleteMedia,
-  exportMediaPack,
-  importMediaPack,
   sha256BytesHex,
 } from '../../../src/services/mediaPack';
+import { exportMediaPack, importMediaPack } from '../../../src/services/mediaZip';
 
 const NOW = () => '2026-10-30T10:00:00.000Z';
 
