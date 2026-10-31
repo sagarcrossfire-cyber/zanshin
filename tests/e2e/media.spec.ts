@@ -113,17 +113,27 @@ async function importPack(page: Page) {
   await expect(page.getByTestId('media-summary')).toContainText('5 items');
 }
 
-/** Sums layout-shift scores (excluding shifts right after input) from page load. */
-async function trackLayoutShift(page: Page) {
-  await page.addInitScript(() => {
-    const w = window as unknown as { __cls: number };
-    w.__cls = 0;
+/** Layout shifts attributed to media only: the observer starts once the
+ * screen's own content is on the page, and only shifts whose sources sit
+ * inside a media box count. Screens load cards asynchronously, and that
+ * (pre-existing) movement is not what this spec guards. */
+async function startMediaShiftWatch(page: Page) {
+  await page.evaluate(() => {
+    const w = window as unknown as { __mediaShift: number };
+    w.__mediaShift = 0;
     new PerformanceObserver((list) => {
-      for (const entry of list.getEntries() as unknown as Array<{ value: number; hadRecentInput: boolean }>) {
-        if (!entry.hadRecentInput) w.__cls += entry.value;
+      for (const entry of list.getEntries() as unknown as Array<{ value: number; hadRecentInput: boolean; sources?: Array<{ node: Node | null }> }>) {
+        if (entry.hadRecentInput) continue;
+        const fromMedia = (entry.sources ?? []).some((source) =>
+          source.node instanceof Element && source.node.closest('[data-media], .z-art-icon, .z-hero, .z-clip, .z-art-image') !== null);
+        if (fromMedia) w.__mediaShift += entry.value;
       }
-    }).observe({ buffered: true, type: 'layout-shift' });
+    }).observe({ buffered: false, type: 'layout-shift' });
   });
+}
+
+async function mediaShift(page: Page): Promise<number> {
+  return page.evaluate(() => (window as unknown as { __mediaShift: number }).__mediaShift);
 }
 
 test('media pack: import, art across the app, stable layout, art off', async ({ page }, testInfo) => {
@@ -140,31 +150,38 @@ test('media pack: import, art across the app, stable layout, art off', async ({ 
   await stored.locator('summary').click();
   await expect(stored).toContainText('Yoshimitsu');
 
-  await trackLayoutShift(page);
-
-  // Today: the hero with the date on a plate.
+  // Today: the hero with the date on a plate. The box is reserved before the
+  // bytes arrive, so the image loading must not move anything.
   await page.goto('/today');
   const hero = page.locator('.z-hero');
   await expect(hero).toBeVisible();
+  await startMediaShiftWatch(page);
+  const heroBefore = await hero.boundingBox();
   await expect(hero.locator('img.z-hero__img--loaded')).toBeVisible();
   await expect(hero.locator('img')).toHaveAttribute('src', /^blob:/);
   await expect(hero.locator('.z-hero__plate')).toBeVisible();
   await page.waitForTimeout(500);
-  const clsToday = await page.evaluate(() => (window as unknown as { __cls: number }).__cls);
-  expect(clsToday, 'Today layout shift').toBeLessThanOrEqual(0.05);
+  const heroAfter = await hero.boundingBox();
+  expect(heroAfter?.height, 'hero height after the image loaded').toBe(heroBefore?.height);
+  expect(heroAfter?.width, 'hero width after the image loaded').toBe(heroBefore?.width);
+  expect(await mediaShift(page), 'Today layout shift from media').toBeLessThanOrEqual(0.05);
   const axeToday = await new AxeBuilder({ page: page as never }).analyze();
   expect(axeToday.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')).toEqual([]);
   await page.screenshot({ path: `qa/screenshots/01B/today-hero-${testInfo.project.name}.png` });
 
-  // Matchups: imported icons, initials tiles for everyone else.
+  // Matchups: imported icons, initials tiles for everyone else, same size.
   await page.goto('/matchups');
-  const kazuya = page.locator('.z-card', { hasText: 'Kazuya' }).first().locator('.z-art-icon');
-  await expect(kazuya.locator('img')).toHaveAttribute('src', /^blob:/);
-  const lili = page.locator('.z-card', { hasText: 'Lili' }).first().locator('.z-art-icon');
-  await expect(lili).toHaveText('L');
+  const kazuyaCard = page.locator('.z-card').filter({ has: page.getByRole('heading', { exact: true, name: 'Kazuya' }) });
+  await expect(kazuyaCard).toBeVisible();
+  await startMediaShiftWatch(page);
+  const tileBefore = await kazuyaCard.locator('.z-art-icon').boundingBox();
+  await expect(kazuyaCard.locator('.z-art-icon img')).toHaveAttribute('src', /^blob:/);
+  const liliCard = page.locator('.z-card').filter({ has: page.getByRole('heading', { exact: true, name: 'Lili' }) });
+  await expect(liliCard.locator('.z-art-icon')).toHaveText('L');
   await page.waitForTimeout(300);
-  const clsMatchups = await page.evaluate(() => (window as unknown as { __cls: number }).__cls);
-  expect(clsMatchups, 'Matchups layout shift').toBeLessThanOrEqual(0.05);
+  const tileAfter = await kazuyaCard.locator('.z-art-icon').boundingBox();
+  expect(tileAfter?.height, 'icon tile height').toBe(tileBefore?.height);
+  expect(await mediaShift(page), 'Matchups layout shift from media').toBeLessThanOrEqual(0.05);
   await page.screenshot({ path: `qa/screenshots/01B/matchups-icons-${testInfo.project.name}.png` });
 
   // Codex move detail: the clip card with its controls.

@@ -49,18 +49,27 @@ test('AC-LOG-2/G5: two logged 5-game sets drive Today Focus (3.0 vs 2.0)', async
   for (let round = 0; round < 2; round += 1) {
     await page.goto('/log/new');
     await expect(page.getByLabel('Date and time')).toBeVisible();
-    // Games: 10 -> 5.
+    // The steppers repeat while held, so on a busy machine a pointer click
+    // whose release is delayed can step twice. Enter fires a plain click:
+    // one step each, every time.
     const decrease = page.getByRole('button', { name: 'Decrease Games played' });
-    for (let i = 0; i < 5; i += 1) await decrease.click();
+    await decrease.focus();
+    for (let i = 0; i < 5; i += 1) await page.keyboard.press('Enter'); // Games: 10 -> 5.
+    await expect(page.locator('output', { hasText: /^5$/ }).first()).toBeVisible();
     const increaseMissed = page.getByRole('button', { name: 'Increase Missed punishes' });
-    for (let i = 0; i < 15; i += 1) await increaseMissed.click();
+    await increaseMissed.focus();
+    for (let i = 0; i < 15; i += 1) await page.keyboard.press('Enter');
+    await expect(page.locator('output', { hasText: /^15$/ })).toBeVisible();
     await page.getByRole('button', { name: 'Log match set' }).click();
     await expect(page).toHaveURL(/\/log\//);
+    await expect(page.getByText(/of 5 games/)).toBeVisible();
   }
   await page.goto('/today');
   // Focus renders the weakness label, value to one decimal, and the target
-  // as the number 2 (not 2.0).
-  await expect(page.getByText(/Missed punishes per game: 3\.0 vs target 2/)).toBeVisible();
+  // as the number 2 (not 2.0). The whole card text is in the failure message.
+  const focus = page.locator('#main');
+  await expect(focus).toContainText(/Missed punishes per game/);
+  expect(await focus.innerText()).toMatch(/Missed punishes per game: 3\.0 vs target 2/);
 });
 
 test('AC-LOG-3: CSV import dedupes on re-import', async ({ page }) => {
