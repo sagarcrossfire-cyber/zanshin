@@ -1,13 +1,15 @@
 /* DataBadge — spec §4.7. Props: status 'verified'|'sourced'|'conflicting'|
- * 'unverified', detail? (source/revision text), onClick? (Conflicting: tap to
- * compare). Always icon + text label; never color-only. */
+ * 'unverified'|'web', detail? (source/revision text), onClick? (Conflicting:
+ * tap to compare). Always icon + text label; never color-only. 'web'
+ * (release 1.3.0) marks prose the site's intel function fetched from the
+ * web: cited, never verified, never frame data. */
 import type { ReactNode } from 'react';
-import { IconVerified, IconSourced, IconConflicting, IconUnverified } from '../icons';
+import { IconVerified, IconSourced, IconConflicting, IconUnverified, IconWeb } from '../icons';
 import './DataBadge.css';
 
-export type DataStatus = 'verified' | 'sourced' | 'conflicting' | 'unverified';
-const LABELS: Record<DataStatus, string> = { verified: 'Verified', sourced: 'Sourced', conflicting: 'Conflicting', unverified: 'Unverified' };
-const ICONS: Record<DataStatus, ReactNode> = { verified: <IconVerified />, sourced: <IconSourced />, conflicting: <IconConflicting />, unverified: <IconUnverified /> };
+export type DataStatus = 'verified' | 'sourced' | 'conflicting' | 'unverified' | 'web';
+const LABELS: Record<DataStatus, string> = { verified: 'Verified', sourced: 'Sourced', conflicting: 'Conflicting', unverified: 'Unverified', web: 'Web-sourced' };
+const ICONS: Record<DataStatus, ReactNode> = { verified: <IconVerified />, sourced: <IconSourced />, conflicting: <IconConflicting />, unverified: <IconUnverified />, web: <IconWeb /> };
 
 export interface DataBadgeProps { status: DataStatus; detail?: string; onClick?: () => void; }
 

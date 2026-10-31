@@ -21,6 +21,7 @@ import {
   problemMoveSchema,
   profileSchema,
   replayReviewSchema,
+  researchNoteSchema,
   sessionSchema,
   settingsSchema,
   snapshotSchema,
@@ -115,6 +116,7 @@ const TABLE_SCHEMAS: Record<string, z.ZodTypeAny> = {
   errors: errorRecordSchema,
   meta: metaRecordSchema,
   media: mediaAssetSchema,
+  research: researchNoteSchema,
 };
 
 const QUARANTINE_JSON_LIMIT = 2000;

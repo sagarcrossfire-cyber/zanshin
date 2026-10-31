@@ -18,6 +18,7 @@ import {
 import { AnthropicProvider } from '../domain/coach/providers/anthropic';
 import { mockProvider } from '../domain/coach/providers/mock';
 import { OpenAICompatibleProvider } from '../domain/coach/providers/openai';
+import { ZanshinProvider } from '../domain/coach/providers/zanshin';
 import {
   matchupBrief,
   sessionDebrief,
@@ -37,6 +38,7 @@ import { problemMovesRepo } from '../data/repos/problemMoves';
 import { sessionsRepo } from '../data/repos/sessions';
 import { setsRepo } from '../data/repos/sets';
 import type { Profile, Settings } from '../data/schemas';
+import { formatSpend, intelHealth } from './intel';
 
 export interface CoachDeps {
   profile: Profile;
@@ -141,6 +143,9 @@ export function providerFromSettings(settings: Settings, fetchImpl?: typeof fetc
         fetchImpl,
       });
     }
+    case 'zanshin':
+      // The site's intel function holds the key; nothing to check here.
+      return new ZanshinProvider({ fetchImpl, model: settings.aiModel });
     case 'none':
     default:
       throw new CoachUnavailable('no provider configured');
@@ -643,6 +648,17 @@ export async function askCoach(question: string, deps: CoachDeps): Promise<AskRe
 }
 
 export async function testConnection(deps: CoachDeps): Promise<{ ok: boolean; message: string }> {
+  if (deps.settings.aiProvider === 'zanshin') {
+    // The site's own function: its health route is free, so no paid probe.
+    try {
+      const health = await intelHealth({ fetchImpl: deps.fetchImpl });
+      if (!health.keyConfigured) return { ok: false, message: 'The site has no Perplexity key: set PERPLEXITY_API_KEY in Netlify.' };
+      return { ok: true, message: `Connection works. ${formatSpend(health.today.costUsd, health.capUsd)}.` };
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : 'unknown error';
+      return { ok: false, message: `Connection failed: ${reason}` };
+    }
+  }
   let provider: CoachProvider;
   try {
     provider = providerFromSettings(deps.settings, deps.fetchImpl);

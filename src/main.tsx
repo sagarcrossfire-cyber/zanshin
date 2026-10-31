@@ -8,7 +8,7 @@ import { createRoot } from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
 import { App } from './app/App';
 import { isSafeMode } from './config/safeMode';
-import { SCHEMA_VERSION, V1_STORES, V2_STORES, V3_STORES, V4_STORES } from './data/db';
+import { SCHEMA_VERSION, V1_STORES, V2_STORES, V3_STORES, V4_STORES, V5_STORES } from './data/db';
 import { isDatabaseClosedError } from './data/dbErrors';
 import { ensureMigratedSafely } from './data/migrate';
 import { recordError, reportUnexpectedError } from './services/errorReport';
@@ -26,7 +26,7 @@ async function bootstrap(): Promise<void> {
       currentVersion: SCHEMA_VERSION,
       dbName: 'zanshin',
       storage: window.localStorage,
-      storesByVersion: { 1: V1_STORES, 2: V2_STORES, 3: V3_STORES, 4: V4_STORES },
+      storesByVersion: { 1: V1_STORES, 2: V2_STORES, 3: V3_STORES, 4: V4_STORES, 5: V5_STORES },
     });
     if (guard.probeError !== undefined) {
       recordError('migrate.ensureMigratedSafely', new Error(guard.probeError));

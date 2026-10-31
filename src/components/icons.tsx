@@ -81,6 +81,8 @@ export const IconTierLaunch = (p: IconProps) => (<Svg {...p}><path d="M6 6.5 12 
 export const IconVerified = (p: IconProps) => (<Svg {...p}><circle cx="12" cy="12" r="8.5" /><path d="M8.5 12.2 11 14.7 15.7 9.8" /></Svg>);
 export const IconSourced = (p: IconProps) => (<Svg {...p}><path d="M5 5.5A1.5 1.5 0 0 1 6.5 4H19v15H6.5A1.5 1.5 0 0 0 5 20.5z" /><path d="M5 19.5V5.5" /><path d="M9 8h6M9 11.5h4" /></Svg>);
 export const IconConflicting = (p: IconProps) => (<Svg {...p}><path d="M6 6l12 12M18 6 6 18" /></Svg>);
+/** Web-sourced prose (release 1.3.0): a globe. */
+export const IconWeb = (p: IconProps) => (<Svg {...p}><circle cx="12" cy="12" r="8.5" /><path d="M3.5 12h17M12 3.5c2.6 2.6 3.6 5.4 3.6 8.5s-1 5.9-3.6 8.5c-2.6-2.6-3.6-5.4-3.6-8.5s1-5.9 3.6-8.5z" /></Svg>);
 export const IconUnverified = (p: IconProps) => (<Svg {...p}><circle cx="12" cy="12" r="8.5" /><path d="M9.6 9.4A2.6 2.6 0 0 1 12 7.6c1.4 0 2.5 1 2.5 2.2 0 1.7-2.2 1.9-2.5 3.4" /><circle cx="12" cy="16.4" r="0.6" fill="currentColor" stroke="none" /></Svg>);
 
 /* ---------- Generic (hand-drawn) ---------- */

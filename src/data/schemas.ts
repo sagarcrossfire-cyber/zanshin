@@ -477,7 +477,9 @@ export const settingsSchema = z.object({
   repsPerSet: z.number().int().positive(),
   newCardsPerDay: z.number().int().nonnegative(),
   reviewsPerDay: z.number().int().nonnegative(),
-  aiProvider: z.enum(['none', 'openai-compatible', 'anthropic', 'mock']),
+  /** 'zanshin' (release 1.3.0): the site's own intel function answers, with
+   * the key held on the server; aiModel then names one of its models. */
+  aiProvider: z.enum(['none', 'openai-compatible', 'anthropic', 'mock', 'zanshin']),
   aiRequestsPerHour: z.number().int().nonnegative(),
   /** Coach provider credentials (§5.17/§8.7). Optional; absent = unset. The key is stored only in IndexedDB, never logged or exported (AC-COACH-3). */
   aiApiKey: z.string().optional(),
@@ -629,3 +631,39 @@ export const mediaPackManifestSchema = z
   })
   .passthrough();
 export type MediaPackManifest = z.infer<typeof mediaPackManifestSchema>;
+
+// ---------- research notes (release 1.3.0) ----------
+// Web-sourced prose the site's intel function returned and Sagar kept: a
+// "Look it up" answer, a matchup primer, or a patch brief. Research is prose
+// with citations, never frame data: nothing here feeds the Codex, the
+// checker, or any verified field. Rows carry the 'web' provenance badge.
+
+export const RESEARCH_KINDS = ['answer', 'primer', 'patch'] as const;
+export const researchKindSchema = z.enum(RESEARCH_KINDS);
+export type ResearchKind = z.infer<typeof researchKindSchema>;
+
+export const researchCitationSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  url: z.string().url(),
+  date: z.string().nullable().optional(),
+});
+export type ResearchCitation = z.infer<typeof researchCitationSchema>;
+
+export const researchNoteSchema = z.object({
+  id: z.string().min(1),
+  kind: researchKindSchema,
+  /** character:<Name> for primers and matchup questions, patch:<revision> for
+   * briefs, free text for anything else. Optional. */
+  subjectKey: z.string().min(1).optional(),
+  /** The question asked (answers) or a short title (primers, briefs). */
+  question: z.string().min(1),
+  text: z.string().min(1),
+  citations: z.array(researchCitationSchema),
+  model: z.string().min(1),
+  costUsd: z.number().nonnegative().optional(),
+  /** Wavu revision the brief explains (patch briefs only). */
+  revision: z.string().optional(),
+  createdAt: isoDateTimeSchema,
+});
+export type ResearchNote = z.infer<typeof researchNoteSchema>;

@@ -126,4 +126,5 @@ export {
   errorsRepo, assessmentsRepo, verificationsRepo, conflictsRepo, coachMessagesRepo, metaRepo,
 } from './errors';
 export { mediaRepo, mediaAssetId, blobKeysOf, type MediaConsistency, type MediaStats } from './media';
+export { researchRepo } from './research';
 export { db, resetDbForTests, SCHEMA_VERSION } from '../db';

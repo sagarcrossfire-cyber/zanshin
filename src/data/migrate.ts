@@ -87,8 +87,11 @@ async function takePreMigrationSnapshot(
   await probe.open();
   try {
     const tables: Record<string, unknown[]> = {};
+    // A table the new schema adds (research in v5) does not exist in the old
+    // database being snapshotted; it is recorded empty rather than read.
+    const present = new Set(probe.tables.map((table) => table.name));
     for (const name of [...BACKUP_TABLES]) {
-      tables[name] = await probe.table(name).toArray();
+      tables[name] = present.has(name) ? await probe.table(name).toArray() : [];
     }
     tables.packs = await probe.table('packs').toArray();
     const sha256 = await sha256Hex(canonicalJson(tables));

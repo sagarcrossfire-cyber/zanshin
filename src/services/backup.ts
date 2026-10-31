@@ -15,6 +15,7 @@ import {
   packsRepo,
   problemMovesRepo,
   profileRepo,
+  researchRepo,
   sessionsRepo,
   setsRepo,
   settingsRepo,
@@ -26,7 +27,7 @@ import type { Profile, Settings } from '../data/schemas';
 
 export const BACKUP_FORMAT = 'zanshin-backup';
 export const BACKUP_SCHEMA_VERSION = 1;
-export const APP_VERSION = '1.2.0';
+export const APP_VERSION = '1.3.0';
 
 /** Tables included in every backup, in canonical order. */
 export const BACKUP_TABLES = [
@@ -48,6 +49,7 @@ export const BACKUP_TABLES = [
   'verifications',
   'errors',
   'meta',
+  'research',
 ] as const;
 
 export type BackupTableName = (typeof BACKUP_TABLES)[number];
@@ -168,7 +170,7 @@ async function readTables(includePacks: boolean, includeSecrets: boolean): Promi
   const [
     profile, settings, sessions, sets, matchSets, reviews, mastery, stageStatus,
     cards, cardStates, moveNotes, assessments, conflicts, problemMoves,
-    coachMessages, errors, meta, verifications,
+    coachMessages, errors, meta, verifications, research,
   ] = await Promise.all([
     profileRepo.all(),
     settingsRepo.all(),
@@ -188,6 +190,7 @@ async function readTables(includePacks: boolean, includeSecrets: boolean): Promi
     errorsRepo.all(),
     metaRepo.all(),
     verificationsRepo.all(),
+    researchRepo.all(),
   ]);
   const safeSettings = includeSecrets
     ? settings
@@ -214,6 +217,7 @@ async function readTables(includePacks: boolean, includeSecrets: boolean): Promi
     errors,
     meta,
     verifications,
+    research,
   };
   if (includePacks) {
     tables.packs = await packsRepo.all();
@@ -329,6 +333,7 @@ const TABLE_ADAPTERS: Record<BackupTableName, TableAdapter> = {
   verifications: adapterFor(verificationsRepo.all, verificationsRepo.remove, verificationsRepo.put, idKey),
   errors: adapterFor(errorsRepo.all, errorsRepo.remove, errorsRepo.put, idKey),
   meta: adapterFor(metaRepo.all, metaRepo.remove, metaRepo.put, (row: { key: string }) => row.key),
+  research: adapterFor(researchRepo.all, researchRepo.remove, researchRepo.put, idKey),
 };
 
 /**

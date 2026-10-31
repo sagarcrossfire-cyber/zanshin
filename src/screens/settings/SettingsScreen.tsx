@@ -16,6 +16,7 @@ import { CONTROLLER_GLYPH, CONTROLLERS, DAY_NAMES, PLATFORM_GLYPH, RANKS, SESSIO
 import { useAppStore } from '../../stores/appStore';
 import type { Profile, Settings } from '../../data/schemas';
 import { testConnection } from '../../services/coach';
+import { DEFAULT_COACH_MODEL, formatSpend, intelModelOptions, intelUsage, isIntelModel, type IntelUsageReport } from '../../services/intel';
 import { KPI_TARGET_EDITOR } from '../../domain/engine/weakness';
 import {
   APP_VERSION,
@@ -43,6 +44,7 @@ export function SettingsScreen() {
   const [coach, setCoach] = useState<Pick<Settings, 'aiProvider' | 'aiApiKey' | 'aiBaseUrl' | 'aiModel' | 'aiRequestsPerHour'> | null>(null);
   const [testResult, setTestResult] = useState('');
   const [testing, setTesting] = useState(false);
+  const [spend, setSpend] = useState<IntelUsageReport | null | 'offline'>(null);
   const [lab, setLab] = useState<Pick<Settings, 'labAudioCues' | 'labWakeLock' | 'repsPerSet'> | null>(null);
   const [kpi, setKpi] = useState<Record<string, { value: string; disabled: boolean }> | null>(null);
   const [includePacks, setIncludePacks] = useState(false);
@@ -103,6 +105,20 @@ export function SettingsScreen() {
       cancelled = true;
     };
   }, []);
+  // The site's spend meter: a free read of the intel function's usage route.
+  const showSpend = coach?.aiProvider === 'zanshin';
+  useEffect(() => {
+    if (!showSpend) return;
+    let cancelled = false;
+    intelUsage().then((report) => {
+      if (!cancelled) setSpend(report);
+    }).catch(() => {
+      if (!cancelled) setSpend('offline');
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [showSpend]);
 
   if (!profile || !settings || !draft || !coach || !lab || !kpi) return <main><p>Loading…</p></main>;
 
@@ -311,12 +327,32 @@ export function SettingsScreen() {
         <Select id="set-ai-provider" label="AI provider" value={coach.aiProvider}
           options={[
             { value: 'none', label: 'None (rules coach only)' },
+            { value: 'zanshin', label: 'ZANSHIN intelligence (this site, key on the server)' },
             { value: 'openai-compatible', label: 'OpenAI-compatible' },
             { value: 'anthropic', label: 'Anthropic' },
             { value: 'mock', label: 'Mock (development)' },
           ]}
           onChange={(v) => setCoachField({ aiProvider: v as Settings['aiProvider'] })} />
-        {coach.aiProvider !== 'none' && coach.aiProvider !== 'mock' && (
+        {coach.aiProvider === 'zanshin' && (
+          <>
+            <p className="z-label">
+              Answers go through this site’s intelligence function, which holds the Perplexity key and a daily spend
+              cap. No key is stored on this device. The same function powers Look it up, matchup primers and patch briefs.
+            </p>
+            <Select id="set-ai-model" label="Coach model"
+              value={isIntelModel(coach.aiModel) ? coach.aiModel : DEFAULT_COACH_MODEL}
+              options={intelModelOptions()}
+              onChange={(v) => setCoachField({ aiModel: v })} />
+            <p className="z-label" data-testid="intel-spend">
+              {spend === null && 'Reading today’s spend…'}
+              {spend === 'offline' && 'Spend meter unavailable (offline, or the site has not deployed the function yet).'}
+              {spend !== null && spend !== 'offline' && (
+                `Spend: ${formatSpend(spend.days[0]?.costUsd ?? 0, spend.capUsd)} · last 7 days $${spend.days.reduce((sum, day) => sum + day.costUsd, 0).toFixed(2)}`
+              )}
+            </p>
+          </>
+        )}
+        {coach.aiProvider !== 'none' && coach.aiProvider !== 'mock' && coach.aiProvider !== 'zanshin' && (
           <>
             <TextField id="set-ai-key" label="API key" type="password" value={coach.aiApiKey ?? ''}
               onChange={(v) => setCoachField({ aiApiKey: v === '' ? undefined : v })} />
@@ -447,6 +483,11 @@ export function SettingsScreen() {
           Frame data: Wavu Wiki (CC0). The app&apos;s own interface art is original ink-style SVG; the images and clips
           it shows come from this site&apos;s media folder and from files you import, and are stored on this device.
           Character art and move clips © Bandai Namco Entertainment Inc. Portraits, icons and clips via Wavu Wiki.
+        </p>
+        <p className="z-body-l">
+          Web research (Look it up, matchup primers, patch briefs) and the ZANSHIN coach provider go through this
+          site&apos;s own intelligence function, which searches trusted Tekken sites through Perplexity. What comes
+          back is marked Web-sourced and kept as research notes; it never changes frame data.
         </p>
         <p className="z-body-l">Licenses: IBM Plex Sans / IBM Plex Mono and Shippori Mincho B1 are licensed under the SIL Open Font License 1.1.</p>
       </Card>

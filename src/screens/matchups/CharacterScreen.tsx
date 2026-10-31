@@ -1,6 +1,8 @@
 // Character matchup page — spec §5.11. Problem moves (add from the pack
 // when loaded, free text otherwise), character notes, counterplay links,
-// Lab tasks generated from problem moves, on-demand pack import.
+// Lab tasks generated from problem moves, on-demand pack import, and (1.3.0)
+// a web-sourced matchup primer from the site's intel function, kept on the
+// device as a research note with the 'web' badge.
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
@@ -10,6 +12,11 @@ import { TextField } from '../../components/base/TextField';
 import { InputString } from '../../components/signature/InputString';
 import { CharacterHero } from '../../components/media/CharacterArt';
 import { ClipToggle } from '../../components/media/MoveClip';
+import { SafeModeNote } from '../../components/base/SafeModeNote';
+import { ResearchNoteView } from '../../components/research/ResearchNoteView';
+import { isSafeMode } from '../../config/safeMode';
+import { IntelError } from '../../services/intel';
+import { fetchPrimer, storedPrimer, type PrimerView } from '../../services/research';
 import { wavuMoveId } from '../../domain/media/subjects';
 import { loadPlaybook, loadRoster } from '../../data/packs';
 import { matchSetsRepo, moveNotesRepo, packsRepo, problemMovesRepo } from '../../data/repos';
@@ -50,6 +57,10 @@ export function CharacterScreen() {
   const [answerDetail, setAnswerDetail] = useState('');
   const [description, setDescription] = useState('');
   const [verified, setVerified] = useState(false);
+  const [primer, setPrimer] = useState<PrimerView | null>(null);
+  const [primerLoading, setPrimerLoading] = useState(false);
+  const [primerError, setPrimerError] = useState('');
+  const safeMode = isSafeMode();
 
   const rosterEntry = useMemo(() => loadRoster().find((c) => c.name === character), [character]);
 
@@ -68,6 +79,8 @@ export function CharacterScreen() {
         if (note) setNotes(note.note);
         const pack = await packsRepo.get(characterPackId(character));
         if (!cancelled && pack) setPackMoves(pack.data as Move[]);
+        const kept = await storedPrimer(character);
+        if (!cancelled) setPrimer(kept);
       } catch (error) {
         if (!isDatabaseClosedError(error)) throw error;
       }
@@ -131,6 +144,20 @@ export function CharacterScreen() {
     pushToast('Practice session created. Open it from Lab.');
   };
 
+  const loadPrimer = async (refresh: boolean): Promise<void> => {
+    setPrimerLoading(true);
+    setPrimerError('');
+    try {
+      setPrimer(await fetchPrimer(character, refresh));
+    } catch (error) {
+      if (error instanceof IntelError && error.capReached) setPrimerError(`${error.message} The cap resets at midnight UTC.`);
+      else if (error instanceof IntelError && error.notConfigured) setPrimerError('The site has no Perplexity key yet; set PERPLEXITY_API_KEY in Netlify.');
+      else setPrimerError(error instanceof Error ? error.message : 'Could not fetch the primer.');
+    } finally {
+      setPrimerLoading(false);
+    }
+  };
+
   const playbook = loadPlaybook();
 
   return (
@@ -150,6 +177,30 @@ export function CharacterScreen() {
             <a href={rosterEntry.wavuPage} target="_blank" rel="noopener noreferrer">Wavu Wiki page</a>{' '}
             <a href={rosterEntry.counterplayPage} target="_blank" rel="noopener noreferrer">Counterplay page</a>
           </p>
+        )}
+      </Card>
+
+      <Card title="Matchup primer" data-testid="primer-card">
+        <p>
+          A short web-sourced read on Yoshimitsu vs {character}: their plan, what to punish, what to duck or step.
+          Written by the site’s intelligence function from trusted Tekken sites, with sources. Prose only — verify
+          any frame number in the Codex.
+        </p>
+        {safeMode && <SafeModeNote what="Fetching a primer" />}
+        {primer === null && !primerLoading && (
+          <Button onClick={() => void loadPrimer(false)} disabled={safeMode}>Get the primer</Button>
+        )}
+        {primerLoading && <p aria-live="polite">Fetching the primer — up to ten seconds.</p>}
+        {primerError !== '' && <p role="alert">{primerError}</p>}
+        {primer !== null && !primerLoading && (
+          <ResearchNoteView
+            note={primer.note}
+            frameTokens={primer.frameTokens}
+            meta={primer.fromDevice ? 'kept on this device' : primer.stale ? 'the site served an older copy; refresh failed' : 'from the site'}
+            actions={(
+              <Button variant="secondary" onClick={() => void loadPrimer(true)} disabled={safeMode}>Refresh primer</Button>
+            )}
+          />
         )}
       </Card>
 

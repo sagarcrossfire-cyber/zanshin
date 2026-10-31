@@ -1,7 +1,9 @@
 /* Coach — spec §5.14/§8. Tabs: Weekly review (rules coach, with history),
  * Debriefs (per session), Ask (AI chat when a provider is configured, else
- * Copy context). Messages render safe Markdown and end with one
- * "Next action:" line. */
+ * Copy context), and Look it up (release 1.3.0: web research through the
+ * site's intel function, cited, kept as research notes with the 'web'
+ * badge). Messages render safe Markdown and end with one "Next action:"
+ * line; research is prose and never becomes frame data. */
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
@@ -11,9 +13,13 @@ import { Tabs } from '../../components/base/Tabs';
 import { TextField } from '../../components/base/TextField';
 import { Chip } from '../../components/base/Chip';
 import { isSafeMode } from '../../config/safeMode';
+import { ResearchNoteView } from '../../components/research/ResearchNoteView';
+import { Select } from '../../components/base/Select';
 import { coachMessagesRepo } from '../../data/repos/errors';
 import { sessionsRepo } from '../../data/repos/sessions';
-import type { CoachMessage, Session } from '../../data/schemas';
+import type { CoachMessage, ResearchNote, Session } from '../../data/schemas';
+import { DEFAULT_COACH_MODEL, INTEL_MODELS, IntelError, formatSpend, isIntelModel, type IntelModel } from '../../services/intel';
+import { deleteNote, listNotes, lookUp, saveNote, type LookUpResult } from '../../services/research';
 import {
   askCoach,
   buildCoachContext,
@@ -23,10 +29,16 @@ import {
   weeklyReviewText,
 } from '../../services/coach';
 import { useAppStore } from '../../stores/appStore';
-import { renderSafeMarkdown } from './markdown';
+import { renderSafeMarkdown } from '../../components/coach/markdown';
 import './CoachScreen.css';
 
-type CoachTab = 'review' | 'debriefs' | 'ask';
+type CoachTab = 'review' | 'debriefs' | 'ask' | 'lookup';
+
+const LOOKUP_MODELS: Array<{ value: IntelModel; label: string }> = [
+  { label: 'Sonar — grounded search, cheapest', value: 'perplexity/sonar' },
+  { label: 'Claude Haiku 5.5 — fast', value: 'anthropic/claude-haiku-5-5' },
+  { label: 'Claude Sonnet 5.5 — best reasoning', value: 'anthropic/claude-sonnet-5-5' },
+];
 
 function CitationChips({ citations }: { citations: string[] }) {
   const resolved = citations
@@ -75,6 +87,13 @@ export function CoachScreen() {
   const [asking, setAsking] = useState(false);
   const [askError, setAskError] = useState('');
   const [copyQuestion, setCopyQuestion] = useState('');
+  const [lookupQuestion, setLookupQuestion] = useState('');
+  const [lookupModel, setLookupModel] = useState<IntelModel>('perplexity/sonar');
+  const [lookingUp, setLookingUp] = useState(false);
+  const [lookupError, setLookupError] = useState('');
+  const [lookupResult, setLookupResult] = useState<LookUpResult | null>(null);
+  const [lookupKept, setLookupKept] = useState(false);
+  const [notes, setNotes] = useState<ResearchNote[]>([]);
 
   const loadReviews = useCallback(async () => {
     const rows = await coachMessagesRepo.allByThread('weekly-review');
@@ -85,11 +104,16 @@ export function CoachScreen() {
     setMessages(rows);
   }, []);
 
+  const loadNotes = useCallback(async () => {
+    setNotes(await listNotes());
+  }, []);
+
   useEffect(() => {
     void loadReviews();
     void loadMessages();
+    void loadNotes();
     void sessionsRepo.all().then((rows) => setSessions(rows.filter((s) => s.status === 'done')));
-  }, [loadReviews, loadMessages]);
+  }, [loadReviews, loadMessages, loadNotes]);
 
   if (!profile || !settings) {
     return (
@@ -161,8 +185,52 @@ export function CoachScreen() {
     }
   };
 
+  const runLookUp = async () => {
+    const trimmed = lookupQuestion.trim();
+    if (trimmed === '' || lookingUp) return;
+    setLookingUp(true);
+    setLookupError('');
+    setLookupKept(false);
+    try {
+      const result = await lookUp(trimmed, { model: lookupModel });
+      setLookupResult(result);
+    } catch (error) {
+      if (error instanceof IntelError && error.capReached) {
+        setLookupError(`${error.message} The cap resets at midnight UTC.`);
+      } else if (error instanceof IntelError && error.notConfigured) {
+        setLookupError('The site has no Perplexity key yet. Set PERPLEXITY_API_KEY in Netlify and redeploy.');
+      } else {
+        setLookupError(error instanceof Error ? error.message : 'Could not look that up.');
+      }
+    } finally {
+      setLookingUp(false);
+    }
+  };
+
+  const keepLookUp = async () => {
+    if (!lookupResult || lookupKept) return;
+    try {
+      await saveNote(lookupResult.note);
+      setLookupKept(true);
+      await loadNotes();
+      pushToast('Kept as a research note.');
+    } catch (error) {
+      pushToast(error instanceof Error ? error.message : 'Could not keep the note.');
+    }
+  };
+
+  const removeNote = async (id: string) => {
+    try {
+      await deleteNote(id);
+      await loadNotes();
+    } catch (error) {
+      pushToast(error instanceof Error ? error.message : 'Could not delete the note.');
+    }
+  };
+
   const providerConfigured = settings.aiProvider !== 'none';
   const latestReview = reviews[reviews.length - 1];
+  const answerNotes = notes.filter((note) => note.kind === 'answer');
 
   return (
     <main className="z-coach">
@@ -175,6 +243,7 @@ export function CoachScreen() {
           { id: 'review', label: 'Weekly review' },
           { id: 'debriefs', label: 'Debriefs' },
           { id: 'ask', label: 'Ask' },
+          { id: 'lookup', label: 'Look it up' },
         ]}
       />
 
@@ -239,6 +308,74 @@ export function CoachScreen() {
         </section>
       )}
 
+      {tab === 'lookup' && (
+        <section aria-label="Look it up" className="z-coach__lookup">
+          <p>
+            Searches trusted Tekken sites through this site and answers with sources. Web answers are prose, marked
+            Web-sourced; they never change your Codex or frame data. Each answer costs a few cents of the daily budget.
+          </p>
+          {safeMode && <SafeModeNote what="Looking things up" />}
+          <form
+            className="z-coach__ask-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void runLookUp();
+            }}
+          >
+            <TextField
+              id="coach-lookup-question"
+              label="What do you want to know?"
+              value={lookupQuestion}
+              onChange={setLookupQuestion}
+              placeholder="How do people deal with Jin's f,f+2 pressure as Yoshimitsu?"
+            />
+            <Select
+              id="coach-lookup-model"
+              label="Model"
+              options={LOOKUP_MODELS}
+              value={lookupModel}
+              onChange={(v) => { if (isIntelModel(v)) setLookupModel(v); }}
+            />
+            <Button type="submit" disabled={lookingUp || lookupQuestion.trim() === '' || safeMode}>
+              {lookingUp ? 'Searching…' : 'Look it up'}
+            </Button>
+          </form>
+          {lookupError !== '' && <p role="alert">{lookupError}</p>}
+          {lookingUp && <p aria-live="polite">Searching the web — up to ten seconds.</p>}
+          {lookupResult !== null && !lookingUp && (
+            <Card title="Answer" data-testid="lookup-answer">
+              <ResearchNoteView
+                note={lookupResult.note}
+                frameTokens={lookupResult.frameTokens}
+                showQuestion
+                meta={`${lookupResult.usage.costUsd > 0 ? `$${lookupResult.usage.costUsd.toFixed(3)} · ` : ''}${formatSpend(lookupResult.usage.todayUsd, lookupResult.usage.capUsd)}`}
+                actions={(
+                  <Button variant="secondary" onClick={() => void keepLookUp()} disabled={lookupKept}>
+                    {lookupKept ? 'Kept' : 'Keep as a note'}
+                  </Button>
+                )}
+              />
+            </Card>
+          )}
+          {answerNotes.length > 0 && (
+            <div className="z-coach__history">
+              <h2>Kept notes</h2>
+              {answerNotes.map((note) => (
+                <details key={note.id} data-testid="research-kept">
+                  <summary>{note.question} · {note.createdAt.slice(0, 10)}</summary>
+                  <ResearchNoteView
+                    note={note}
+                    actions={(
+                      <Button variant="destructive" onClick={() => void removeNote(note.id)}>Delete note</Button>
+                    )}
+                  />
+                </details>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
       {tab === 'ask' && (
         <section aria-label="Ask">
           {!providerConfigured && (
@@ -278,6 +415,11 @@ export function CoachScreen() {
               }}
             >
               {safeMode && <SafeModeNote what="The AI coach" />}
+              {settings.aiProvider === 'zanshin' && (
+                <p className="z-coach__meta">
+                  Answers come through this site’s intelligence function ({INTEL_MODELS[isIntelModel(settings.aiModel) ? settings.aiModel : DEFAULT_COACH_MODEL].label}); the key stays on the server.
+                </p>
+              )}
               <TextField
                 id="coach-question"
                 label="Ask the coach"
