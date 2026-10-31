@@ -30,11 +30,10 @@ import {
   addMediaFile,
   deleteAllMedia,
   deleteMedia,
-  exportMediaPack,
-  importMediaPack,
   MediaImportError,
   type MediaImportReport,
 } from '../../services/mediaPack';
+import { exportMediaPack, importMediaPack } from '../../services/mediaZip';
 import { useAppStore } from '../../stores/appStore';
 import '../onboarding/OnboardingScreen.css';
 
