@@ -1,17 +1,17 @@
 {
   "dependencies": {
-    "@fontsource/ibm-plex-mono": "5.2.6",
-    "@fontsource/ibm-plex-sans": "5.2.6",
+    "@fontsource/ibm-plex-mono": "5.3.0",
+    "@fontsource/ibm-plex-sans": "5.3.0",
     "@fontsource/shippori-mincho-b1": "5.3.0",
-    "date-fns": "4.1.0",
-    "dexie": "4.2.0",
-    "fflate": "0.8.2",
+    "date-fns": "4.4.0",
+    "dexie": "4.4.7",
+    "fflate": "0.8.3",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-router-dom": "6.30.0",
     "recharts": "2.15.3",
     "zod": "3.25.76",
-    "zustand": "5.0.8"
+    "zustand": "5.0.16"
   },
   "description": "ZANSHIN \u2014 personal Tekken 8 Yoshimitsu coaching app (local-first PWA). Unofficial personal training tool, not affiliated with Bandai Namco.",
   "devDependencies": {
