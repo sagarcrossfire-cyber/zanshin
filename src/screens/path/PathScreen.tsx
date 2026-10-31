@@ -80,7 +80,10 @@ export function PathScreen() {
                 if (!node) return null;
                 return (
                   <li key={nodeId} className="z-path__node">
-                    <Link to={`/path/${nodeId}`} aria-label={`${node.title}, mastery ${row?.score ?? 0}, ${row?.state ?? 'learning'}`}>
+                    {/* No aria-label: the link is named by its content (the
+                        ring's own label carries title, score and state), so
+                        the visible text is always part of the name (WCAG 2.5.3). */}
+                    <Link to={`/path/${nodeId}`}>
                       <EnsoRing score={row?.score ?? 0} state={ensoState(row?.state ?? 'learning', view.state === 'locked')} label={node.title} size={72} />
                       <span>{node.title}</span>
                     </Link>

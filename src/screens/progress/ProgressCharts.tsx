@@ -54,7 +54,7 @@ export default function ProgressCharts({ data, weeklyMinutes }: { data: Progress
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="label" />
             <YAxis domain={[0, 1]} tickFormatter={(v: number) => `${Math.round(v * 100)}%`} />
-            <Tooltip formatter={(v: number) => [`${Math.round(v * 100)}%`, 'Success']} />
+            <Tooltip formatter={(v) => [`${Math.round(Number(v) * 100)}%`, 'Success']} />
             <Line type="monotone" dataKey="value" name="Success rate" stroke="var(--text-1)" dot />
           </LineChart>
         </ResponsiveContainer>
@@ -66,7 +66,7 @@ export default function ProgressCharts({ data, weeklyMinutes }: { data: Progress
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="label" />
             <YAxis domain={[0, 1]} tickFormatter={(v: number) => `${Math.round(v * 100)}%`} />
-            <Tooltip formatter={(v: number) => [`${Math.round(v * 100)}%`, 'Accuracy']} />
+            <Tooltip formatter={(v) => [`${Math.round(Number(v) * 100)}%`, 'Accuracy']} />
             <Line type="monotone" dataKey="value" name="Accuracy" stroke="var(--text-1)" dot />
           </LineChart>
         </ResponsiveContainer>
@@ -104,7 +104,7 @@ export default function ProgressCharts({ data, weeklyMinutes }: { data: Progress
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="label" />
             <YAxis domain={[0, 100]} tickFormatter={(v: number) => `${v}%`} />
-            <Tooltip formatter={(v: number) => [`${Math.round(v)}%`, 'Win rate']} />
+            <Tooltip formatter={(v) => [`${Math.round(Number(v))}%`, 'Win rate']} />
             <Bar dataKey="value" name="Win rate" fill="var(--text-1)" />
           </BarChart>
         </ResponsiveContainer>
