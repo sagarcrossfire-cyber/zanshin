@@ -36,6 +36,15 @@ The deploy step needs two repository secrets, which only the repository owner ad
 
 Netlify normally receives finished deploys; when a build is started on Netlify's side instead (a deploy through the Netlify MCP connector, or a repository linked in the Netlify UI), `netlify.toml` runs `scripts/netlify-build.sh`, which is the same gate, media step and build. Response headers (a Content Security Policy, frame denial, caching) are in `public/_headers`; routing in `public/_redirects`.
 
+## Branch protection
+
+The pipeline is only a gate if `main` cannot be pushed to directly. Set this once in GitHub (Settings → Rules → Rulesets → New branch ruleset; the GitHub app this repo is driven from cannot create rulesets):
+
+- Target: default branch. Enforcement: active. No bypass actors.
+- Rules: restrict deletions; block force pushes; require a pull request (0 approvals is fine for a solo repo); require status checks **Types, lint, unit tests, build** and **Browser tests (phone and desktop)**.
+
+After that every change, including the agent's, goes through a pull request that CI has passed, and `main` is always a tested, deployed state.
+
 ## Media
 
 The app shows no game art of its own. Two things fill it:

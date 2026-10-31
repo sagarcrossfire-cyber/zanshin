@@ -37,8 +37,13 @@ Base: 1.1.0 (`bfeb86d`, Amendment 01B). Schema stays at v4.
 - Script: `scripts/tests/test_media_pack.py` gained site-mode coverage (content-addressed names, `packId` stability, stale-file cleanup) and now runs in CI.
 - End to end: bundled seeding and the quiet no-media path in `tests/e2e/media.spec.ts`, plus the Netlify-style CSP run.
 
+## Shipped
+
+- First production deploy from GitHub Actions on 31 October 2026 (deploy `6ae6085b`, commit `293d725`): 283 files, 8 header rules and 2 redirect rules accepted by Netlify, 228 bundled media items (41 icons, 33 portraits, 154 Yoshimitsu clips; 10 roster images not on Wavu: Anna, Armor King, Bob, Clive, Eddy, Fahkumram, Heihachi, Kunimitsu and Miary Zo portraits, Fahkumram's icon).
+- CI fixes found on the way: the lockfile and the Vitest snapshots were never committed; the runner's `pip` refuses installs (setup-python instead); `ubuntu-latest` is Ubuntu 26, which Playwright does not support yet (pinned to 24.04); the service worker's Wavu cache made mocked and offline tests non-deterministic wherever the runner can reach Wavu; two tests raced optimistic UI.
+
 ## For later
 
-- Branch protection on `main` (require the `quick` and `e2e` checks, no force pushes) via a repository ruleset, once Sagar has decided whether the repository stays public.
+- Branch protection on `main` via a repository ruleset (steps in README.md; the GitHub app cannot create rulesets).
 - Opponent clips in the bundled pack (`--opponents all` roughly doubles its size); today they import as a separate zip.
 - Syncing training data between devices (a backend) is a separate decision.
