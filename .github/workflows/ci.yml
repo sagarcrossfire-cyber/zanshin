@@ -56,10 +56,13 @@ jobs:
       - run: npm run validate:data
       - run: npm run build
       - run: node scripts/check-bundle.mjs
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - name: Media pack script self-test
         run: |
-          pip install pillow
-          python3 scripts/tests/test_media_pack.py
+          python -m pip install --quiet pillow
+          python scripts/tests/test_media_pack.py
 
   e2e:
     name: Browser tests (phone and desktop)
@@ -106,7 +109,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: pip install pillow
+      - run: python -m pip install --quiet pillow
       - name: Download cache (files are re-verified against Wavu's checksums each run)
         uses: actions/cache@v4
         with:
@@ -115,7 +118,7 @@ jobs:
           restore-keys: |
             zanshin-media-cache-
       - name: Build the site's media folder
-        run: python3 scripts/make_zanshin_media_pack.py --site-dir public --cache-dir .zanshin-media-cache --delay 0.5
+        run: python scripts/make_zanshin_media_pack.py --site-dir public --cache-dir .zanshin-media-cache --delay 0.5
       - name: Summary
         run: |
           python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
