@@ -1,0 +1,43 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`matchupBrief > shows win rate only from 10 games 1`] = `
+"**Matchup: Kazuya**
+- Record: 7–5 over 12 games (58% win rate).
+- Problem moves:
+  - df+2: punish with df+1,4
+- Counterplay: https://wavu.wiki/t/Kazuya_counterplay
+- Drill: Problem-move lab: df+2
+Next action: Run the df+2 lab drill tomorrow."
+`;
+
+exports[`patchSummary > lists changes with field labels and the verify count 1`] = `
+"**Patch 3.02.03**
+- 1 Yoshimitsu move changed.
+- b+2,2 on block: -13 → -9.
+- 1 verify task queued; linked cards are due today.
+Next action: Verify b+2,2 in Practice."
+`;
+
+exports[`plateauNote > names the stall, the method change and the spacing 1`] = `
+"**Plateau: BnB**
+- Execution moved 2 points over 5 sessions while below the 80% target (now 57%).
+- Try a different method: record a replay, watch the reference, split the input.
+- This drill moves to every other session.
+Next action: Split the BnB after the tornado for two sessions."
+`;
+
+exports[`sessionDebrief > handles no drills and snapshots 1`] = `
+"**Session debrief, 0 min**
+- No drills logged.
+Next action: Log a match set."
+`;
+
+exports[`weeklyReview > snapshots 1`] = `
+"**Week of Oct 26 – Nov 1**
+- Practice: 4 sessions, 118 of 150 minutes.
+- Moved up: Punish ladder, Practicing to Solid (0.72 to 0.84).
+- Still behind: throw breaks 38% over 21 throws (target 40%).
+- Matches: 22 games, 1.9 missed punishes per game (target 2.0).
+Next week's focus: throw breaks, then Stage 2 movement.
+Next action: Start Monday's session; it opens with the throw-break drill."
+`;

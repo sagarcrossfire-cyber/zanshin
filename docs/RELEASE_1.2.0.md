@@ -26,7 +26,7 @@ Base: 1.1.0 (`bfeb86d`, Amendment 01B). Schema stays at v4.
 | --- | --- | --- |
 | D-120-1 | Media is bundled with the private site and seeded into IndexedDB, rather than referenced by URL | The app stays offline-first and every existing media code path (variants, ink tone, consistency checks, export) keeps working; anyone who can open the site can see the art, which today is only Sagar |
 | D-120-2 | Media is built in CI from Wavu, cached between runs, never committed | Keeps the repository small and the art out of git history; the cache re-verifies each file against Wavu's checksum, so a refresh downloads only what changed |
-| D-120-3 | GitHub Actions deploys to Netlify with `netlify-cli`; Netlify does not build | One place runs the gate and the deploy, the full browser suite runs before anything ships, and the Netlify token lives only in GitHub's secrets |
+| D-120-3 | GitHub Actions deploys to Netlify with `netlify-cli --no-build`; a build started on Netlify's side runs `scripts/netlify-build.sh` (same gate, media and build) | One place runs the gate and the deploy, the full browser suite runs before anything ships, the Netlify token lives only in GitHub's secrets, and a deploy through the Netlify connector still produces the same site |
 | D-120-4 | `connect-src` allows any https host plus localhost | The coach provider's base URL is user-configured (it can be a local server); pinning hosts would break that setting |
 | D-120-5 | `style-src 'unsafe-inline'` | React inline styles (hero focal point, image sizes, Recharts) need it; scripts stay `'self'` only |
 

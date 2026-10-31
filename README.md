@@ -34,7 +34,7 @@ push / PR ──► quick (types, lint, unit, data, build, budget)
 
 The deploy step needs two repository secrets, which only the repository owner adds: `NETLIFY_AUTH_TOKEN` (Netlify → User settings → Applications → Personal access tokens) and `NETLIFY_SITE_ID` (Netlify → Project configuration → General). Until they exist, the deploy job builds, says what is missing, and ends green.
 
-Netlify itself does not build the project (`netlify.toml`); it receives finished deploys. Response headers (a Content Security Policy, frame denial, caching) are in `public/_headers`; routing in `public/_redirects`.
+Netlify normally receives finished deploys; when a build is started on Netlify's side instead (a deploy through the Netlify MCP connector, or a repository linked in the Netlify UI), `netlify.toml` runs `scripts/netlify-build.sh`, which is the same gate, media step and build. Response headers (a Content Security Policy, frame denial, caching) are in `public/_headers`; routing in `public/_redirects`.
 
 ## Media
 

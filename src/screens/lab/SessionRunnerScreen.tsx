@@ -137,8 +137,15 @@ export function SessionRunnerScreen() {
     return () => document.removeEventListener('visibilitychange', onVisibility);
   }, [labMode]);
 
+  // Writes that a closing database interrupts (the page unloading, a test
+  // tearing down) are not failures worth surfacing; anything else is.
   const persist = useCallback(async (next: Session) => {
-    await sessionsRepo.put(next);
+    try {
+      await sessionsRepo.put(next);
+    } catch (error) {
+      if (!isDatabaseClosedError(error)) throw error;
+      return;
+    }
     setSession(next);
   }, []);
 
@@ -166,14 +173,18 @@ export function SessionRunnerScreen() {
   const handleNext = useCallback(async () => {
     if (!session) return;
     const nowIso = new Date().toISOString();
-    const next = await advanceSession(session, nowIso);
-    if (next === null) {
-      const done = await sessionsRepo.get(session.id);
-      if (done) setSession(done);
-      pushToast('Session complete. Nice work.');
-      if (settings?.labAudioCues) playBeep(1320, 200);
-    } else {
-      setSession(next);
+    try {
+      const next = await advanceSession(session, nowIso);
+      if (next === null) {
+        const done = await sessionsRepo.get(session.id);
+        if (done) setSession(done);
+        pushToast('Session complete. Nice work.');
+        if (settings?.labAudioCues) playBeep(1320, 200);
+      } else {
+        setSession(next);
+      }
+    } catch (error) {
+      if (!isDatabaseClosedError(error)) throw error;
     }
   }, [session, pushToast, settings]);
 

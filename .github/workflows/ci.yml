@@ -52,7 +52,7 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
-      - run: npm run test
+      - run: npx vitest run --reporter=default --reporter=github-actions
       - run: npm run validate:data
       - run: npm run build
       - run: node scripts/check-bundle.mjs
@@ -82,9 +82,9 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run build
       - name: Full suite against the preview server
-        run: npx playwright test
+        run: npx playwright test --reporter=list,github
       - name: Smoke, media and PWA against Netlify-style headers (CSP)
-        run: npx playwright test -c playwright.netlify.config.ts
+        run: npx playwright test -c playwright.netlify.config.ts --reporter=list,github
       - name: Keep traces and screenshots on failure
         if: failure()
         uses: actions/upload-artifact@v4

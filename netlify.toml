@@ -1,12 +1,18 @@
-# ZANSHIN on Netlify. Deploys come from GitHub Actions (.github/workflows/ci.yml),
-# which runs every test, builds the site with its bundled media, and uploads
-# the finished `dist` folder. Netlify does not build this project itself.
+# ZANSHIN on Netlify.
+#
+# Day to day, GitHub Actions (.github/workflows/ci.yml) runs every test, builds
+# the site with its bundled media, and uploads the finished `dist` folder with
+# `netlify deploy --no-build`, so this build command does not run. When a build
+# is started on Netlify's side instead (a deploy through the Netlify MCP
+# connector, or a repository linked in the Netlify UI), scripts/netlify-build.sh
+# runs the same gate, media step and build here.
 [build]
   publish = "dist"
-  command = "echo 'Built and deployed by GitHub Actions; see .github/workflows/ci.yml'"
+  command = "bash scripts/netlify-build.sh"
 
 [build.environment]
   NODE_VERSION = "22"
+  PYTHON_VERSION = "3.12"
 
 # Headers and redirects live in public/_headers and public/_redirects, which
 # ship inside `dist`.
