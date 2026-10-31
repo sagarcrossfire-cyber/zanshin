@@ -85,6 +85,11 @@ export default defineConfig({
     fontPreloadPlugin(),
     VitePWA({
       injectRegister: null, // manual registration in main.tsx (Safe Mode skips it)
+      // The site sits behind a sign-in (a private Netlify project). Browsers
+      // fetch the web app manifest without cookies unless the link carries
+      // crossorigin="use-credentials"; without it the manifest request gets
+      // the sign-in page instead and the browser will not install the app.
+      useCredentials: true,
       manifest: {
         background_color: '#0E0F11',
         description: 'Personal Tekken 8 Yoshimitsu coaching app. Unofficial personal training tool.',

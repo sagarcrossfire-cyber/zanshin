@@ -6,6 +6,8 @@
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { Card } from '../../components/base/Card';
 import { Skeleton } from '../../components/base/Skeleton';
+import { MediaImage } from '../../components/media/MediaImage';
+import { rankSubject } from '../../domain/media/subjects';
 import { useAppStore } from '../../stores/appStore';
 import { isDatabaseClosedError } from '../../data/dbErrors';
 import { loadProgressData, type ProgressData } from '../../services/progress';
@@ -58,7 +60,17 @@ export function ProgressScreen() {
 
       <Card title="Rank over time">
         <p className="z-body-l">{data.rankHiddenReason}</p>
-        <p className="z-label">Current rank: {profile.currentRank ?? 'not set'} · Target: {profile.targetRank}</p>
+        <p className="z-label z-rank-line">
+          <span className="z-rank-line__item">
+            {profile.currentRank && <MediaImage kind="rank-badge" subjectKey={rankSubject(profile.currentRank)} width={48} />}
+            Current rank: {profile.currentRank ?? 'not set'}
+          </span>
+          <span aria-hidden="true">·</span>
+          <span className="z-rank-line__item">
+            <MediaImage kind="rank-badge" subjectKey={rankSubject(profile.targetRank)} width={48} />
+            Target: {profile.targetRank}
+          </span>
+        </p>
       </Card>
 
       <Card title="Consistency">

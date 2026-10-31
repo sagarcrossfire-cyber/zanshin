@@ -1,9 +1,10 @@
-// §6.3 — Dexie database 'zanshin', version 3, with the §6.3 tables and indexes.
+// §6.3 — Dexie database 'zanshin', version 4, with the §6.3 tables and indexes
+// plus the Amendment 01B media library tables.
 import Dexie, { type Table } from 'dexie';
 import { flushSeed } from './seedState';
 import type {
   Assessment, Card, CardState, CoachMessage, DataConflict, DrillSet, ErrorRecord,
-  Mastery, MatchSet, MetaRecord, MoveNote, PackRecord, ProblemMove, Profile,
+  Mastery, MatchSet, MediaAsset, MediaBlob, MetaRecord, MoveNote, PackRecord, ProblemMove, Profile,
   ReplayReview, Session, Settings, Snapshot, StageStatus, VerificationRecord,
 } from './schemas';
 
@@ -19,10 +20,13 @@ import type {
  * creates the index natively, no row migration, no user data touched.
  * Version 3: snapshot payload value shape only — `data` is a Uint8Array
  * instead of a Blob (D-059). Indexes unchanged; no row migration needed.
+ * Version 4 (1.1.0, Amendment 01B): two new tables for the local media
+ * library, `media` (one row per imported image or clip) and `mediaBlobs`
+ * (their bytes). Additive: no existing table or row changes.
  * Keep NEXT_SCHEMA_VERSION in sync with the highest registered version.
  */
-export const SCHEMA_VERSION = 3;
-export const NEXT_SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 4;
+export const NEXT_SCHEMA_VERSION = 5;
 
 /** v1 stores, kept for the v1→v2 migration test. */
 export const V1_STORES: Record<string, string> = {
@@ -57,6 +61,13 @@ export const V2_STORES: Record<string, string> = {
 /** v3 stores: identical indexes to v2 (value-shape change only, D-059). */
 export const V3_STORES: Record<string, string> = { ...V2_STORES };
 
+/** v4 stores: v3 plus the media library (Amendment 01B). */
+export const V4_STORES: Record<string, string> = {
+  ...V3_STORES,
+  media: 'id, kind, subjectKey, importedAt',
+  mediaBlobs: 'key',
+};
+
 export class ZanshinDb extends Dexie {
   meta!: Table<MetaRecord, string>;
   profile!: Table<Profile, string>;
@@ -78,12 +89,15 @@ export class ZanshinDb extends Dexie {
   coachMessages!: Table<CoachMessage, string>;
   snapshots!: Table<Snapshot, string>;
   errors!: Table<ErrorRecord, string>;
+  media!: Table<MediaAsset, string>;
+  mediaBlobs!: Table<MediaBlob, string>;
 
   constructor() {
     super('zanshin');
     this.version(1).stores(V1_STORES);
     this.version(2).stores(V2_STORES);
     this.version(3).stores(V3_STORES);
+    this.version(4).stores(V4_STORES);
   }
 }
 

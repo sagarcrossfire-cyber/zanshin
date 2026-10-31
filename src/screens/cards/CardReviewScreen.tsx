@@ -7,6 +7,8 @@ import { Link } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
 import { Card } from '../../components/base/Card';
 import { InputString } from '../../components/signature/InputString';
+import { MoveClipPicker } from '../../components/media/MoveClip';
+import { loadMovesYoshimitsu } from '../../data/packs';
 import { practiceDay } from '../../domain/engine/srs';
 import type { Grade } from '../../domain/engine/srs';
 import { cardsRepo, cardStatesRepo } from '../../data/repos';
@@ -170,6 +172,7 @@ export function CardReviewScreen() {
   }
 
   const showInputString = current.templateId === 'tpl-notation';
+  const moveInputs = new Map(loadMovesYoshimitsu().map((m) => [m.id, m.input]));
 
   return (
     <main className="z-cards">
@@ -188,6 +191,11 @@ export function CardReviewScreen() {
         {revealed ? (
           <div className="z-cards__back">
             <p>{current.back}</p>
+            <MoveClipPicker
+              key={current.id}
+              choices={current.refs.map((moveId) => ({ label: moveInputs.get(moveId) ?? moveId, moveId }))}
+              context="quiz"
+            />
           </div>
         ) : (
           <Button onClick={() => { setRevealed(true); setAnnouncement('Back revealed.'); }}>

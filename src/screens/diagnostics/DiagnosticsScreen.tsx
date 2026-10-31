@@ -2,12 +2,16 @@
 // checks with repairs, storage estimate and quota, service worker status,
 // the last 50 errors, Run self-test, and the Safe Mode switch (full Safe
 // Mode behavior lands in P11; the switch + ?safe=1 reload land here).
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
 import { Card } from '../../components/base/Card';
 import { Toggle } from '../../components/base/Toggle';
-import { DATA_PATCH, DATA_SOURCE, PACK_VERSION } from '../../data/packs';
-import { SCHEMA_VERSION } from '../../data/repos';
+import { DATA_PATCH, DATA_SOURCE, PACK_VERSION, loadMovesYoshimitsu, loadRoster } from '../../data/packs';
+import { SCHEMA_VERSION, mediaRepo, type MediaStats } from '../../data/repos';
+import { MEDIA_KINDS, type MediaKind } from '../../data/schemas';
+import { RANKS } from '../../config/ranks';
+import { isKnownSubject } from '../../domain/media/subjects';
 import { useAppStore } from '../../stores/appStore';
 import {
   defaultCheckWavu,
@@ -37,6 +41,32 @@ async function loadStorageInfo(): Promise<StorageInfo> {
   return { usage: estimate.usage, quota: estimate.quota, persisted, available: true };
 }
 
+const MEDIA_KIND_LABELS: Record<MediaKind, string> = {
+  'character-icon': 'Character icons',
+  'character-portrait': 'Character portraits',
+  'game-logo': 'Game logo',
+  'key-art': 'Key art',
+  'move-clip': 'Move clips',
+  'rank-badge': 'Rank badges',
+};
+
+interface MediaInfo extends MediaStats {
+  /** Items whose subject the app does not know (they never display). */
+  unmatched: number;
+}
+
+/** Counts and size of the imported media library; reads rows, never bytes. */
+async function loadMediaInfo(): Promise<MediaInfo> {
+  const [stats, rows] = await Promise.all([mediaRepo.stats(), mediaRepo.all()]);
+  const roster = loadRoster().map((c) => c.name);
+  const check = { ranks: RANKS as readonly string[], roster, yoshimitsuMoveIds: new Set(loadMovesYoshimitsu().map((m) => m.id)) };
+  return { ...stats, unmatched: rows.filter((row) => !isKnownSubject(row.subjectKey, check)).length };
+}
+
+function formatMb(bytes: number): string {
+  return `${(bytes / 1048576).toFixed(1)} MB`;
+}
+
 async function loadSwStatus(): Promise<string> {
   if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
     return 'Service workers unavailable in this environment.';
@@ -55,6 +85,7 @@ export function DiagnosticsScreen() {
   const [orphans, setOrphans] = useState<string[]>([]);
   const [clockWarning, setClockWarning] = useState<string | null>(null);
   const [storage, setStorage] = useState<StorageInfo | null>(null);
+  const [media, setMedia] = useState<MediaInfo | null>(null);
   const [swStatus, setSwStatus] = useState('');
   const [errors, setErrors] = useState<{ at: string; where: string; message: string }[]>([]);
   const [selfTest, setSelfTest] = useState<SelfTestResult[] | null>(null);
@@ -80,6 +111,11 @@ export function DiagnosticsScreen() {
     void recentErrors(50).then((list) => {
       if (!cancelled) setErrors(list);
     });
+    void loadMediaInfo()
+      .then((info) => {
+        if (!cancelled) setMedia(info);
+      })
+      .catch(() => undefined);
     return () => {
       cancelled = true;
     };
@@ -117,6 +153,7 @@ export function DiagnosticsScreen() {
       ...(checks ?? []).map((c) => `${c.passed ? 'PASS' : 'FAIL'} integrity/${c.id}: ${c.detail}`),
       `Storage: ${storage?.available ? `${((storage.usage ?? 0) / 1048576).toFixed(1)} MB of ${((storage.quota ?? 0) / 1048576).toFixed(0)} MB` : 'unavailable'}`,
       `Service worker: ${swStatus}`,
+      `Media library: ${media ? `${media.count} item(s), ${formatMb(media.bytes)}, ${media.unmatched} not matched` : 'unavailable'}`,
     ];
     setReport(lines.join('\n'));
     try {
@@ -190,6 +227,30 @@ export function DiagnosticsScreen() {
           <p className="z-body-l">Storage estimate unavailable in this environment.</p>
         )}
         <p className="z-body-l">Service worker: {swStatus}</p>
+      </Card>
+
+      <Card title="Media library">
+        {media === null ? (
+          <p className="z-body-l">Loading…</p>
+        ) : media.count === 0 ? (
+          <p className="z-body-l">No images or clips imported. The app uses its own ink art.</p>
+        ) : (
+          <dl className="z-diagnostics" data-testid="diagnostics-media">
+            <dt>Items</dt>
+            <dd>{media.count}</dd>
+            <dt>Stored</dt>
+            <dd>{formatMb(media.bytes)}</dd>
+            {MEDIA_KINDS.filter((kind) => media.byKind[kind] > 0).map((kind) => (
+              <Fragment key={kind}>
+                <dt>{MEDIA_KIND_LABELS[kind]}</dt>
+                <dd>{media.byKind[kind]}</dd>
+              </Fragment>
+            ))}
+            <dt>Not matched to the app</dt>
+            <dd>{media.unmatched}</dd>
+          </dl>
+        )}
+        <p className="z-body-l"><Link to="/settings/media">Manage images and clips</Link></p>
       </Card>
 
       <Card title="Self-test">

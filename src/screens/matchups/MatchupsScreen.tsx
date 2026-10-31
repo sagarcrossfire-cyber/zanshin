@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '../../components/base/Card';
+import { CharacterIcon } from '../../components/media/CharacterArt';
 import { loadRoster } from '../../data/packs';
 import { matchSetsRepo, problemMovesRepo } from '../../data/repos';
 import { isDatabaseClosedError } from '../../data/dbErrors';
@@ -48,7 +49,10 @@ export function MatchupsScreen() {
       <h1>Matchups</h1>
       <p><Link to="/playbook">Open the Playbook</Link> for the general counterplay table and game plans.</p>
       {rows.map((row) => (
-        <Card key={row.name} title={row.name}>
+        <Card
+          key={row.name}
+          title={<span className="z-art-title"><CharacterIcon name={row.name} size="sm" decorative />{row.name}</span>}
+        >
           <p>Record: {row.wins}–{row.games - row.wins} ({row.games} games).</p>
           {row.games >= 10 ? (
             <p>Win rate: {Math.round((row.wins / row.games) * 100)}%.</p>

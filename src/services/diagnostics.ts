@@ -13,6 +13,7 @@ import {
   drillSetSchema,
   errorRecordSchema,
   masterySchema,
+  mediaAssetSchema,
   matchSetSchema,
   metaRecordSchema,
   moveNoteSchema,
@@ -43,7 +44,9 @@ import { errorsRepo, metaRepo } from '../data/repos/errors';
 import { masteryRepo } from '../data/repos/mastery';
 import { sessionsRepo } from '../data/repos/sessions';
 import { setsRepo } from '../data/repos/sets';
+import { mediaRepo } from '../data/repos/media';
 import { recomputeNodeMastery } from './lab';
+import { refreshMediaIndex } from './mediaLibrary';
 import type { Profile, Settings } from '../data/schemas';
 
 /** Validate every bundled pack by loading + Zod-parsing it. */
@@ -111,6 +114,7 @@ const TABLE_SCHEMAS: Record<string, z.ZodTypeAny> = {
   snapshots: snapshotSchema,
   errors: errorRecordSchema,
   meta: metaRecordSchema,
+  media: mediaAssetSchema,
 };
 
 const QUARANTINE_JSON_LIMIT = 2000;
@@ -121,9 +125,15 @@ export async function quarantineInvalidRows(nowIso: string): Promise<{ quarantin
   const counts: Record<string, number> = {};
   for (const table of db.tables) {
     const schema = TABLE_SCHEMAS[table.name];
+    // Tables without a row schema are only counted, never loaded: imported
+    // media bytes (`mediaBlobs`) can run to hundreds of megabytes, and this
+    // runs at every startup.
+    if (schema === undefined) {
+      counts[table.name] = await table.count();
+      continue;
+    }
     const rows = await table.toArray() as Record<string, unknown>[];
     counts[table.name] = rows.length;
-    if (schema === undefined) continue;
     const keyPath = table.schema.primKey.keyPath;
     for (const row of rows) {
       const result = schema.safeParse(row);
@@ -268,7 +278,37 @@ export async function runIntegrityChecks(): Promise<IntegrityReport> {
     repaired: mismatches > 0 ? `${mismatches} recomputed` : undefined,
   });
 
-  // 7. Clock earlier than the last write by more than a day → warn.
+  // 7. Imported media rows and their bytes agree (Amendment 01B). Only blob
+  // keys are read. A row whose original bytes are gone is removed (importing
+  // the pack again restores it), missing variants are dropped from their row,
+  // and bytes no row points at are deleted.
+  try {
+    const media = await mediaRepo.checkConsistency(true);
+    const fixes: string[] = [];
+    if (media.rowsRemoved.length > 0) fixes.push(`${media.rowsRemoved.length} media item(s) whose bytes were missing removed; import the pack again to restore them.`);
+    if (media.rowsTrimmed.length > 0) fixes.push(`${media.rowsTrimmed.length} media item(s) lost a downscaled copy; the original is kept.`);
+    if (media.orphanBlobKeys.length > 0) fixes.push(`${media.orphanBlobKeys.length} unused media file(s) deleted.`);
+    if (fixes.length > 0) {
+      repaired.push(...fixes);
+      await refreshMediaIndex();
+    }
+    checks.push({
+      id: 'media',
+      label: 'Imported media rows and bytes agree',
+      passed: true,
+      detail: fixes.length === 0 ? 'Media library consistent.' : fixes.join(' '),
+      repaired: fixes.length > 0 ? `${media.rowsRemoved.length + media.rowsTrimmed.length + media.orphanBlobKeys.length} fixed` : undefined,
+    });
+  } catch (error) {
+    checks.push({
+      id: 'media',
+      label: 'Imported media rows and bytes agree',
+      passed: false,
+      detail: error instanceof Error ? error.message : 'Media check failed.',
+    });
+  }
+
+  // 8. Clock earlier than the last write by more than a day → warn.
   let clockWarning: string | null = null;
   const lastWrites = [...sessions.map((s) => s.startedAt), ...sets.map((s) => s.at)];
   if (lastWrites.length > 0) {

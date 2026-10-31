@@ -9,6 +9,7 @@ import { RouteErrorBoundary } from './ErrorBoundary';
 import { applyTheme, initTheme } from './theme';
 import { isOnboardingDone, useAppStore } from '../stores/appStore';
 import { ensureDailySnapshot } from '../services/snapshots';
+import { refreshMediaIndex } from '../services/mediaLibrary';
 import { practiceDay } from '../domain/engine/srs';
 
 // Route splitting (§13.8): every screen loads on demand so the app shell
@@ -28,6 +29,7 @@ const OnboardingScreen = lazy(() => import('../screens/onboarding/OnboardingScre
 const ProgressScreen = lazy(() => import('../screens/progress/ProgressScreen').then((m) => ({ default: m.ProgressScreen })));
 const PatchWatchScreen = lazy(() => import('../screens/patch/PatchWatchScreen').then((m) => ({ default: m.PatchWatchScreen })));
 const SettingsScreen = lazy(() => import('../screens/settings/SettingsScreen').then((m) => ({ default: m.SettingsScreen })));
+const MediaScreen = lazy(() => import('../screens/settings/MediaScreen').then((m) => ({ default: m.MediaScreen })));
 const TodayScreen = lazy(() => import('../screens/today/TodayScreen').then((m) => ({ default: m.TodayScreen })));
 const DiagnosticsScreen = lazy(() => import('../screens/diagnostics/DiagnosticsScreen').then((m) => ({ default: m.DiagnosticsScreen })));
 const LogListScreen = lazy(() => import('../screens/log/LogListScreen').then((m) => ({ default: m.LogListScreen })));
@@ -101,6 +103,7 @@ export function AppRoutes() {
           <Route path="/cards/review" element={<RequireOnboarding><Bounded label="/cards/review"><CardReviewScreen /></Bounded></RequireOnboarding>} />
           <Route path="/patch" element={<RequireOnboarding><Bounded label="/patch"><PatchWatchScreen /></Bounded></RequireOnboarding>} />
           <Route path="/settings" element={<RequireOnboarding><Bounded label="/settings"><SettingsScreen /></Bounded></RequireOnboarding>} />
+          <Route path="/settings/media" element={<RequireOnboarding><Bounded label="/settings/media"><MediaScreen /></Bounded></RequireOnboarding>} />
           <Route path="/diagnostics" element={<RequireOnboarding><Bounded label="/diagnostics"><DiagnosticsScreen /></Bounded></RequireOnboarding>} />
           <Route path="/dev/gallery" element={<Bounded label="/dev/gallery"><GalleryScreen /></Bounded>} />
           <Route path="*" element={<main><h1>Not found</h1><p><a href="/today">Go to Today</a></p></main>} />
@@ -116,6 +119,10 @@ export function App() {
   const profile = useAppStore((s) => s.profile);
   useEffect(() => { initTheme(); }, []);
   useEffect(() => { void load(); }, [load]);
+  useEffect(() => {
+    // Media index (Amendment 01B): correct the stored hint from the database.
+    void refreshMediaIndex();
+  }, []);
   useEffect(() => {
     if (settings) applyTheme(settings.theme);
   }, [settings]);

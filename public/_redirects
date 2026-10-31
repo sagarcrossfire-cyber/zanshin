@@ -1,0 +1,3 @@
+# Netlify: serve the app for every path, so a reload on /today or a shared
+# deep link opens the app instead of a 404. Real files are served first.
+/*    /index.html    200

@@ -37,6 +37,8 @@ import { DrillCard } from '../../components/signature/DrillCard';
 import { MatchupCard } from '../../components/signature/MatchupCard';
 import { CoachMessage } from '../../components/signature/CoachMessage';
 import { PatchBanner } from '../../components/signature/PatchBanner';
+import { CharacterHero, CharacterIcon } from '../../components/media/CharacterArt';
+import { ClipBadge, MoveClip } from '../../components/media/MoveClip';
 import * as Icons from '../../components/icons';
 import { IconClose, IconSearch } from '../../components/icons';
 import './GalleryScreen.css';
@@ -198,6 +200,31 @@ export function GalleryScreen() {
         <MatchupCard character="Kazuya" wins={6} losses={4} glyphMode={glyph} problemMoves={[{ notation: 'df+2', answer: 'Sidestep left, then punish.', note: 'Most common opener seen.' }]} />
         <CoachMessage message="2.6 missed punishes per game against a target of 1.0. Most were −13 or −14: df+1,4 or b+2,2." citations={[{ id: 'move-df14', label: 'df+1,4 in Codex' }, { id: 'punish', label: 'Punish ladder' }]} onCite={() => undefined} />
         <PatchBanner changes={[{ move: 'df+2', change: 'Startup changed in the latest patch.', reverify: 'df+2 on block in Practice' }]} onDismiss={() => undefined} />
+      </Section>
+
+      <Section title="Media — Amendment 01B (imported art and clips)">
+        <div className="z-gallery__col">
+          <p className="z-label">Initials tile (no icon imported for this character)</p>
+          <div className="z-gallery__row">
+            {(['sm', 'md', 'lg'] as const).map((size) => (
+              <span key={size} className={`z-art-icon z-art-icon--${size}`} role="img" aria-label={`Initials tile, ${size}`}>Y</span>
+            ))}
+          </div>
+        </div>
+        <div className="z-gallery__col">
+          <p className="z-label">Hero box while the portrait loads (plate over placeholder)</p>
+          <div className="z-hero">
+            <div className="z-hero__plate"><p className="z-label">Today · sample</p><h1>Yoshimitsu</h1></div>
+          </div>
+        </div>
+        <div className="z-gallery__col">
+          <p className="z-label">Live components — show this device&apos;s imported media, or nothing</p>
+          <span className="z-art-title"><CharacterIcon name="Yoshimitsu" size="md" decorative />Yoshimitsu</span>
+          <CharacterHero name="Yoshimitsu"><h1>Yoshimitsu</h1></CharacterHero>
+          <ClipBadge moveId="Yoshimitsu-1,2" />
+          <MoveClip moveId="Yoshimitsu-1,2" label="1,2" context="codex" autoPlay={false} />
+          <p className="z-caption">Import a media pack in Settings, Images and clips, to see these filled.</p>
+        </div>
       </Section>
 
       <Section title="Icons — §4.6 groups">

@@ -1,6 +1,7 @@
 /* DrillCard — spec §4.7. Props: drill { title, why (<=1 line), target, recipe,
  * steps[], progression?, regression?, history? (numbers for the sparkline) },
  * onStart?. History sparkline is a plain SVG polyline, monochrome + mastery. */
+import type { ReactNode } from 'react';
 import { Button } from '../base/Button';
 import { Card } from '../base/Card';
 import { Chip } from '../base/Chip';
@@ -10,7 +11,11 @@ export interface DrillData {
   title: string; why: string; target: string; recipe: string;
   steps: string[]; progression?: string; regression?: string; history?: number[];
 }
-export interface DrillCardProps { drill: DrillData; onStart?: () => void; startLabel?: string; }
+export interface DrillCardProps {
+  drill: DrillData; onStart?: () => void; startLabel?: string;
+  /** Optional media (imported move clips, Amendment 01B) shown under the why line. */
+  media?: ReactNode;
+}
 
 function Sparkline({ values }: { values: number[] }) {
   if (values.length < 2) return null;
@@ -23,11 +28,12 @@ function Sparkline({ values }: { values: number[] }) {
   );
 }
 
-export function DrillCard({ drill, onStart, startLabel = 'Start' }: DrillCardProps) {
+export function DrillCard({ drill, onStart, startLabel = 'Start', media }: DrillCardProps) {
   return (
     <Card title={drill.title}>
       <div className="z-drill">
         <p className="z-drill__why">{drill.why}</p>
+        {media}
         <div className="z-drill__row">
           <Chip tone="filled">Target: {drill.target}</Chip>
           {drill.history && <Sparkline values={drill.history} />}

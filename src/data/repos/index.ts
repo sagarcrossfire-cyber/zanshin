@@ -104,6 +104,14 @@
 //                    all(): Promise<MetaRecord[]>
 //                    put(record: MetaRecord): Promise<MetaRecord>
 //                    remove(key: string): Promise<void>
+//   mediaRepo:       all(): Promise<MediaAsset[]>  (oldest import first)
+//                    get(id) / find(kind, subjectKey): Promise<MediaAsset | undefined>
+//                    allBySubject(subjectKey): Promise<MediaAsset[]>
+//                    put(asset, blobs): Promise<MediaAsset>  (replaces, one transaction)
+//                    blob(key): Promise<Uint8Array | undefined>
+//                    remove(id) / clear(): Promise<void>
+//                    stats(): Promise<MediaStats>
+//                    checkConsistency(repair): Promise<MediaConsistency>  (reads keys only, never bytes)
 export { profileRepo } from './profile';
 export { settingsRepo } from './settings';
 export { packsRepo } from './packs';
@@ -117,4 +125,5 @@ export { snapshotsRepo } from './snapshots';
 export {
   errorsRepo, assessmentsRepo, verificationsRepo, conflictsRepo, coachMessagesRepo, metaRepo,
 } from './errors';
+export { mediaRepo, mediaAssetId, blobKeysOf, type MediaConsistency, type MediaStats } from './media';
 export { db, resetDbForTests, SCHEMA_VERSION } from '../db';

@@ -5,6 +5,7 @@
     "@fontsource/shippori-mincho-b1": "5.3.0",
     "date-fns": "4.1.0",
     "dexie": "4.2.0",
+    "fflate": "0.8.2",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-router-dom": "6.30.0",
@@ -47,6 +48,7 @@
   "name": "zanshin",
   "private": true,
   "scripts": {
+    "prebuild": "tsx scripts/rasterize-icons.ts",
     "build": "vite build",
     "dev": "vite",
     "import:wavu": "tsx scripts/import-wavu.ts",
@@ -64,5 +66,5 @@
     "build:standalone": "vite build --config vite.standalone.config.ts"
   },
   "type": "module",
-  "version": "1.0.0"
+  "version": "1.1.0"
 }

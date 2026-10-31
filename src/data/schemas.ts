@@ -491,6 +491,13 @@ export const settingsSchema = z.object({
   dataPatch: z.string().min(1),
   dataSource: z.enum(['wavu', 'tekkendocs', 'seed']),
   kpiTargets: z.record(weaknessMetricIdSchema, z.number().nullable()),
+  /** Media display preferences (Amendment 01B). Optional so rows written by
+   * 1.0.0 stay valid; absent means the default noted on each field. */
+  mediaShowArt: z.boolean().optional(), // default true
+  mediaInkArt: z.boolean().optional(), // default false: grayscale ink tone for still art
+  mediaClipAutoplay: z.boolean().optional(), // default true (never under reduced motion)
+  mediaClipSpeedCodex: z.number().positive().max(1).optional(), // default 1
+  mediaClipSpeedLab: z.number().positive().max(1).optional(), // default 0.5
 });
 export type Settings = z.infer<typeof settingsSchema>;
 
@@ -532,3 +539,89 @@ export const metaRecordSchema = z.object({
   value: z.string(),
 });
 export type MetaRecord = z.infer<typeof metaRecordSchema>;
+
+// ---------- media library (Amendment 01B, release 1.1.0) ----------
+// Images and clips that Sagar imports himself. They live only in this
+// browser's IndexedDB (`media` + `mediaBlobs`), are never bundled into the
+// build, never uploaded, and the app never fetches media from any site.
+
+export const MEDIA_KINDS = [
+  'character-icon', 'character-portrait', 'move-clip', 'rank-badge', 'game-logo', 'key-art',
+] as const;
+export const mediaKindSchema = z.enum(MEDIA_KINDS);
+export type MediaKind = z.infer<typeof mediaKindSchema>;
+
+/** character:<roster name>, move:<Wavu Move.id>, rank:<rank name>, or app:<slot>. */
+export const mediaSubjectKeySchema = z.string().regex(/^(character|move|rank|app):\S.*$/, {
+  message: 'subjectKey must look like character:<Name>, move:<Wavu move id>, rank:<rank> or app:<slot>',
+});
+
+export const sha256HexSchema = z.string().regex(/^[0-9a-f]{64}$/, { message: 'sha256 must be 64 lowercase hex characters' });
+
+/** A downscaled copy of an imported image (portraits and key art). */
+export const mediaVariantSchema = z.object({
+  width: z.number().int().positive(),
+  blobKey: z.string().min(1),
+  bytes: z.number().int().nonnegative(),
+  mime: z.string().min(1),
+});
+export type MediaVariant = z.infer<typeof mediaVariantSchema>;
+
+/** One imported image or clip (`media` table). One row per kind + subject:
+ * importing the same kind and subject again replaces it. */
+export const mediaAssetSchema = z.object({
+  id: z.string().min(1),
+  kind: mediaKindSchema,
+  subjectKey: mediaSubjectKeySchema,
+  mime: z.string().min(1),
+  bytes: z.number().int().nonnegative(),
+  sha256: sha256HexSchema,
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+  blobKey: z.string().min(1),
+  variants: z.array(mediaVariantSchema).optional(),
+  origin: z.enum(['pack', 'file']),
+  sourcePage: z.string().optional(),
+  credit: z.string().optional(),
+  importedAt: isoDateTimeSchema,
+});
+export type MediaAsset = z.infer<typeof mediaAssetSchema>;
+
+/** The bytes behind a media row (`mediaBlobs` table). Uint8Array, not Blob,
+ * for the same reason as snapshots (D-059). */
+export const mediaBlobSchema = z.object({
+  key: z.string().min(1),
+  data: z.custom<Uint8Array>(
+    (v): v is Uint8Array => Object.prototype.toString.call(v) === '[object Uint8Array]',
+    { message: 'data must be a Uint8Array' },
+  ),
+});
+export type MediaBlob = z.infer<typeof mediaBlobSchema>;
+
+/** One entry of a media pack's manifest.json. Unknown fields are ignored. */
+export const mediaPackItemSchema = z
+  .object({
+    file: z.string().min(1),
+    kind: mediaKindSchema,
+    subjectKey: mediaSubjectKeySchema,
+    mime: z.string().min(1),
+    bytes: z.number().int().nonnegative(),
+    sha256: z.string().regex(/^[0-9a-fA-F]{64}$/, { message: 'sha256 must be 64 hex characters' }),
+    width: z.number().int().positive().nullable().optional(),
+    height: z.number().int().positive().nullable().optional(),
+    sourcePage: z.string().nullable().optional(),
+    credit: z.string().nullable().optional(),
+  })
+  .passthrough();
+export type MediaPackItem = z.infer<typeof mediaPackItemSchema>;
+
+/** manifest.json of a media pack (format zanshin-media-pack, version 1). */
+export const mediaPackManifestSchema = z
+  .object({
+    format: z.literal('zanshin-media-pack'),
+    version: z.literal(1),
+    createdAt: z.string().optional(),
+    items: z.array(mediaPackItemSchema),
+  })
+  .passthrough();
+export type MediaPackManifest = z.infer<typeof mediaPackManifestSchema>;

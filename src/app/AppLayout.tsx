@@ -31,6 +31,7 @@ const TITLES: Array<{ prefix: string; title: string }> = [
   { prefix: '/coach', title: 'Coach' },
   { prefix: '/cards', title: 'Flashcards' },
   { prefix: '/patch', title: 'Patch Watch' },
+  { prefix: '/settings/media', title: 'Images and clips' },
   { prefix: '/settings', title: 'Settings' },
   { prefix: '/diagnostics', title: 'Diagnostics' },
   { prefix: '/dev/gallery', title: 'Component Gallery' },

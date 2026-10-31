@@ -9,6 +9,7 @@ import { Button } from '../../components/base/Button';
 import { Card } from '../../components/base/Card';
 import { Select } from '../../components/base/Select';
 import { Stepper } from '../../components/base/Stepper';
+import { CharacterHero } from '../../components/media/CharacterArt';
 import { TextField } from '../../components/base/TextField';
 import { InputString } from '../../components/signature/InputString';
 import { FLAGS } from '../../config/flags';
@@ -68,6 +69,7 @@ export function OnboardingScreen() {
       <Stepper steps={STEPS} currentIndex={step} ariaLabel="Onboarding progress" onStepClick={(i) => { if (i < step) goTo(i); }} />
       {step === 0 && (
         <Card title="Welcome to ZANSHIN">
+          <CharacterHero name="Yoshimitsu" />
           <p className="z-body-l">A calm, candid coach for your Yoshimitsu — from first controls to Tekken King.</p>
           <p className="z-body-l">Your data stays on this device. No account, no cloud, no uploads.</p>
           <p className="z-body-l">残心 — lingering mind: finish the move, then stay ready for the next one.</p>

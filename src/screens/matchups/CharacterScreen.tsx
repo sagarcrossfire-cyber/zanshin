@@ -8,6 +8,9 @@ import { Card } from '../../components/base/Card';
 import { Select } from '../../components/base/Select';
 import { TextField } from '../../components/base/TextField';
 import { InputString } from '../../components/signature/InputString';
+import { CharacterHero } from '../../components/media/CharacterArt';
+import { ClipToggle } from '../../components/media/MoveClip';
+import { wavuMoveId } from '../../domain/media/subjects';
 import { loadPlaybook, loadRoster } from '../../data/packs';
 import { matchSetsRepo, moveNotesRepo, packsRepo, problemMovesRepo } from '../../data/repos';
 import { isDatabaseClosedError } from '../../data/dbErrors';
@@ -132,7 +135,9 @@ export function CharacterScreen() {
 
   return (
     <main>
-      <h1>{character}</h1>
+      <CharacterHero name={character}>
+        <h1>{character}</h1>
+      </CharacterHero>
       <Card title="Record">
         <p>{wins}–{games - wins} ({games} games).</p>
         {games >= 10 ? (
@@ -157,6 +162,11 @@ export function CharacterScreen() {
               {problemMove.verified ? ' (verified)' : ' (unverified)'}
             </p>
             <p>{problemMove.description}</p>
+            <ClipToggle
+              moveId={problemMove.moveId ?? wavuMoveId(character, problemMove.input)}
+              label={`${character} ${problemMove.input}`}
+              context="quiz"
+            />
             <Button variant="secondary" onClick={() => void practice(problemMove)}>Practice in Lab</Button>
           </div>
         ))}

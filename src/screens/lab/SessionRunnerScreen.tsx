@@ -10,7 +10,9 @@ import { TextField } from '../../components/base/TextField';
 import { DrillCard } from '../../components/signature/DrillCard';
 import { InputString } from '../../components/signature/InputString';
 import { RepLogger } from '../../components/signature/RepLogger';
-import { loadCombos, loadCurriculum } from '../../data/packs';
+import { loadCombos, loadCurriculum, loadMovesYoshimitsu } from '../../data/packs';
+import { MoveClipPicker, type ClipChoice } from '../../components/media/MoveClip';
+import { wavuMoveId } from '../../domain/media/subjects';
 import { conflictsRepo, masteryRepo, problemMovesRepo, sessionsRepo } from '../../data/repos';
 import type { DataConflict, DrillSet, ProblemMove, Session } from '../../data/schemas';
 import { isDatabaseClosedError } from '../../data/dbErrors';
@@ -86,6 +88,25 @@ export function SessionRunnerScreen() {
     () => (currentBlock ? resolveBlock(currentBlock.drillId, curriculum, combos, conflicts, problemMoves) : null),
     [currentBlock, curriculum, combos, conflicts, problemMoves],
   );
+
+  // Imported clips for the moves this block trains (Amendment 01B): the
+  // drill's Codex references, or the problem move behind a problem drill.
+  const clipChoices = useMemo((): ClipChoice[] => {
+    const drillId = currentBlock?.drillId;
+    if (!drillId) return [];
+    if (drillId.startsWith('problem:')) {
+      const problemMove = problemMoves.find((pm) => pm.id === drillId.slice('problem:'.length));
+      if (!problemMove) return [];
+      return [{
+        label: `${problemMove.character} ${problemMove.input}`,
+        moveId: problemMove.moveId ?? wavuMoveId(problemMove.character, problemMove.input),
+      }];
+    }
+    const drill = curriculum.drills.find((d) => d.id === drillId);
+    if (!drill) return [];
+    const inputs = new Map(loadMovesYoshimitsu().map((m) => [m.id, m.input]));
+    return drill.codexRefs.map((moveId) => ({ label: inputs.get(moveId) ?? moveId, moveId }));
+  }, [currentBlock, curriculum, problemMoves]);
 
   const remaining = currentBlock ? blockRemainingMs(currentBlock, now) : 0;
   const blockKey = currentBlock ? `${session?.id}-${currentBlock.id}` : '';
@@ -306,6 +327,7 @@ export function SessionRunnerScreen() {
               recipe: resolved.recipe,
               steps: resolved.steps,
             }}
+            media={<MoveClipPicker key={currentBlock.id} choices={clipChoices} context="lab" />}
           />
           <div aria-live="polite">
             <RepLogger

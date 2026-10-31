@@ -1,7 +1,8 @@
 // Move detail — spec §5.6. FrameBar (when the pack's frames parse),
 // stats grid, "Use it for", risks in words, opponent's answer, parent and
 // follow-ups, combos and drills that use the move, Sagar's notes and
-// verification history, and a Wavu link-out (never an embed).
+// verification history, and a Wavu link-out. A clip shows only when Sagar
+// imported one into his local media library (Amendment 01B).
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
@@ -12,6 +13,7 @@ import { FrameBar } from '../../components/signature/FrameBar';
 import { FrameValue } from '../../components/signature/FrameValue';
 import { HitLevelChips } from '../../components/signature/HitLevelChips';
 import { InputString } from '../../components/signature/InputString';
+import { MoveClipCard } from '../../components/media/MoveClip';
 import { loadCombos, loadConflicts, loadCurriculum, loadMovesYoshimitsu } from '../../data/packs';
 import { moveNotesRepo, verificationsRepo } from '../../data/repos';
 import { recoversInto } from '../../domain/codex/filters';
@@ -102,6 +104,8 @@ export function MoveDetailScreen() {
           detail={`${move.provenance.source} · ${move.provenance.patch}`}
         />
       </Card>
+
+      <MoveClipCard moveId={move.id} label={move.name ? `${move.name}, ${move.input}` : move.input} context="codex" />
 
       {frameParts && (
         <Card title="Frame bar">

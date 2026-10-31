@@ -11,6 +11,7 @@ import { TextField } from '../../components/base/TextField';
 import { FrameValue } from '../../components/signature/FrameValue';
 import { HitLevelChips } from '../../components/signature/HitLevelChips';
 import { InputString } from '../../components/signature/InputString';
+import { ClipBadge } from '../../components/media/MoveClip';
 import { loadConflicts, loadMovesYoshimitsu } from '../../data/packs';
 import { moveNotesRepo } from '../../data/repos';
 import { buildMoveIndex, searchMoves } from '../../domain/codex/search';
@@ -192,6 +193,7 @@ export function MoveExplorerScreen() {
                 {move.tags.includes('heat-engager') && <Chip tone="heat">Heat Engager</Chip>}
                 {move.tags.includes('launcher') && <Chip tone="launch">Launcher</Chip>}
                 {blockTier(move) === 'launch' && <Chip tone="launch">Launch punishable</Chip>}
+                <ClipBadge moveId={move.id} />
               </span>
               <DataBadge
                 status={conflictingIds.has(move.id) ? 'conflicting' : move.provenance.status === 'verified' ? 'verified' : 'unverified'}

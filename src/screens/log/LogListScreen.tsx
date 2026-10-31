@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
 import { Card } from '../../components/base/Card';
+import { CharacterIcon } from '../../components/media/CharacterArt';
 import { matchSetsRepo, problemMovesRepo } from '../../data/repos';
 import { isDatabaseClosedError } from '../../data/dbErrors';
 import type { MatchSet, ProblemMove } from '../../data/schemas';
@@ -59,7 +60,7 @@ export function LogListScreen() {
         const last = charSets[0];
         const problemCount = problems.filter((p) => p.character === character).length;
         return (
-          <Card key={character} title={character}>
+          <Card key={character} title={<span className="z-art-title"><CharacterIcon name={character} size="sm" decorative />{character}</span>}>
             <p>Record: {wins}–{games - wins} ({games} games). Last played: {last ? new Date(last.at).toLocaleDateString() : 'never'}.</p>
             {problemCount > 0 && <p>{problemCount} problem {problemCount === 1 ? 'move' : 'moves'}.</p>}
             <ul>

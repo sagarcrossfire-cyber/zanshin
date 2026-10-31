@@ -9,6 +9,7 @@ import { Card } from '../../components/base/Card';
 import { CountStepper } from '../../components/base/CountStepper';
 import { SafeModeNote } from '../../components/base/SafeModeNote';
 import { Select } from '../../components/base/Select';
+import { CharacterIcon } from '../../components/media/CharacterArt';
 import { TextField } from '../../components/base/TextField';
 import { isSafeMode } from '../../config/safeMode';
 import { loadCurriculum, loadRoster } from '../../data/packs';
@@ -199,8 +200,11 @@ export function LogFormScreen() {
             { value: 'tournament', label: 'Tournament' },
             { value: 'offline', label: 'Offline' },
           ]} />
-        <Select id="log-opponent" label="Opponent character (recent first)" value={opponentCharacter}
-          onChange={setOpponentCharacter} options={opponentOptions} />
+        <div className="z-art-title">
+          <CharacterIcon name={opponentCharacter} size="md" decorative />
+          <Select id="log-opponent" label="Opponent character (recent first)" value={opponentCharacter}
+            onChange={setOpponentCharacter} options={opponentOptions} />
+        </div>
         <TextField id="log-rank" label="Opponent rank (optional)" value={opponentRank} onChange={setOpponentRank} />
         <CountStepper label="Games played" value={games} onChange={(v) => { setGames(v); if (wins > v) setWins(v); }} min={1} />
         <CountStepper label="Games won" value={wins} onChange={setWins} min={0} max={games} />

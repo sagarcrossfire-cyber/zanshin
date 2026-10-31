@@ -27,6 +27,9 @@ import {
 } from '../../services/punish';
 import { cardForMissedQuestion, ensureCard, wallClockIso } from '../../services/cards';
 import { useAppStore } from '../../stores/appStore';
+import { CharacterIcon } from '../../components/media/CharacterArt';
+import { MoveClip } from '../../components/media/MoveClip';
+import { wavuMoveId } from '../../domain/media/subjects';
 import './PunishScreen.css';
 
 type PunishTab = 'ladder' | 'character' | 'lab';
@@ -40,6 +43,11 @@ interface QuizItem {
   explanation: string;
   highlightRung: number | null;
   isBonus: boolean;
+  /** Imported clips (Amendment 01B): the move being punished, shown with the
+   * question, and Yoshimitsu's answer, shown after it. Absent or not
+   * imported means nothing renders. */
+  opponentClip?: { moveId: string; label: string };
+  answerClip?: { moveId: string; label: string };
   /** Score an answer under the question's rule (ladder: engine half-credit). */
   scoreAnswer: (input: string) => { score: 0 | 0.5 | 1; reason: string };
   missed: {
@@ -65,6 +73,7 @@ function ladderItems(
       explanation: text,
       highlightRung: question.blockValue,
       isBonus: false,
+      answerClip: { label: `Your punish: ${question.correctInput}`, moveId: wavuMoveId('Yoshimitsu', question.correctInput) },
       scoreAnswer: (input: string) => {
         const result = scoreLadderAnswer(question, punishers, input);
         return { score: result.score, reason: result.reason };
@@ -100,6 +109,12 @@ function characterItems(
       explanation: question.explanation,
       highlightRung: question.blockValue,
       isBonus: question.kind === 'bonus',
+      ...(question.kind !== 'bonus' && question.moveInput !== ''
+        ? { opponentClip: { label: `${question.character} ${question.moveInput}`, moveId: wavuMoveId(question.character, question.moveInput) } }
+        : {}),
+      ...(question.kind !== 'problem'
+        ? { answerClip: { label: `Your punish: ${question.correctInput}`, moveId: wavuMoveId('Yoshimitsu', question.correctInput) } }
+        : {}),
       scoreAnswer: (input: string) =>
         input === question.correctInput
           ? { score: 1 as const, reason: 'Correct.' }
@@ -248,6 +263,9 @@ function QuizSession({
         />
       </div>
       {timerOn && !answered && <p>Time left: {remaining}s</p>}
+      {item.opponentClip && (
+        <MoveClip key={item.id} moveId={item.opponentClip.moveId} label={item.opponentClip.label} context="quiz" />
+      )}
       <p className="z-punish__question">{item.text}</p>
       <div className="z-punish__options" role="group" aria-label="Answer options">
         {item.options.map((option) => {
@@ -278,6 +296,9 @@ function QuizSession({
         <div className="z-punish__explanation">
           <p role="status">{resultText}</p>
           <p>{item.explanation}</p>
+          {item.answerClip && (
+            <MoveClip key={`${item.id}-answer`} moveId={item.answerClip.moveId} label={item.answerClip.label} context="quiz" />
+          )}
           {item.highlightRung !== null && (
             <PunishLadder punishers={ladder} highlightRung={item.highlightRung} glyphMode={glyphMode} />
           )}
@@ -423,13 +444,16 @@ export function PunishScreen() {
       )}
       {tab === 'character' && (
         <section aria-label="Character quiz">
-          <Select
-            id="punish-opponent"
-            label="Opponent"
-            options={roster.map((c) => ({ value: c.name, label: c.name }))}
-            value={opponent}
-            onChange={setOpponent}
-          />
+          <div className="z-art-title">
+            <CharacterIcon name={opponent} size="md" decorative />
+            <Select
+              id="punish-opponent"
+              label="Opponent"
+              options={roster.map((c) => ({ value: c.name, label: c.name }))}
+              value={opponent}
+              onChange={setOpponent}
+            />
+          </div>
           {!hasPack && (
             <Card title={`No cached data for ${opponent}`}>
               {FLAGS.inAppImporter ? (

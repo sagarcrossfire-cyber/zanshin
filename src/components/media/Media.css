@@ -1,0 +1,106 @@
+/* Amendment 01B — imported art and clips. Art shows the fighter; the ink
+ * interface around it is unchanged. Every media box reserves its size so
+ * nothing shifts while bytes load, and text never sits on raw art: it sits
+ * on --art-plate, which keeps --text-1 and --text-2 readable over any image. */
+
+.z-art-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--art-frame);
+  background: var(--art-placeholder);
+  color: var(--text-2);
+  font-family: var(--font-display);
+  font-weight: 800;
+  line-height: 1;
+}
+.z-art-icon--sm { width: 36px; height: 44px; font-size: 18px; }
+.z-art-icon--md { width: 54px; height: 66px; font-size: 24px; }
+.z-art-icon--lg { width: 72px; height: 88px; font-size: 32px; }
+.z-art-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.z-art-title { display: inline-flex; align-items: center; gap: var(--space-3); }
+
+/* Badges, logo and key art: no frame (they carry their own shape). */
+.z-art-image { display: inline-flex; flex: none; overflow: hidden; vertical-align: middle; }
+.z-art-image img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.z-rank-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.z-rank-line__item { display: inline-flex; align-items: center; gap: var(--space-2); }
+
+.z-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--art-frame);
+  background: var(--art-placeholder);
+  height: 160px;
+}
+@media (min-width: 600px) { .z-hero { height: 200px; } }
+@media (min-width: 1024px) { .z-hero { height: 240px; } }
+.z-hero__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity var(--dur-standard) var(--ease-enter);
+}
+.z-hero__img--loaded { opacity: 1; }
+.z-hero__plate {
+  position: absolute;
+  left: var(--space-3);
+  bottom: var(--space-3);
+  max-width: calc(100% - var(--space-6));
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-control);
+  background: var(--art-plate);
+  color: var(--text-1);
+}
+.z-hero__plate h1, .z-hero__plate p { margin: 0; }
+.z-hero__plate .z-label { color: var(--text-2); }
+.z-hero__plate .z-hero__sub { color: var(--text-2); }
+
+.z-clip { margin: 0; display: flex; flex-direction: column; gap: var(--space-2); max-width: 640px; }
+.z-clip__frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--art-frame);
+  background: var(--art-placeholder);
+}
+.z-clip__video { display: block; width: 100%; height: 100%; object-fit: contain; background: var(--bg); }
+.z-clip:focus-visible { outline: 2px solid var(--info); outline-offset: 4px; border-radius: var(--radius-card); }
+.z-clip__controls { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+.z-clip__controls .z-btn { min-height: 44px; }
+.z-clip__speed[aria-pressed='true'], .z-clip__loop[aria-pressed='true'] {
+  border-color: var(--text-1);
+  color: var(--text-1);
+  font-weight: 600;
+}
+.z-clip__caption { color: var(--text-2); }
+.z-clip__keys { color: var(--text-3); }
+
+.z-clip-picker { display: flex; flex-direction: column; gap: var(--space-3); }
+.z-clip-picker__choices { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.z-clip-picker__choice[aria-pressed='true'] { border-color: var(--text-1); }
+
+.z-clip-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+.z-art--ink img, .z-art--ink .z-hero__img { filter: grayscale(1) contrast(1.05); }
+
+@media (prefers-reduced-motion: reduce) {
+  .z-hero__img { transition: none; }
+}
+
+.z-about-logo { display: flex; margin-bottom: var(--space-3); }

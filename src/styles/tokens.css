@@ -48,3 +48,19 @@
   --hl-low: #B02A6E;   --heat: #5B45D6;  --heat-glow: #1A65A3;
   --mastery: #7D5B1D;  --info: #1D5FBF;  --warning: #8A5E00;  --seal: #C2381F;
 }
+
+/* media (Amendment 01B): frames and plates for imported art. Plates are
+ * 90% --bg over the art, which keeps --text-1 and --text-2 at 6.5:1 or
+ * better over any image in both themes (--text-3 is not used on plates).
+ * Browsers without color-mix get an opaque plate. Declared on every theme
+ * scope, not just :root, because a custom property that references another
+ * is resolved where it is declared: a nested data-theme (the gallery) would
+ * otherwise inherit plates computed from the outer theme. */
+:root, [data-theme] {
+  --art-frame: var(--line);
+  --art-placeholder: var(--raised);
+  --art-plate: var(--bg);
+}
+@supports (color: color-mix(in srgb, black 50%, transparent)) {
+  :root, [data-theme] { --art-plate: color-mix(in srgb, var(--bg) 90%, transparent); }
+}

@@ -1,6 +1,7 @@
 // Settings — spec §5.2/§5.1. Every onboarding field is editable here
 // (AC-ONB-4), plus theme and glyph mode. Edits are local until Save.
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
 import { Card } from '../../components/base/Card';
 import { SafeModeNote } from '../../components/base/SafeModeNote';
@@ -8,6 +9,7 @@ import { Select } from '../../components/base/Select';
 import { TextField } from '../../components/base/TextField';
 import { Toggle } from '../../components/base/Toggle';
 import { InputString } from '../../components/signature/InputString';
+import { MediaImage } from '../../components/media/MediaImage';
 import { applyTheme, type ThemeChoice } from '../../app/theme';
 import { isSafeMode } from '../../config/safeMode';
 import { CONTROLLER_GLYPH, CONTROLLERS, DAY_NAMES, PLATFORM_GLYPH, RANKS, SESSION_MINUTES_OPTIONS } from '../../config/ranks';
@@ -299,6 +301,12 @@ export function SettingsScreen() {
         <p className="z-label">Glyph preview</p>
         <InputString input="b+2,1,1+2" glyphMode={draft.glyphMode} />
       </Card>
+      <Card title="Images and clips">
+        <p className="z-body-l">
+          Import character art, move clips and rank badges for the app to show. They stay on this device.
+        </p>
+        <Link to="/settings/media"><Button variant="secondary">Open images and clips</Button></Link>
+      </Card>
       <Card title="Coach">
         <Select id="set-ai-provider" label="AI provider" value={coach.aiProvider}
           options={[
@@ -422,6 +430,7 @@ export function SettingsScreen() {
         </Button>
       </Card>
       <Card title="About">
+        <MediaImage kind="game-logo" subjectKey="app:logo" width={240} height={80} alt="TEKKEN 8" className="z-about-logo" />
         <dl className="z-diagnostics">
           <dt>Version</dt>
           <dd>{APP_VERSION}</dd>
@@ -434,7 +443,11 @@ export function SettingsScreen() {
           TEKKEN is a registered trademark of Bandai Namco Entertainment Inc. ZANSHIN is an unofficial
           personal training tool, not affiliated with or endorsed by Bandai Namco.
         </p>
-        <p className="z-body-l">Frame data: Wavu Wiki (CC0). Character artwork is original ink-style SVG; no game art is used.</p>
+        <p className="z-body-l">
+          Frame data: Wavu Wiki (CC0). The app itself ships only original ink-style SVG art; the images and clips you
+          import stay on this device. Character art and move clips © Bandai Namco Entertainment Inc. Portraits,
+          icons and clips via Wavu Wiki.
+        </p>
         <p className="z-body-l">Licenses: IBM Plex Sans / IBM Plex Mono and Shippori Mincho B1 are licensed under the SIL Open Font License 1.1.</p>
       </Card>
       <Button onClick={save} disabled={draft.displayName.trim() === '' || safeMode}>Save settings</Button>

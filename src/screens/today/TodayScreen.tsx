@@ -8,6 +8,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
 import { Card } from '../../components/base/Card';
 import { Chip } from '../../components/base/Chip';
+import { CharacterHero } from '../../components/media/CharacterArt';
 import { loadCurriculum } from '../../data/packs';
 import { metaRepo, sessionsRepo, settingsRepo } from '../../data/repos';
 import { isDatabaseClosedError } from '../../data/dbErrors';
@@ -136,7 +137,9 @@ export function TodayScreen() {
 
   return (
     <div className="z-today">
-      <p className="z-label">{format(new Date(`${date}T12:00:00`), 'EEEE, MMMM d, yyyy')}</p>
+      <CharacterHero name="Yoshimitsu">
+        <p className="z-label">{format(new Date(`${date}T12:00:00`), 'EEEE, MMMM d, yyyy')}</p>
+      </CharacterHero>
 
       {patch && (
         <Card title="Data update applied">

@@ -57,6 +57,29 @@ describe('tokens.css contrast (§4.3)', () => {
       }
     });
   }
+  // Amendment 01B §4.4: text over imported art sits on --art-plate, --bg at
+  // 90% over whatever the art is. Worst cases are pure white and pure black
+  // art; --text-1 and --text-2 must keep 6.5:1 there (--text-3 is not used
+  // on plates: it falls to about 4.3:1 on the light plate over black).
+  it('art plate keeps --text-1 and --text-2 at 6.5:1 over any art', () => {
+    const plateRule = css.match(/--art-plate:\s*color-mix\(in srgb, var\(--bg\) (\d+)%, transparent\)/);
+    expect(plateRule, 'tokens.css declares --art-plate as a color-mix of --bg').not.toBeNull();
+    const share = Number(plateRule?.[1]) / 100;
+    const mix = (top: string, back: string): string => {
+      const channel = (hex: string, i: number) => parseInt(hex.slice(i, i + 2), 16);
+      return `#${[1, 3, 5].map((i) => Math.round(channel(top, i) * share + channel(back, i) * (1 - share)).toString(16).padStart(2, '0')).join('')}`;
+    };
+    for (const theme of ['dark', 'light'] as const) {
+      const tokens = parseTheme(css, theme);
+      for (const art of ['#ffffff', '#000000']) {
+        const plate = mix(tok(tokens, '--bg'), art);
+        for (const text of ['--text-1', '--text-2']) {
+          expect(contrastRatio(tok(tokens, text), plate), `${theme} ${text} on plate over ${art}`).toBeGreaterThanOrEqual(6.5);
+        }
+      }
+    }
+  });
+
   it('both themes define the same token set', () => {
     const dark = Object.keys(parseTheme(css, 'dark')).sort();
     const light = Object.keys(parseTheme(css, 'light')).sort();
