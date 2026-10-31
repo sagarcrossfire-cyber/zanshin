@@ -8,7 +8,6 @@ import { Toast } from '../components/base/Toast';
 import { isSafeMode, setSafeMode } from '../config/safeMode';
 import { DATA_PATCH, DATA_SOURCE } from '../data/packs';
 import { runIntegrityChecks } from '../services/diagnostics';
-import { seedBundledMedia } from '../services/bundledMedia';
 import { releaseWakeLock } from '../services/labMode';
 import {
   mayShowUpdateToast,
@@ -101,7 +100,10 @@ export function AppLayout() {
     bundledRanRef.current = true;
     const controller = new AbortController();
     const run = () => {
-      void seedBundledMedia({ enabled: settingsRef.current?.mediaBundledAuto !== false, signal: controller.signal })
+      // Loaded on demand: the seeder (and the importer behind it) is not
+      // part of the shell bundle (§13.8).
+      void import('../services/bundledMedia')
+        .then(({ seedBundledMedia }) => seedBundledMedia({ enabled: settingsRef.current?.mediaBundledAuto !== false, signal: controller.signal }))
         .then((result) => {
           if (result.status === 'done' && result.report.imported > 0) {
             pushToast(`Added ${result.report.imported} image${result.report.imported === 1 ? '' : 's'} and clips from the site.`);

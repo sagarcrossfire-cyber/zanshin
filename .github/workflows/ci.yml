@@ -47,8 +47,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -59,7 +59,7 @@ jobs:
       - run: npm run validate:data
       - run: npm run build
       - run: node scripts/check-bundle.mjs
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
       - name: Media pack script self-test
@@ -73,15 +73,15 @@ jobs:
     timeout-minutes: 45
     needs: quick
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci
       - name: Playwright browser cache
         id: pw-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
@@ -93,7 +93,7 @@ jobs:
         run: npx playwright test -c playwright.netlify.config.ts --reporter=list,github
       - name: Keep traces and screenshots on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-results
           path: |
@@ -108,13 +108,13 @@ jobs:
     needs: quick
     if: github.event_name != 'pull_request'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
       - run: python -m pip install --quiet pillow
       - name: Download cache (files are re-verified against Wavu's checksums each run)
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .zanshin-media-cache
           key: zanshin-media-cache-${{ github.run_id }}
@@ -141,7 +141,7 @@ jobs:
               names = '; '.join(x['subjectKey'] for x in m['misses'][:20])
               print(f"::notice title=Not found on Wavu ({len(m['misses'])})::{names}", file=sys.stderr)
           PY
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: site-media
           path: public/media
@@ -158,13 +158,13 @@ jobs:
       name: production
       url: https://glistening-conkies-c028b3.netlify.app
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: site-media
           path: public/media
@@ -190,7 +190,7 @@ jobs:
           npx --yes netlify-cli@latest deploy --prod --dir=dist --no-build \
             --message "GitHub Actions ${GITHUB_SHA::7}: $(git log -1 --pretty=%s)" | tee deploy.log
           printf '### Deployed\n\n%s\n' "$(grep -Eo 'https://[^ ]+' deploy.log | sort -u | tr '\n' ' ')" >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: zanshin-site
           path: dist

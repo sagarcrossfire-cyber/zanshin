@@ -1,15 +1,15 @@
-// Amendment 01B — importing and exporting the local media library. Media
-// enters from two places only: a media pack Sagar picks (this module, loaded
+// Amendment 01B — storing items in the local media library. Media enters
+// from two places only: a media pack Sagar picks (services/mediaZip.ts, loaded
 // with the Media screen because it carries the zip code) and the site's own
 // bundled media folder (services/bundledMedia.ts, same manifest format,
-// fetched from this origin). Both go through importMediaItems below.
+// fetched from this origin). Both go through importMediaItems below. This
+// module has no zip code, so the app shell stays small (§13.8).
 //
 // Media pack format (zanshin-media-pack, version 1): a manifest.json plus the
 // files its items list. Each item names its kind, subjectKey, MIME type, byte
 // count and SHA-256; unknown fields are ignored. Items are verified one at a
 // time and read one at a time, so a large pack never needs every file in
 // memory at once.
-import { unzipSync, zipSync, type Zippable } from 'fflate';
 import { mediaAssetId, mediaRepo } from '../data/repos';
 import {
   mediaPackManifestSchema,
@@ -20,7 +20,7 @@ import {
   type MediaPackManifest,
   type MediaVariant,
 } from '../data/schemas';
-import { extensionForMime, kindFitsSubject, mimeFitsKind } from '../domain/media/subjects';
+import { kindFitsSubject, mimeFitsKind } from '../domain/media/subjects';
 import { sha256Sync } from './backup';
 import { blobFromBytes, refreshMediaIndex } from './mediaLibrary';
 
@@ -83,7 +83,7 @@ export async function sha256BytesHex(bytes: Uint8Array): Promise<string> {
  * (an iframe, or TextEncoder in some test environments) fail `instanceof`,
  * and fflate would then read them as folders, so views are re-wrapped
  * (without copying) and buffers are recognised by their tag. */
-function ownBytes(view: ArrayBufferView): Uint8Array {
+export function ownBytes(view: ArrayBufferView): Uint8Array {
   return new Uint8Array(view.buffer, view.byteOffset, view.byteLength);
 }
 
@@ -98,7 +98,7 @@ export async function blobBytes(blob: Blob): Promise<Uint8Array> {
   });
 }
 
-async function toBytes(input: Blob | ArrayBuffer | Uint8Array): Promise<Uint8Array> {
+export async function toBytes(input: Blob | ArrayBuffer | Uint8Array): Promise<Uint8Array> {
   if (ArrayBuffer.isView(input)) return ownBytes(input);
   if (Object.prototype.toString.call(input) === '[object ArrayBuffer]') return new Uint8Array(input as ArrayBuffer);
   return blobBytes(input as Blob);
@@ -228,12 +228,6 @@ export function mediaItemProblem(item: MediaPackItem): string | null {
   return null;
 }
 
-/** Reads one entry from the zip without unzipping the others. */
-function readEntry(zip: Uint8Array, name: string): Uint8Array | undefined {
-  const files = unzipSync(zip, { filter: (file) => file.name === name });
-  return files[name];
-}
-
 /** Parses manifest JSON text into a media pack manifest, or throws MediaImportError. */
 export function parseMediaManifest(text: string, what = 'manifest.json'): MediaPackManifest {
   let json: unknown;
@@ -330,27 +324,6 @@ export async function importMediaItems(
   return report;
 }
 
-/**
- * Imports a media pack zip. Throws MediaImportError when the zip or its
- * manifest is unusable (nothing is changed then); see importMediaItems for
- * how individual items are handled.
- */
-export async function importMediaPack(
-  input: Blob | ArrayBuffer | Uint8Array,
-  options: MediaImportOptions = {},
-): Promise<MediaImportReport> {
-  const zip = await toBytes(input);
-  let manifestBytes: Uint8Array | undefined;
-  try {
-    manifestBytes = readEntry(zip, 'manifest.json');
-  } catch {
-    throw new MediaImportError('This file is not a readable zip.');
-  }
-  if (!manifestBytes) throw new MediaImportError('The zip has no manifest.json, so it is not a ZANSHIN media pack.');
-  const manifest = parseMediaManifest(new TextDecoder().decode(manifestBytes));
-  return importMediaItems(manifest.items, async (item) => readEntry(zip, item.file), options);
-}
-
 /** Adds one image or clip picked by Sagar, assigned to a kind and subject. */
 export async function addMediaFile(
   file: Blob,
@@ -382,51 +355,6 @@ export async function addMediaFile(
   });
   await refreshMediaIndex();
   return stored;
-}
-
-function packFileName(asset: MediaAsset, index: number): string {
-  const slug = asset.subjectKey.replace(/^[a-z]+:/, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'item';
-  return `media/${asset.kind}/${String(index + 1).padStart(4, '0')}-${slug}.${extensionForMime(asset.mime)}`;
-}
-
-/** Exports every imported item (originals, not downscaled copies) as a
- * media pack the importer reads back unchanged. */
-export async function exportMediaPack(nowIso?: string): Promise<{ blob: Blob; fileName: string; count: number }> {
-  const assets = await mediaRepo.all();
-  const createdAt = nowIso ?? new Date().toISOString();
-  const items: Array<Record<string, unknown>> = [];
-  const files: Zippable = {};
-  for (const [index, asset] of assets.entries()) {
-    const data = await mediaRepo.blob(asset.blobKey);
-    if (!data) continue;
-    const file = packFileName(asset, index);
-    files[file] = [ownBytes(data), { level: 0 }];
-    items.push({
-      bytes: data.byteLength,
-      file,
-      kind: asset.kind,
-      mime: asset.mime,
-      sha256: asset.sha256,
-      subjectKey: asset.subjectKey,
-      ...(asset.width !== undefined ? { width: asset.width } : {}),
-      ...(asset.height !== undefined ? { height: asset.height } : {}),
-      ...(asset.sourcePage ? { sourcePage: asset.sourcePage } : {}),
-      ...(asset.credit ? { credit: asset.credit } : {}),
-    });
-  }
-  const manifest = { createdAt, format: MEDIA_PACK_FORMAT, generator: 'ZANSHIN Export media', items, version: 1 };
-  const zipped = zipSync({
-    'manifest.json': [ownBytes(new TextEncoder().encode(JSON.stringify(manifest, null, 1))), { level: 6 }],
-    ...files,
-  });
-  const stamp = createdAt.replace(/[-:]/g, '').slice(0, 13).replace('T', '-');
-  const copy = new Uint8Array(zipped.byteLength);
-  copy.set(zipped);
-  return {
-    blob: new Blob([copy.buffer], { type: 'application/zip' }),
-    count: items.length,
-    fileName: `zanshin-media-${stamp}.zip`,
-  };
 }
 
 /** Deletes one imported item. */
