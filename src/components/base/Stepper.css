@@ -14,3 +14,15 @@
 .z-stepper__step--done .z-stepper__dot { border-color: var(--fa-plus); color: var(--fa-plus); }
 .z-stepper--large .z-stepper__dot { width: 44px; height: 44px; font-size: 15px; }
 .z-stepper--large .z-stepper__step { min-height: 56px; }
+
+/* 1.4.0: never wider than the screen. On phones only the current step keeps
+ * its label; the row scrolls if it still does not fit. */
+.z-stepper { max-width: 100%; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.z-stepper::-webkit-scrollbar { display: none; }
+.z-stepper__step { flex: none; }
+.z-stepper__step[aria-current="step"] .z-stepper__dot { background: var(--accent); color: var(--on-accent); }
+@media (max-width: 599px) {
+  .z-stepper { gap: var(--space-1); }
+  .z-stepper--large .z-stepper__dot { width: 36px; height: 36px; font-size: 14px; }
+  .z-stepper__step:not([aria-current="step"]) .z-stepper__label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}

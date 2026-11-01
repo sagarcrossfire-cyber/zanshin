@@ -1,29 +1,34 @@
-/* ZANSHIN design system — spec §4.4, §4.5, §4.8, §4.12.
- * Base reset, focus ring, type scale. CSS approach for the whole system:
- * plain .css files co-located with each component (NOT CSS Modules),
- * class names prefixed `z-`, colors ONLY via var(--token). Documented here
- * as the single styling convention for all components. */
+/* ZANSHIN design system — spec §4.4, §4.5, §4.8, §4.12, redrawn for 1.4.0.
+ * Base reset, focus ring, type scale, the scene behind every screen.
+ * Plain .css co-located with each component, class names prefixed `z-`,
+ * colours ONLY via var(--token). */
 
 *, *::before, *::after { box-sizing: border-box; }
 
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; background: var(--scene-bottom); color-scheme: dark; }
+html[data-theme="light"] { color-scheme: light; }
 
 body {
   margin: 0;
-  background: var(--bg);
+  background: var(--scene-bottom);
   color: var(--text-1);
   font-family: var(--font-sans);
   font-size: 15px;
   line-height: 22px;
   font-feature-settings: 'tnum' 1;
+  -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3, h4, p, ul, ol, figure, blockquote { margin: 0; }
 ul, ol { padding: 0; list-style: none; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; background: none; border: 0; padding: 0; }
-a { color: var(--info); }
+a { color: var(--info); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
 img, svg { display: block; max-width: 100%; }
+/* Icons that sit inside a line of text stay on that line. */
+.z-inline-icon svg, .z-frame-value svg, .z-chip svg, .z-btn svg { display: inline-block; vertical-align: -0.15em; flex: none; }
+::selection { background: var(--accent-soft); color: var(--text-1); }
 
 /* Focus: always visible, 2px --info ring + 2px offset (§4.12). */
 :focus-visible {
@@ -32,18 +37,42 @@ img, svg { display: block; max-width: 100%; }
   border-radius: var(--radius-chip);
 }
 
-/* Type styles (§4.4). Numbers always tabular. */
-.z-display-xl { font-family: var(--font-display); font-weight: 800; font-size: 48px; line-height: 56px; }
-.z-display-l { font-family: var(--font-display); font-weight: 800; font-size: 36px; line-height: 44px; }
-.z-display-m { font-family: var(--font-display); font-weight: 600; font-size: 28px; line-height: 36px; }
+/* Type styles (§4.4, 1.4.0 scale). Numbers always tabular. */
+.z-display-xl { font-family: var(--font-display); font-weight: 800; font-size: 48px; line-height: 56px; letter-spacing: -0.01em; }
+.z-display-l { font-family: var(--font-display); font-weight: 800; font-size: 36px; line-height: 44px; letter-spacing: -0.01em; }
+.z-display-m { font-family: var(--font-display); font-weight: 700; font-size: 28px; line-height: 36px; }
 .z-title { font-family: var(--font-sans); font-weight: 600; font-size: 20px; line-height: 28px; }
 .z-body-l { font-size: 17px; line-height: 26px; }
 .z-body { font-size: 15px; line-height: 22px; }
 .z-label { font-size: 13px; line-height: 18px; font-weight: 500; letter-spacing: 0.02em; }
 .z-caption { font-size: 12px; line-height: 16px; color: var(--text-2); }
+.z-eyebrow {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--accent);
+}
+.z-eyebrow::before { content: ''; width: 18px; height: 2px; border-radius: 2px; background: currentColor; }
 .z-data-l { font-family: var(--font-mono); font-weight: 600; font-size: 28px; line-height: 32px; font-variant-numeric: tabular-nums; }
 .z-data { font-family: var(--font-mono); font-weight: 500; font-size: 15px; line-height: 20px; font-variant-numeric: tabular-nums; }
 .z-data-s { font-family: var(--font-mono); font-weight: 500; font-size: 13px; line-height: 18px; font-variant-numeric: tabular-nums; }
+
+/* Headings inside screens: display face, a brush underline on section titles. */
+:where(.z-main) h1, .z-page-title {
+  font-family: var(--font-display); font-weight: 800; font-size: 32px; line-height: 40px; letter-spacing: -0.01em;
+  margin-bottom: var(--space-2);
+}
+:where(.z-main) h2 { font-family: var(--font-display); font-weight: 700; font-size: 22px; line-height: 30px; }
+.z-section-title {
+  font-family: var(--font-display); font-weight: 700; font-size: 22px; line-height: 30px;
+  display: inline-flex; flex-direction: column; gap: var(--space-1);
+}
+.z-section-title::after {
+  content: ''; height: 3px; width: 56px; border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2) 70%, transparent);
+}
+@media (min-width: 1024px) {
+  :where(.z-main) h1, .z-page-title { font-size: 40px; line-height: 48px; }
+}
 
 /* Lab Mode (§4.4, §4.13): every type style scales by 1.35, targets 64px. */
 .z-lab { font-size: 20px; }
@@ -60,6 +89,10 @@ img, svg { display: block; max-width: 100%; }
 /* Spacing helpers on the 4px grid (§4.5) — use sparingly; components own their padding. */
 .z-stack > * + * { margin-top: var(--space-4); }
 
+/* Screens without their own layout get breathing room between sections
+ * (zero specificity, so any screen rule wins). */
+:where(main:not([class]), .z-screen) > * + * { margin-top: var(--space-5); }
+
 /* Reduced motion (§4.8, §4.12): remove non-essential animation. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -72,3 +105,6 @@ img, svg { display: block; max-width: 100%; }
 
 /* Safe Mode note (§14.4) — shared by every screen with disabled writes. */
 .z-safe-note { color: var(--text-1); font-size: 14px; line-height: 20px; margin: var(--space-3) 0; }
+
+/* Thin themed scrollbars. */
+* { scrollbar-color: var(--line-strong) transparent; scrollbar-width: thin; }

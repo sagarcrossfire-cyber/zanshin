@@ -6,7 +6,7 @@ import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, MemoryRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { AppLayout } from './AppLayout';
 import { RouteErrorBoundary } from './ErrorBoundary';
-import { applyTheme, initTheme } from './theme';
+import { applyScheme, applyTheme, initTheme } from './theme';
 import { isOnboardingDone, useAppStore } from '../stores/appStore';
 import { ensureDailySnapshot } from '../services/snapshots';
 import { refreshMediaIndex } from '../services/mediaLibrary';
@@ -124,7 +124,9 @@ export function App() {
     void refreshMediaIndex();
   }, []);
   useEffect(() => {
-    if (settings) applyTheme(settings.theme);
+    if (!settings) return;
+    if (settings.scheme) applyScheme(settings.scheme);
+    applyTheme(settings.theme);
   }, [settings]);
   useEffect(() => {
     // Daily snapshot (§6.6): first open of each practice day, once.
@@ -150,7 +152,9 @@ export function TestApp({ initialEntries }: { initialEntries?: string[] }) {
   const settings = useAppStore((s) => s.settings);
   useEffect(() => { void load(); }, [load]);
   useEffect(() => {
-    if (settings) applyTheme(settings.theme);
+    if (!settings) return;
+    if (settings.scheme) applyScheme(settings.scheme);
+    applyTheme(settings.theme);
   }, [settings]);
   return (
     <MemoryRouter initialEntries={initialEntries}>

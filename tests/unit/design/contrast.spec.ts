@@ -80,6 +80,48 @@ describe('tokens.css contrast (§4.3)', () => {
     }
   });
 
+  // Release 1.4.0: the dark schemes override the Manji Night defaults. Each
+  // scheme's text AND signal colours (frame values, levels, Heat, links,
+  // warnings, accents) must stay >= 4.5:1 on every surface of that scheme.
+  const SIGNALS = ['--accent', '--accent-2', '--fa-plus', '--fa-punish', '--fa-launch', '--hl-low', '--heat', '--info', '--warning', '--mastery'];
+  function parseScheme(scheme: 'crimson' | 'heat'): Record<string, string> {
+    const base = parseTheme(css, 'dark');
+    const re = new RegExp(`\\[data-theme="dark"\\]\\[data-scheme="${scheme}"\\][^{]*\\{([^}]*)\\}`, 's');
+    const block = css.match(re)?.[1] ?? '';
+    const out = { ...base };
+    for (const m of block.matchAll(/(--[\w-]+)\s*:\s*(#[0-9a-fA-F]{6})\b/g)) {
+      if (m[1] && m[2]) out[m[1]] = m[2];
+    }
+    return out;
+  }
+  const SCHEMES: Array<[string, Record<string, string>]> = [
+    ['manji (dark)', parseTheme(css, 'dark')],
+    ['crimson', parseScheme('crimson')],
+    ['heat', parseScheme('heat')],
+    ['washi (light)', parseTheme(css, 'light')],
+  ];
+  for (const [name, tokens] of SCHEMES) {
+    it(`${name}: text and signal colours >= 4.5:1 on every surface; accent text >= 4.5:1`, () => {
+      for (const fg of [...TEXT_TOKENS, ...SIGNALS]) {
+        for (const surface of SURFACES) {
+          expect(contrastRatio(tok(tokens, fg), tok(tokens, surface)), `${name} ${fg} on ${surface}`).toBeGreaterThanOrEqual(4.5);
+        }
+      }
+      expect(contrastRatio(tok(tokens, '--on-accent'), tok(tokens, '--accent')), `${name} on-accent on accent`).toBeGreaterThanOrEqual(4.5);
+      for (const surface of SURFACES) {
+        expect(contrastRatio(tok(tokens, '--control-border'), tok(tokens, surface)), `${name} control on ${surface}`).toBeGreaterThanOrEqual(3);
+      }
+    });
+  }
+  it('the crimson and heat schemes override the same colour tokens', () => {
+    const keys = (scheme: 'crimson' | 'heat') => {
+      const re = new RegExp(`\\[data-theme="dark"\\]\\[data-scheme="${scheme}"\\][^{]*\\{([^}]*)\\}`, 's');
+      return [...(css.match(re)?.[1] ?? '').matchAll(/(--[\w-]+)\s*:/g)].map((m) => m[1]).sort();
+    };
+    expect(keys('crimson').length).toBeGreaterThan(20);
+    expect(keys('heat')).toEqual(keys('crimson'));
+  });
+
   it('both themes define the same token set', () => {
     const dark = Object.keys(parseTheme(css, 'dark')).sort();
     const light = Object.keys(parseTheme(css, 'light')).sort();

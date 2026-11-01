@@ -1,9 +1,15 @@
-/* Tabs — spec §4.4 label, §4.12 keyboard operable (roving tabindex). */
-.z-tabs { display: flex; gap: var(--space-1); border-bottom: 1px solid var(--line); overflow-x: auto; }
-.z-tab {
-  min-height: 44px; padding: var(--space-2) var(--space-4); white-space: nowrap;
-  font-size: 13px; line-height: 18px; font-weight: 500; letter-spacing: 0.02em;
-  color: var(--text-2); border-bottom: 2px solid transparent; margin-bottom: -1px;
+/* Tabs — spec §4.4 label, §4.12 keyboard operable (roving tabindex).
+ * Release 1.4.0: a segmented glass control with an accent pill. */
+.z-tabs {
+  display: flex; gap: var(--space-1); overflow-x: auto; padding: var(--space-1);
+  background: var(--glass); border: 1px solid var(--glass-border); border-radius: 14px;
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); width: fit-content; max-width: 100%;
 }
-.z-tab[aria-selected="true"] { color: var(--text-1); border-bottom-color: var(--text-1); }
+.z-tab {
+  min-height: 44px; padding: var(--space-2) var(--space-4); white-space: nowrap; border-radius: 10px;
+  font-size: 14px; line-height: 18px; font-weight: 500; letter-spacing: 0.01em;
+  color: var(--text-2); transition: color var(--dur-standard) var(--ease-enter), background var(--dur-standard) var(--ease-enter);
+}
+.z-tab:hover { color: var(--text-1); }
+.z-tab[aria-selected="true"] { color: var(--on-accent); background: var(--accent); font-weight: 600; }
 .z-tab:disabled { opacity: 0.45; }

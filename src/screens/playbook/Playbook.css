@@ -1,0 +1,10 @@
+/* Playbook — release 1.4.0: counterplay as a grid of glass entries. */
+.z-playbook__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-3); }
+.z-playbook__item {
+  display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4); min-width: 0;
+  border-radius: var(--radius-control); background: var(--glass-strong); border: 1px solid var(--glass-border); border-top: 3px solid var(--accent);
+}
+.z-playbook__item h2 { font-family: var(--font-display); font-size: 19px; line-height: 24px; margin: 0; }
+.z-playbook__item p { color: var(--text-2); font-size: 14px; line-height: 20px; }
+.z-playbook__label { display: inline-block; min-width: 52px; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+.z-playbook__moves { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); }

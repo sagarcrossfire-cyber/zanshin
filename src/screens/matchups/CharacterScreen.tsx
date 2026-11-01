@@ -161,11 +161,16 @@ export function CharacterScreen() {
   const playbook = loadPlaybook();
 
   return (
-    <main>
-      <CharacterHero name={character}>
+    <main className="z-mu-page">
+      <CharacterHero name={character} eyebrow="Yoshimitsu vs">
         <h1>{character}</h1>
+        <p className="z-mu-page__record"><strong>{wins}–{games - wins}</strong> · {games} games · {problems.length} problem {problems.length === 1 ? 'move' : 'moves'}</p>
       </CharacterHero>
-      <Card title="Record">
+      <div className="z-mu-page__grid">
+      <Card title="Record" className="z-mu-page__record-card">
+        <div className="z-mu-ring" aria-hidden="true" style={{ ['--pct' as string]: `${games > 0 ? Math.round((wins / games) * 100) : 0}` }}>
+          <span>{games > 0 ? `${Math.round((wins / games) * 100)}%` : '—'}</span>
+        </div>
         <p>{wins}–{games - wins} ({games} games).</p>
         {games >= 10 ? (
           <p>Win rate: {Math.round((wins / games) * 100)}%.</p>
@@ -173,8 +178,8 @@ export function CharacterScreen() {
           <p>Not enough games yet ({games}/10).</p>
         )}
         {rosterEntry && (
-          <p>
-            <a href={rosterEntry.wavuPage} target="_blank" rel="noopener noreferrer">Wavu Wiki page</a>{' '}
+          <p className="z-mu-page__links">
+            <a href={rosterEntry.wavuPage} target="_blank" rel="noopener noreferrer">Wavu Wiki page</a>
             <a href={rosterEntry.counterplayPage} target="_blank" rel="noopener noreferrer">Counterplay page</a>
           </p>
         )}
@@ -266,6 +271,7 @@ export function CharacterScreen() {
           ))}
         </ul>
       </Card>
+      </div>
     </main>
   );
 }

@@ -11,11 +11,16 @@ export type DataStatus = 'verified' | 'sourced' | 'conflicting' | 'unverified' |
 const LABELS: Record<DataStatus, string> = { verified: 'Verified', sourced: 'Sourced', conflicting: 'Conflicting', unverified: 'Unverified', web: 'Web-sourced' };
 const ICONS: Record<DataStatus, ReactNode> = { verified: <IconVerified />, sourced: <IconSourced />, conflicting: <IconConflicting />, unverified: <IconUnverified />, web: <IconWeb /> };
 
-export interface DataBadgeProps { status: DataStatus; detail?: string; onClick?: () => void; }
+export interface DataBadgeProps {
+  status: DataStatus; detail?: string; onClick?: () => void;
+  /** Release 1.4.0: label only, the detail moves to a tooltip (dense lists). */
+  compact?: boolean;
+}
 
-export function DataBadge({ status, detail, onClick }: DataBadgeProps) {
-  const label = detail ? `${LABELS[status]} · ${detail}` : LABELS[status];
-  const cls = `z-data-badge z-data-badge--${status}`;
-  if (onClick) return <button type="button" className={cls} onClick={onClick}>{ICONS[status]}<span>{label}</span></button>;
-  return <span className={cls}>{ICONS[status]}<span>{label}</span></span>;
+export function DataBadge({ status, detail, onClick, compact = false }: DataBadgeProps) {
+  const label = detail && !compact ? `${LABELS[status]} · ${detail}` : LABELS[status];
+  const title = compact && detail ? `${LABELS[status]} · ${detail}` : undefined;
+  const cls = `z-data-badge z-data-badge--${status}${compact ? ' z-data-badge--compact' : ''}`;
+  if (onClick) return <button type="button" className={cls} title={title} onClick={onClick}>{ICONS[status]}<span>{label}</span></button>;
+  return <span className={cls} title={title}>{ICONS[status]}<span>{label}</span></span>;
 }

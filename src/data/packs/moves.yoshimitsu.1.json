@@ -168,7 +168,7 @@
     "num": 19,
     "input": "3,1",
     "parentId": "Yoshimitsu-3",
-    "name": "Enma&#039;s Flame",
+    "name": "Enma's Flame",
     "aliases": [],
     "altInputs": [],
     "hitLevel": ",h",
@@ -204,7 +204,7 @@
     "num": 20,
     "input": "3,2,1+2",
     "parentId": "Yoshimitsu-3,2",
-    "name": "Enma&#039;s Cleansing Sword",
+    "name": "Enma's Cleansing Sword",
     "aliases": [],
     "altInputs": [],
     "hitLevel": ",M",
@@ -281,7 +281,7 @@
     "crush": "* cs4~22 * fs10~50",
     "recovery": "r37",
     "total": "63",
-    "notes": "* Tornado * Evasive, can go under some mids | Role: Listed as punishable at -13 to -14 in \u00a710.13; no exact value stated in \u00a710",
+    "notes": "* Tornado * Evasive, can go under some mids | Role: Listed as punishable at -13 to -14 in §10.13; no exact value stated in §10",
     "tags": [
       "high-crush",
       "launcher",
@@ -302,7 +302,7 @@
     "num": 23,
     "input": "4,4,2,2,1",
     "parentId": "Yoshimitsu-4,4,2,2",
-    "name": "Wheel of Arrows &gt; Sword Stab",
+    "name": "Wheel of Arrows > Sword Stab",
     "aliases": [
       "1SS.4,4,2,2,1",
       "4,4,2,2,1SS.1"
@@ -432,7 +432,7 @@
     "num": 30,
     "input": "f+2,db+2",
     "parentId": "Yoshimitsu-f+2",
-    "name": "Backfist &gt; Stone Fist",
+    "name": "Backfist > Stone Fist",
     "aliases": [],
     "altInputs": [],
     "hitLevel": ",m",
@@ -472,7 +472,7 @@
     "hit": "+17a (+8)",
     "recovery": "r32",
     "total": "49",
-    "notes": "* Homing * Balcony Break | Role: Homing answer to sidestep to his right, per \u00a710.13",
+    "notes": "* Homing * Balcony Break | Role: Homing answer to sidestep to his right, per §10.13",
     "tags": [
       "balcony-break",
       "homing"
@@ -605,7 +605,7 @@
     "hit": "-8a (-15)",
     "recovery": "r33",
     "total": "58",
-    "notes": "* Balcony Break * Floor Break * Head * Floor break occurs on 4th hit * Transition to FLE on hit only * Attacks after 1st only come out on hit * Combo from 1st hit does 2,1,1 damage * Combo does 2 extra damage from FLE.n * Cancel to r65 BT earliest on frame 10 with b * Automatically transitions to r55 IND on self-wallsplat * Total and recovery frames on hit r19 t88 | Role: Segment of the \u00a710.12 Heat combo route (written f3+4 in the spec)",
+    "notes": "* Balcony Break * Floor Break * Head * Floor break occurs on 4th hit * Transition to FLE on hit only * Attacks after 1st only come out on hit * Combo from 1st hit does 2,1,1 damage * Combo does 2 extra damage from FLE.n * Cancel to r65 BT earliest on frame 10 with b * Automatically transitions to r55 IND on self-wallsplat * Total and recovery frames on hit r19 t88 | Role: Segment of the §10.12 Heat combo route (written f3+4 in the spec)",
     "tags": [
       "balcony-break",
       "floor-break"
@@ -659,7 +659,7 @@
     "num": 37,
     "input": "df+1,2,db+2",
     "parentId": "Yoshimitsu-df+1,2",
-    "name": "Tsuka Atemi &gt; Slap U Crazy",
+    "name": "Tsuka Atemi > Slap U Crazy",
     "aliases": [],
     "altInputs": [],
     "hitLevel": ",m",
@@ -1094,7 +1094,7 @@
     "num": 52,
     "input": "d+1+4,B+1,1,1,1,1",
     "parentId": "Yoshimitsu-d+1+4,B+1,1,1,1",
-    "name": "Harakiri &gt; Manji Blood Dance",
+    "name": "Harakiri > Manji Blood Dance",
     "aliases": [],
     "altInputs": [],
     "hitLevel": ",m!",
@@ -1137,7 +1137,7 @@
     "counterHit": "+6g",
     "recovery": "r36",
     "total": "89",
-    "notes": "* Balcony Break (airborne or CH) * Combo from 1st with 1f delay * Combo from 1st CH with 8f delay * Input can be delayed 8f | Role: Listed as punishable at -13 to -14 in \u00a710.13; no exact value stated in \u00a710",
+    "notes": "* Balcony Break (airborne or CH) * Combo from 1st with 1f delay * Combo from 1st CH with 8f delay * Input can be delayed 8f | Role: Listed as punishable at -13 to -14 in §10.13; no exact value stated in §10",
     "tags": [
       "balcony-break"
     ],
@@ -1168,7 +1168,7 @@
     "hit": "-37",
     "recovery": "r64 FUFT",
     "total": "153",
-    "notes": "Combo from 5th CH | Role: Long chain, -49 on block, per \u00a710.13",
+    "notes": "Combo from 5th CH | Role: Long chain, -49 on block, per §10.13",
     "tags": [],
     "provenance": {
       "source": "wavu",
@@ -1392,7 +1392,7 @@
     "counterHit": "-67",
     "recovery": "r80 FUFT",
     "total": "168",
-    "notes": "* Combo from 4th hit * Combo from 3rd CH | Role: Sixth hit of the b+1 chain is -73 on block, per \u00a710.10 and \u00a710.13",
+    "notes": "* Combo from 4th hit * Combo from 3rd CH | Role: Sixth hit of the b+1 chain is -73 on block, per §10.10 and §10.13",
     "tags": [],
     "provenance": {
       "source": "wavu",
@@ -1958,7 +1958,7 @@
     "num": 80,
     "input": "uf+3+4,3+4",
     "parentId": "Yoshimitsu-uf+3+4",
-    "name": "Poison Wind &gt; Kangaroo Kick",
+    "name": "Poison Wind > Kangaroo Kick",
     "aliases": [],
     "altInputs": [],
     "hitLevel": ",m",
@@ -2158,7 +2158,7 @@
     "hit": "+5",
     "recovery": "r32",
     "total": "56",
-    "notes": "* Enter KIN r25 +3 +12 with 1+2 * Cannot be buffered | Role: Low-risk pressure at -4, per \u00a710.10",
+    "notes": "* Enter KIN r25 +3 +12 with 1+2 * Cannot be buffered | Role: Low-risk pressure at -4, per §10.10",
     "tags": [],
     "provenance": {
       "source": "wavu",
@@ -2252,7 +2252,7 @@
     "crush": "* js10~27 * fs28~30",
     "recovery": "r37",
     "total": "61",
-    "notes": "* Floor Break * Cannot be buffered * Visually similar to f,F+1+2 | Role: Launch punishable at -20, per \u00a710.13; no other values stated in \u00a710",
+    "notes": "* Floor Break * Cannot be buffered * Visually similar to f,F+1+2 | Role: Launch punishable at -20, per §10.13; no other values stated in §10",
     "tags": [
       "floor-break",
       "low-crush"
@@ -2580,7 +2580,7 @@
     "num": 102,
     "input": "ws1,2,db+2",
     "parentId": "Yoshimitsu-ws1,2",
-    "name": "Door Knocker &gt; Back Knuckle Slap U Crazy",
+    "name": "Door Knocker > Back Knuckle Slap U Crazy",
     "aliases": [],
     "altInputs": [],
     "hitLevel": ",m",
@@ -2741,7 +2741,7 @@
     "character": "Yoshimitsu",
     "num": 107,
     "input": "FC.DF+1",
-    "name": "&lt;div class=&quot;dotlist&quot;&gt;\n\n* Sword Sweep\n* Samurai Cutter\n&lt;/div&gt;",
+    "name": "<div class=\"dotlist\">\n\n* Sword Sweep\n* Samurai Cutter\n</div>",
     "aliases": [
       "1SS.FC.DF+1"
     ],
@@ -2823,7 +2823,7 @@
     "hit": "+28a (+18)",
     "recovery": "r31",
     "total": "48",
-    "notes": "* Tornado * Sidestep adds minimum 9f, effective startup i25~26 | Role: Listed as punishable at -13 to -14 in \u00a710.13; no exact value stated in \u00a710",
+    "notes": "* Tornado * Sidestep adds minimum 9f, effective startup i25~26 | Role: Listed as punishable at -13 to -14 in §10.13; no exact value stated in §10",
     "tags": [
       "launcher",
       "tornado"
@@ -3238,7 +3238,7 @@
     "hit": "+30a (+20)",
     "recovery": "r29",
     "total": "69",
-    "notes": "* Tornado * Weapon * Combo from 1st hit | Role: Kincho follow-up in the \u00a710.12 self-damage staple route",
+    "notes": "* Tornado * Weapon * Combo from 1st hit | Role: Kincho follow-up in the §10.12 self-damage staple route",
     "tags": [
       "launcher",
       "tornado"

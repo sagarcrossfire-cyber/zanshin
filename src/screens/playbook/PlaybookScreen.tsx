@@ -1,5 +1,7 @@
 // Playbook — spec §5.11 / §10.13. The counterplay table and the six
 // game plans. Every item links to at least one move or drill (AC-PB-1).
+import './Playbook.css';
+import { PageHeader } from '../../components/layout/PageHeader';
 import { Link } from 'react-router-dom';
 import { Card } from '../../components/base/Card';
 import { InputString } from '../../components/signature/InputString';
@@ -14,16 +16,17 @@ export function PlaybookScreen() {
 
   return (
     <main>
-      <h1>Playbook</h1>
+      <PageHeader level={1} eyebrow="Game plans" title="Playbook" lede="What opponents do to Yoshimitsu and how to answer it, plus the plans that win rounds." />
 
-      <Card title="Counterplay — what they do to Yoshimitsu">
+      <Card title="Counterplay — what they do to Yoshimitsu" className="z-playbook">
+        <div className="z-playbook__grid">
         {playbook.counterplay.map((item) => (
-          <div key={item.id}>
+          <div key={item.id} className="z-playbook__item">
             <h2>{item.whatTheyDo}</h2>
             <p>{item.answer}</p>
-            <p>Beats: {item.whatItBeats}</p>
-            <p>
-              Moves:{' '}
+            <p className="z-playbook__beats"><span className="z-playbook__label">Beats</span> {item.whatItBeats}</p>
+            <p className="z-playbook__moves">
+              <span className="z-playbook__label">Moves</span>{' '}
               {(item.moveIds ?? []).map((id) => {
                 const move = moveById.get(id);
                 return move ? (
@@ -31,8 +34,8 @@ export function PlaybookScreen() {
                 ) : <span key={id}>{id} </span>;
               })}
             </p>
-            <p>
-              Drills:{' '}
+            <p className="z-playbook__drills">
+              <span className="z-playbook__label">Drills</span>{' '}
               {item.drillIds.map((id) => {
                 const node = nodeByDrill.get(id);
                 return node ? (
@@ -42,6 +45,7 @@ export function PlaybookScreen() {
             </p>
           </div>
         ))}
+        </div>
       </Card>
 
       <Card title="Game plans">

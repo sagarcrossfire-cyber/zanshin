@@ -168,7 +168,7 @@
     "num": 19,
     "input": "3,1",
     "parentId": "Yoshimitsu-3",
-    "name": "Enma&#039;s Flame",
+    "name": "Enma's Flame",
     "aliases": [],
     "altInputs": [],
     "hitLevel": ",h",
@@ -204,7 +204,7 @@
     "num": 20,
     "input": "3,2,1+2",
     "parentId": "Yoshimitsu-3,2",
-    "name": "Enma&#039;s Cleansing Sword",
+    "name": "Enma's Cleansing Sword",
     "aliases": [],
     "altInputs": [],
     "hitLevel": ",M",
@@ -281,7 +281,7 @@
     "crush": "* cs4~22 * fs10~50",
     "recovery": "r37",
     "total": "63",
-    "notes": "* Tornado * Evasive, can go under some mids | Role: Listed as punishable at -13 to -14 in \u00a710.13; no exact value stated in \u00a710",
+    "notes": "* Tornado * Evasive, can go under some mids | Role: Listed as punishable at -13 to -14 in §10.13; no exact value stated in §10",
     "tags": [
       "high-crush",
       "launcher",
@@ -302,7 +302,7 @@
     "num": 23,
     "input": "4,4,2,2,1",
     "parentId": "Yoshimitsu-4,4,2,2",
-    "name": "Wheel of Arrows &gt; Sword Stab",
+    "name": "Wheel of Arrows > Sword Stab",
     "aliases": [
       "1SS.4,4,2,2,1",
       "4,4,2,2,1SS.1"
@@ -432,7 +432,7 @@
     "num": 30,
     "input": "f+2,db+2",
     "parentId": "Yoshimitsu-f+2",
-    "name": "Backfist &gt; Stone Fist",
+    "name": "Backfist > Stone Fist",
     "aliases": [],
     "altInputs": [],
     "hitLevel": ",m",
@@ -472,7 +472,7 @@
     "hit": "+17a (+8)",
     "recovery": "r32",
     "total": "49",
-    "notes": "* Homing * Balcony Break | Role: Homing answer to sidestep to his right, per \u00a710.13",
+    "notes": "* Homing * Balcony Break | Role: Homing answer to sidestep to his right, per §10.13",
     "tags": [
       "balcony-break",
       "homing"
@@ -605,7 +605,7 @@
     "hit": "-8a (-15)",
     "recovery": "r33",
     "total": "58",
-    "notes": "* Balcony Break * Floor Break * Head * Floor break occurs on 4th hit * Transition to FLE on hit only * Attacks after 1st only come out on hit * Combo from 1st hit does 2,1,1 damage * Combo does 2 extra damage from FLE.n * Cancel to r65 BT earliest on frame 10 with b * Automatically transitions to r55 IND on self-wallsplat * Total and recovery frames on hit r19 t88 | Role: Segment of the \u00a710.12 Heat combo route (written f3+4 in the spec)",
+    "notes": "* Balcony Break * Floor Break * Head * Floor break occurs on 4th hit * Transition to FLE on hit only * Attacks after 1st only come out on hit * Combo from 1st hit does 2,1,1 damage * Combo does 2 extra damage from FLE.n * Cancel to r65 BT earliest on frame 10 with b * Automatically transitions to r55 IND on self-wallsplat * Total and recovery frames on hit r19 t88 | Role: Segment of the §10.12 Heat combo route (written f3+4 in the spec)",
     "tags": [
       "balcony-break",
       "floor-break"
@@ -659,7 +659,7 @@
     "num": 37,
     "input": "df+1,2,db+2",
     "parentId": "Yoshimitsu-df+1,2",
-    "name": "Tsuka Atemi &gt; Slap U Crazy",
+    "name": "Tsuka Atemi > Slap U Crazy",
     "aliases": [],
     "altInputs": [],
     "hitLevel": ",m",
@@ -1094,7 +1094,7 @@
     "num": 52,
     "input": "d+1+4,B+1,1,1,1,1",
     "parentId": "Yoshimitsu-d+1+4,B+1,1,1,1",
-    "name": "Harakiri &gt; Manji Blood Dance",
+    "name": "Harakiri > Manji Blood Dance",
     "aliases": [],
     "altInputs": [],
     "hitLevel": ",m!",
@@ -1137,7 +1137,7 @@
     "counterHit": "+6g",
     "recovery": "r36",
     "total": "89",
-    "notes": "* Balcony Break (airborne or CH) * Combo from 1st with 1f delay * Combo from 1st CH with 8f delay * Input can be delayed 8f | Role: Listed as punishable at -13 to -14 in \u00a710.13; no exact value stated in \u00a710",
+    "notes": "* Balcony Break (airborne or CH) * Combo from 1st with 1f delay * Combo from 1st CH with 8f delay * Input can be delayed 8f | Role: Listed as punishable at -13 to -14 in §10.13; no exact value stated in §10",
     "tags": [
       "balcony-break"
     ],
@@ -1168,7 +1168,7 @@
     "hit": "-37",
     "recovery": "r64 FUFT",
     "total": "153",
-    "notes": "Combo from 5th CH | Role: Long chain, -49 on block, per \u00a710.13",
+    "notes": "Combo from 5th CH | Role: Long chain, -49 on block, per §10.13",
     "tags": [],
     "provenance": {
       "source": "wavu",
@@ -1392,7 +1392,7 @@
     "counterHit": "-67",
     "recovery": "r80 FUFT",
     "total": "168",
-    "notes": "* Combo from 4th hit * Combo from 3rd CH | Role: Sixth hit of the b+1 chain is -73 on block, per \u00a710.10 and \u00a710.13",
+    "notes": "* Combo from 4th hit * Combo from 3rd CH | Role: Sixth hit of the b+1 chain is -73 on block, per §10.10 and §10.13",
     "tags": [],
     "provenance": {
       "source": "wavu",
@@ -1958,7 +1958,7 @@
     "num": 80,
     "input": "uf+3+4,3+4",
     "parentId": "Yoshimitsu-uf+3+4",
-    "name": "Poison Wind &gt; Kangaroo Kick",
+    "name": "Poison Wind > Kangaroo Kick",
     "aliases": [],
     "altInputs": [],
     "hitLevel": ",m",
@@ -2158,7 +2158,7 @@
     "hit": "+5",
     "recovery": "r32",
     "total": "56",
-    "notes": "* Enter KIN r25 +3 +12 with 1+2 * Cannot be buffered | Role: Low-risk pressure at -4, per \u00a710.10",
+    "notes": "* Enter KIN r25 +3 +12 with 1+2 * Cannot be buffered | Role: Low-risk pressure at -4, per §10.10",
     "tags": [],
     "provenance": {
       "source": "wavu",
@@ -2252,7 +2252,7 @@
     "crush": "* js10~27 * fs28~30",
     "recovery": "r37",
     "total": "61",
-    "notes": "* Floor Break * Cannot be buffered * Visually similar to f,F+1+2 | Role: Launch punishable at -20, per \u00a710.13; no other values stated in \u00a710",
+    "notes": "* Floor Break * Cannot be buffered * Visually similar to f,F+1+2 | Role: Launch punishable at -20, per §10.13; no other values stated in §10",
     "tags": [
       "floor-break",
       "low-crush"
@@ -2580,7 +2580,7 @@
     "num": 102,
     "input": "ws1,2,db+2",
     "parentId": "Yoshimitsu-ws1,2",
-    "name": "Door Knocker &gt; Back Knuckle Slap U Crazy",
+    "name": "Door Knocker > Back Knuckle Slap U Crazy",
     "aliases": [],
     "altInputs": [],
     "hitLevel": ",m",
@@ -2741,7 +2741,7 @@
     "character": "Yoshimitsu",
     "num": 107,
     "input": "FC.DF+1",
-    "name": "&lt;div class=&quot;dotlist&quot;&gt;\n\n* Sword Sweep\n* Samurai Cutter\n&lt;/div&gt;",
+    "name": "<div class=\"dotlist\">\n\n* Sword Sweep\n* Samurai Cutter\n</div>",
     "aliases": [
       "1SS.FC.DF+1"
     ],
@@ -2823,7 +2823,7 @@
     "hit": "+28a (+18)",
     "recovery": "r31",
     "total": "48",
-    "notes": "* Tornado * Sidestep adds minimum 9f, effective startup i25~26 | Role: Listed as punishable at -13 to -14 in \u00a710.13; no exact value stated in \u00a710",
+    "notes": "* Tornado * Sidestep adds minimum 9f, effective startup i25~26 | Role: Listed as punishable at -13 to -14 in §10.13; no exact value stated in §10",
     "tags": [
       "launcher",
       "tornado"
@@ -3238,7 +3238,7 @@
     "hit": "+30a (+20)",
     "recovery": "r29",
     "total": "69",
-    "notes": "* Tornado * Weapon * Combo from 1st hit | Role: Kincho follow-up in the \u00a710.12 self-damage staple route",
+    "notes": "* Tornado * Weapon * Combo from 1st hit | Role: Kincho follow-up in the §10.12 self-damage staple route",
     "tags": [
       "launcher",
       "tornado"
@@ -3407,7 +3407,7 @@
     "character": "Yoshimitsu",
     "num": 134,
     "input": "FLE.2",
-    "name": "Flea &gt; Sliding Headbutt",
+    "name": "Flea > Sliding Headbutt",
     "aliases": [],
     "altInputs": [],
     "stance": "FLE",
@@ -3504,7 +3504,7 @@
     "character": "Yoshimitsu",
     "num": 137,
     "input": "FLE.3+4",
-    "name": "Flea &gt; Kangaroo Kick",
+    "name": "Flea > Kangaroo Kick",
     "aliases": [],
     "altInputs": [],
     "stance": "FLE",
@@ -3601,7 +3601,7 @@
     "character": "Yoshimitsu",
     "num": 140,
     "input": "FLE.d+3+4",
-    "name": "Flea &gt; Indian Stance",
+    "name": "Flea > Indian Stance",
     "aliases": [],
     "altInputs": [],
     "stance": "FLE",
@@ -3628,7 +3628,7 @@
     "character": "Yoshimitsu",
     "num": 141,
     "input": "FLE.u+1+2",
-    "name": "Flea &gt; Manji Dragonfly",
+    "name": "Flea > Manji Dragonfly",
     "aliases": [],
     "altInputs": [],
     "stance": "FLE",
@@ -3654,7 +3654,7 @@
     "character": "Yoshimitsu",
     "num": 142,
     "input": "FLE.u+3+4",
-    "name": "Flea &gt; Dragonfly Feint",
+    "name": "Flea > Dragonfly Feint",
     "aliases": [],
     "altInputs": [],
     "stance": "FLE",
@@ -3706,7 +3706,7 @@
     "crush": "js1~",
     "recovery": "r10 FLE",
     "total": "55",
-    "notes": "* Balcony Break * 10 chip damage on block * Opponent recovers crouching on block | Role: Flea jump, +10g to +25g on block per \u00a710.10",
+    "notes": "* Balcony Break * 10 chip damage on block * Opponent recovers crouching on block | Role: Flea jump, +10g to +25g on block per §10.10",
     "tags": [
       "balcony-break",
       "launcher",
@@ -3770,7 +3770,7 @@
     "crush": "js1~",
     "recovery": "r43 FLE",
     "total": "60",
-    "notes": "* Balcony Break * Clean hit, 1st hit 25 > 37 damage * Transition to attack throw on close standing hit, +15a r43 FLE and 20 extra damage * Can side switch on throw hit | Role: WFL move named in the Wavu move list; stance name unverified; no frame values stated in \u00a710",
+    "notes": "* Balcony Break * Clean hit, 1st hit 25 > 37 damage * Transition to attack throw on close standing hit, +15a r43 FLE and 20 extra damage * Can side switch on throw hit | Role: WFL move named in the Wavu move list; stance name unverified; no frame values stated in §10",
     "tags": [
       "balcony-break",
       "low-crush"
@@ -3803,7 +3803,7 @@
     "crush": "* js1~12 * cs12~ * fs13~",
     "recovery": "r26 FUFT",
     "total": "50",
-    "notes": "Transition to r24 IND on hit only | Role: WFL move named in the Wavu move list; stance name unverified; no frame values stated in \u00a710",
+    "notes": "Transition to r24 IND on hit only | Role: WFL move named in the Wavu move list; stance name unverified; no frame values stated in §10",
     "tags": [
       "high-crush",
       "low-crush"
@@ -4132,7 +4132,7 @@
     "num": 160,
     "input": "3,2,NSS.1+2",
     "parentId": "Yoshimitsu-3,2",
-    "name": "Enma&#039;s Soul Blade",
+    "name": "Enma's Soul Blade",
     "aliases": [
       "NSS.3,2,1+2"
     ],
@@ -4146,7 +4146,7 @@
     "hit": "+20a (+10)",
     "recovery": "r34 1SS",
     "total": "100",
-    "notes": "* Balcony Break * Weapon * Combo from 2nd hit with 4f delay * Input can be delayed 10f * Move can be delayed 9f * 10 chip damage on block * Clean hit 35 damage * Recovers 1 base health or 6 additional recoverable health on hit * Recovers 1 base health when remaining recoverable health is 5 or less * 3,2,H.1+2: Consumes 180F of remaining Heat time | Role: Staple ender; whiffing b1 spaces all three hits, per \u00a710.12",
+    "notes": "* Balcony Break * Weapon * Combo from 2nd hit with 4f delay * Input can be delayed 10f * Move can be delayed 9f * 10 chip damage on block * Clean hit 35 damage * Recovers 1 base health or 6 additional recoverable health on hit * Recovers 1 base health when remaining recoverable health is 5 or less * 3,2,H.1+2: Consumes 180F of remaining Heat time | Role: Staple ender; whiffing b1 spaces all three hits, per §10.12",
     "tags": [
       "balcony-break",
       "launcher"
@@ -4522,7 +4522,7 @@
     "crush": " js1~46 fs47~49",
     "recovery": "r33",
     "total": "79",
-    "notes": "* Tornado * Combo from 1st hit * Enter NSS r33 with B | Role: Listed as punishable at -13 to -14 in \u00a710.13; no exact value stated in \u00a710",
+    "notes": "* Tornado * Combo from 1st hit * Enter NSS r33 with B | Role: Listed as punishable at -13 to -14 in §10.13; no exact value stated in §10",
     "tags": [
       "low-crush",
       "tornado"
@@ -4609,7 +4609,7 @@
     "character": "Yoshimitsu",
     "num": 178,
     "input": "DGF.1+2",
-    "name": "Manji Dragonfly &gt; Flea",
+    "name": "Manji Dragonfly > Flea",
     "aliases": [],
     "altInputs": [],
     "stance": "DGF",
@@ -4743,7 +4743,7 @@
     "character": "Yoshimitsu",
     "num": 182,
     "input": "DGF.d+3+4",
-    "name": "Manji Dragonfly &gt; Indian Stance",
+    "name": "Manji Dragonfly > Indian Stance",
     "aliases": [],
     "altInputs": [],
     "stance": "DGF",
@@ -5229,7 +5229,7 @@
     "hitLevel": "",
     "id": "Yoshimitsu-1SS.f+3+4",
     "input": "1SS.f+3+4",
-    "notes": "Staple combo ender after NSS.1+4, per \u00a710.12",
+    "notes": "Staple combo ender after NSS.1+4, per §10.12",
     "provenance": {
       "patch": "3.02.02",
       "source": "seed",
@@ -5400,7 +5400,7 @@
     "crush": " js26~",
     "recovery": "r23 DGF",
     "total": "63",
-    "notes": "* Heat Engager * Heat Dash +5, +62a (+42) * Balcony Break * Weapon * Combo from 1st hit * 6 chip damage on block * Recovers 1 base health or 6 additional recoverable health on hit * Recovers 1 base health when remaining recoverable health is 5 or less * Does not transition to DGF during Heat Dash * Recovers in 1SS * 3,H.1: Consumes 90F of remaining Heat time | Role: Heat Engager variant of 3,1 in NSS, per \u00a710.8",
+    "notes": "* Heat Engager * Heat Dash +5, +62a (+42) * Balcony Break * Weapon * Combo from 1st hit * 6 chip damage on block * Recovers 1 base health or 6 additional recoverable health on hit * Recovers 1 base health when remaining recoverable health is 5 or less * Does not transition to DGF during Heat Dash * Recovers in 1SS * 3,H.1: Consumes 90F of remaining Heat time | Role: Heat Engager variant of 3,1 in NSS, per §10.8",
     "tags": [
       "balcony-break",
       "heat-engager",
@@ -5535,7 +5535,7 @@
     "character": "Yoshimitsu",
     "input": "4,4,2,2,1~1",
     "parentId": "Yoshimitsu-4,4,2,2,1",
-    "name": "Wheel of Arrows &gt; Sword Poke Windmill",
+    "name": "Wheel of Arrows > Sword Poke Windmill",
     "aliases": [
       "1SS.4,4,2,2,1~1",
       "4,4,2,2,1SS.1~1"
@@ -5587,7 +5587,7 @@
       "fetchedAt": "2026-10-29T19:34:27.387Z",
       "status": "sourced"
     },
-    "notes": "Long chain, -54 on block, per \u00a710.13"
+    "notes": "Long chain, -54 on block, per §10.13"
   },
   {
     "id": "Yoshimitsu-4,4,2,2,NSS.1~1",
@@ -5749,7 +5749,7 @@
     "hitLevel": "m",
     "id": "Yoshimitsu-FC.D+1+4",
     "input": "FC.D+1+4",
-    "notes": "Flash from crouch; punishes -6 after blocking low, per \u00a710.7",
+    "notes": "Flash from crouch; punishes -6 after blocking low, per §10.7",
     "provenance": {
       "patch": "3.02.02",
       "source": "seed",
@@ -5769,7 +5769,7 @@
     "hitLevel": "m",
     "id": "Yoshimitsu-FC.NSS.d+1+4",
     "input": "FC.NSS.d+1+4",
-    "notes": "Flash from crouch in NSS; punishes -8 after blocking low, per \u00a710.7",
+    "notes": "Flash from crouch in NSS; punishes -8 after blocking low, per §10.7",
     "provenance": {
       "patch": "3.02.02",
       "source": "seed",
@@ -6215,7 +6215,7 @@
     "hit": "+26a (+16)",
     "recovery": "r43",
     "total": "65",
-    "notes": "Weapon | Role: Kincho option; listed as punishable at -13 to -14 in \u00a710.13; power crushes can go between KIN.2,1+2",
+    "notes": "Weapon | Role: Kincho option; listed as punishable at -13 to -14 in §10.13; power crushes can go between KIN.2,1+2",
     "tags": [
       "launcher"
     ],
@@ -6687,7 +6687,7 @@
     "hit": "+14 +64a",
     "recovery": "r36 1SS",
     "total": "47",
-    "notes": "* Strong Aerial Tailspin * Weapon * Knockdown against BT opponent, +19a (+9) * 4 chip damage on block * Recovers 1 base health or 6 additional recoverable health on hit * Can be done from Crouch Level 1 * Crumple stun +14~17 after hit * H.1+4: Consumes 300F of remaining Heat time | Role: Flash in NSS, i8; in NSS, per \u00a710.7",
+    "notes": "* Strong Aerial Tailspin * Weapon * Knockdown against BT opponent, +19a (+9) * 4 chip damage on block * Recovers 1 base health or 6 additional recoverable health on hit * Can be done from Crouch Level 1 * Crumple stun +14~17 after hit * H.1+4: Consumes 300F of remaining Heat time | Role: Flash in NSS, i8; in NSS, per §10.7",
     "tags": [
       "panic"
     ],
@@ -7043,7 +7043,7 @@
     "id": "Yoshimitsu-NSS.d+1+2",
     "character": "Yoshimitsu",
     "input": "NSS.d+1+2",
-    "name": "No Sword Stance &gt; Indian Stance",
+    "name": "No Sword Stance > Indian Stance",
     "aliases": [],
     "altInputs": [],
     "stance": "NSS",
@@ -7115,7 +7115,7 @@
     "hit": "+29a (+3)",
     "recovery": "r37 1SS",
     "total": "57",
-    "notes": "* Heat Engager * Heat Dash +5, +62a (+42) * Balcony Break * Weapon * 8 chip damage on block * Recovers 1 base health or 6 additional recoverable health on hit * Recovers 1 base health when remaining recoverable health is 5 or less * Extended range * H.f+1+2: Consumes 270F of heat timer during heat * Steel pedal | Role: NSS launcher, i20, -7 on block, +29a on hit; Heat Engager variant per \u00a710.8",
+    "notes": "* Heat Engager * Heat Dash +5, +62a (+42) * Balcony Break * Weapon * 8 chip damage on block * Recovers 1 base health or 6 additional recoverable health on hit * Recovers 1 base health when remaining recoverable health is 5 or less * Extended range * H.f+1+2: Consumes 270F of heat timer during heat * Steel pedal | Role: NSS launcher, i20, -7 on block, +29a on hit; Heat Engager variant per §10.8",
     "tags": [
       "balcony-break",
       "heat-engager",
@@ -7134,7 +7134,7 @@
     "id": "Yoshimitsu-NSS.f+3+4",
     "character": "Yoshimitsu",
     "input": "NSS.f+3+4",
-    "name": "&lt;div class=&quot;dotlist&quot;&gt;\n\n* Bull Rush\n* Chariot Tackle\n&lt;/div&gt;",
+    "name": "<div class=\"dotlist\">\n\n* Bull Rush\n* Chariot Tackle\n</div>",
     "aliases": [],
     "altInputs": [],
     "stance": "NSS",
@@ -7449,7 +7449,7 @@
     "id": "Yoshimitsu-b+1+2",
     "character": "Yoshimitsu",
     "input": "b+1+2",
-    "name": "&lt;div class=&quot;dotlist&quot;&gt;\n\n* No Sword Stance\n* Mutou no Kiwami\n&lt;/div&gt;",
+    "name": "<div class=\"dotlist\">\n\n* No Sword Stance\n* Mutou no Kiwami\n</div>",
     "aliases": [],
     "altInputs": [
       "BT.b+1+2"
@@ -7687,7 +7687,7 @@
     "hitLevel": "",
     "id": "Yoshimitsu-b+2,1,1+2",
     "input": "b+2,1,1+2",
-    "notes": "Segment of the \u00a710.12 self-damage staple route",
+    "notes": "Segment of the §10.12 self-damage staple route",
     "provenance": {
       "patch": "3.02.02",
       "source": "seed",
@@ -7747,7 +7747,7 @@
     "hit": "+0",
     "recovery": "r34 NSS",
     "total": "72",
-    "notes": "* Heat Engager * Heat Dash +5, +43d (+35) * Combo from 1st with 1f delay * Combo from 1st CH with 7f delay * Input can be delayed 14f | Role: Heat Engager variant of b+2,2 in NSS, per \u00a710.8",
+    "notes": "* Heat Engager * Heat Dash +5, +43d (+35) * Combo from 1st with 1f delay * Combo from 1st CH with 7f delay * Input can be delayed 14f | Role: Heat Engager variant of b+2,2 in NSS, per §10.8",
     "tags": [
       "heat-engager"
     ],
@@ -9198,7 +9198,7 @@
     "crush": "cs1~",
     "recovery": "r24 FC",
     "total": "34",
-    "notes": "* Transition to r24 with f * Transition input can be delayed 16f | Role: Crouch jab; punishes -10 after blocking a low, per \u00a710.7",
+    "notes": "* Transition to r24 with f * Transition input can be delayed 16f | Role: Crouch jab; punishes -10 after blocking a low, per §10.7",
     "tags": [
       "high-crush",
       "punisher-crouching"
@@ -9415,7 +9415,7 @@
     "crush": "js9~32 fs33~35",
     "recovery": "r36",
     "total": "58",
-    "notes": "* Balcony Break * Floor Break | Role: Launch punishable at -19, per \u00a710.13; no other values stated in \u00a710",
+    "notes": "* Balcony Break * Floor Break | Role: Launch punishable at -19, per §10.13; no other values stated in §10",
     "tags": [
       "balcony-break",
       "floor-break",
@@ -9508,7 +9508,7 @@
     "hit": "+9c",
     "recovery": "r33 1SS",
     "total": "81",
-    "notes": "* Floor Break * Weapon * Combo from 1st hit with 4f delay * Input can be delayed 4f * Move can be delayed 3f * Interrupt with i6 from 1st block * Transition to FLE on hit only * Power up in NSS or Heat | Role: Enters Flea (FLE) on hit, per \u00a710.5",
+    "notes": "* Floor Break * Weapon * Combo from 1st hit with 4f delay * Input can be delayed 4f * Move can be delayed 3f * Interrupt with i6 from 1st block * Transition to FLE on hit only * Power up in NSS or Heat | Role: Enters Flea (FLE) on hit, per §10.5",
     "tags": [
       "floor-break"
     ],
@@ -9672,7 +9672,7 @@
       "fetchedAt": "2026-10-29T19:34:27.387Z",
       "status": "sourced"
     },
-    "notes": "Root of ws1,2; no frame values stated in \u00a710"
+    "notes": "Root of ws1,2; no frame values stated in §10"
   },
   {
     "id": "Yoshimitsu-ws1,1",

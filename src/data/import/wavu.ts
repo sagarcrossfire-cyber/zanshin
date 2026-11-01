@@ -273,7 +273,8 @@ export function mapCargoRow(
     num: rowNumber(row, 'Move.num'),
     input,
     parentId,
-    name: rowString(row, 'Move.name') || undefined,
+    // Wavu's Cargo API returns names entity-escaped (Enma&#039;s Flame).
+    name: decodeEntities(rowString(row, 'Move.name') ?? '').trim() || undefined,
     aliases: splitList(cleanField(rowString(row, 'Move.alias'))),
     altInputs: splitList(cleanField(rowString(row, 'Move.alt'))),
     stance: parseStancePrefix(input),

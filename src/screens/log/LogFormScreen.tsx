@@ -39,6 +39,14 @@ const TALLY_FIELDS: Array<{ key: keyof Tallies; label: string }> = [
   { key: 'okiConverted', label: 'Oki converted' },
 ];
 
+/** Release 1.4.0: tallies grouped by what happened, instead of one long list. */
+const TALLY_GROUPS: Array<{ title: string; keys: Array<keyof Tallies> }> = [
+  { title: 'Punishing', keys: ['missedPunishes', 'hitWhileMinus'] },
+  { title: 'Flash and spin', keys: ['flashHit', 'flashBlocked', 'flashWhiffed', 'spinEscaped', 'spinPunished'] },
+  { title: 'Defence', keys: ['throwsBroken', 'throwsMissed', 'lowsBlocked', 'lowsEaten'] },
+  { title: 'Heat and oki', keys: ['heatConverted', 'heatWasted', 'okiConverted'] },
+];
+
 const ANSWER_KINDS: Array<{ value: AnswerKind; label: string }> = [
   { value: 'punish', label: 'Punish' },
   { value: 'block-high', label: 'Block high' },
@@ -214,10 +222,18 @@ export function LogFormScreen() {
       </Card>
 
       <Card title="Tallies">
-        {TALLY_FIELDS.map((field) => (
-          <CountStepper key={field.key} label={field.label} value={tallies[field.key]}
-            onChange={(v) => setTallies({ ...tallies, [field.key]: v })} />
-        ))}
+        <p className="z-caption">Count what happened across the set. Tap + as it happens, or fill it in after.</p>
+        <div className="z-log__groups">
+          {TALLY_GROUPS.map((group) => (
+            <fieldset key={group.title} className="z-log__group">
+              <legend className="z-log__group-title">{group.title}</legend>
+              {TALLY_FIELDS.filter((field) => group.keys.includes(field.key)).map((field) => (
+                <CountStepper key={field.key} label={field.label} value={tallies[field.key]}
+                  onChange={(v) => setTallies({ ...tallies, [field.key]: v })} />
+              ))}
+            </fieldset>
+          ))}
+        </div>
       </Card>
 
       <Card title="What beat me">

@@ -2,6 +2,7 @@
 // session (drills by search/node/type, minutes, reorder), add verify tasks
 // from open conflicts, or resume a draft (including P4 "Practice this"
 // sessions, which arrive paused).
+import { PageHeader } from '../../components/layout/PageHeader';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
@@ -92,6 +93,7 @@ export function LabScreen() {
 
   return (
     <div className="z-lab-screen">
+      <PageHeader eyebrow="The dojo" title="Lab" lede="Drills beside the TV: run today’s plan block by block, or pick a drill and practise it alone." />
       <Card title="Today's planned session">
         <p className="z-body-l">Run the plan for today, block by block, beside the TV.</p>
         <Button onClick={startPlanned}>Start today’s session</Button>

@@ -1,10 +1,23 @@
-/* Card — spec §4.5: no shadow; one surface step + 1px --line border. */
+/* Card — release 1.4.0: a glass panel over the scene. Translucent surface,
+ * blur, a lit top edge in the scheme's accent, soft depth. */
 .z-card {
-  background: var(--surface); border: 1px solid var(--line);
-  border-radius: var(--radius-card); padding: var(--space-4);
+  position: relative;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(16px) saturate(1.25); backdrop-filter: blur(16px) saturate(1.25);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card); padding: var(--space-5);
+  box-shadow: var(--shadow-panel);
 }
-.z-card--raised { background: var(--raised); }
-.z-card--interactive { cursor: pointer; text-align: left; width: 100%; }
-.z-card--interactive:hover { border-color: var(--line-strong); }
-.z-card__title { font-family: var(--font-sans); font-weight: 600; font-size: 20px; line-height: 28px; }
-.z-card__header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-2); }
+.z-card::before {
+  content: ''; position: absolute; left: var(--space-5); right: var(--space-5); top: -1px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-line), transparent);
+  opacity: 0.7; pointer-events: none;
+}
+.z-card--raised { background: var(--glass-strong); }
+.z-card--interactive { cursor: pointer; text-align: left; width: 100%; transition: border-color var(--dur-standard) var(--ease-enter), transform var(--dur-standard) var(--ease-enter); }
+.z-card--interactive:hover { border-color: var(--accent-line); transform: translateY(-1px); }
+.z-card__title { font-family: var(--font-display); font-weight: 700; font-size: 21px; line-height: 28px; }
+.z-card__header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); }
+.z-card > * + * { margin-top: var(--space-3); }
+.z-card > .z-card__header + * { margin-top: 0; }
+@media (max-width: 599px) { .z-card { padding: var(--space-4); } .z-card::before { left: var(--space-4); right: var(--space-4); } }

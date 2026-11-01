@@ -13,7 +13,7 @@ export function Stepper({ steps, currentIndex, large = true, onStepClick, ariaLa
     <ol className={`z-stepper${large ? ' z-stepper--large' : ''}`} aria-label={ariaLabel}>
       {steps.map((s, i) => {
         const done = i < currentIndex; const current = i === currentIndex;
-        const content = (<><span className="z-stepper__dot" aria-hidden="true">{done ? '✓' : i + 1}</span><span className="z-label">{s.label}</span></>);
+        const content = (<><span className="z-stepper__dot" aria-hidden="true">{done ? '✓' : i + 1}</span><span className="z-label z-stepper__label">{s.label}</span></>);
         return (
           <li key={s.id}>
             {onStepClick ? (

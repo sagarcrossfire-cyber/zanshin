@@ -1,0 +1,5 @@
+/* PageHeader — release 1.4.0. Tokens only. */
+.z-page-header { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-2); }
+.z-page-header .z-page-title { margin: 0; }
+.z-page-header__lede { color: var(--text-2); max-width: 64ch; font-size: 16px; line-height: 24px; }
+.z-page-header__actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }

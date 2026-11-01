@@ -4,6 +4,7 @@
  * site's intel function, cited, kept as research notes with the 'web'
  * badge). Messages render safe Markdown and end with one "Next action:"
  * line; research is prose and never becomes frame data. */
+import { PageHeader } from '../../components/layout/PageHeader';
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
@@ -234,7 +235,7 @@ export function CoachScreen() {
 
   return (
     <main className="z-coach">
-      <h1>Coach</h1>
+      <PageHeader level={1} eyebrow="Your corner" title="Coach" lede="A weekly review from your numbers, session debriefs, questions answered from your data, and web research with sources." />
       <Tabs
         ariaLabel="Coach sections"
         value={tab}

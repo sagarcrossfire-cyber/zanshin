@@ -1,0 +1,31 @@
+/* FrameLegend — release 1.4.0. A grid of short explanations with live samples. */
+.z-legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-3); }
+.z-legend__block {
+  padding: var(--space-4); border-radius: var(--radius-control);
+  background: var(--glass-strong); border: 1px solid var(--glass-border);
+  display: flex; flex-direction: column; gap: var(--space-2); min-width: 0;
+}
+.z-legend__block--wide { grid-column: 1 / -1; }
+.z-legend__title { display: flex; align-items: center; gap: var(--space-3); font-family: var(--font-sans); font-size: 15px; line-height: 20px; font-weight: 700; margin: 0; }
+.z-legend__sample {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 56px; min-height: 30px; padding: 0 var(--space-2);
+  border-radius: var(--radius-chip); background: var(--accent-soft); border: 1px solid var(--glass-border);
+}
+.z-legend p { color: var(--text-2); }
+.z-legend__tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: var(--space-2); }
+.z-legend__tier {
+  display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-3);
+  border-radius: var(--radius-chip); background: var(--glass); border: 1px solid var(--glass-border);
+}
+.z-legend__tier .z-frame-value { min-width: 52px; font-size: 17px; font-weight: 600; }
+.z-legend__tier-text { color: var(--text-2); font-size: 13px; line-height: 18px; }
+.z-legend__tier-text strong { color: var(--text-1); font-size: 14px; }
+.z-legend__defs { display: grid; gap: var(--space-2); margin: 0; }
+.z-legend__defs > div { display: grid; grid-template-columns: 48px 1fr; gap: var(--space-3); align-items: baseline; }
+.z-legend__defs dt { color: var(--accent); font-weight: 600; }
+.z-legend__defs dd { margin: 0; color: var(--text-2); font-size: 14px; line-height: 20px; }
+.z-legend__defs--levels > div { grid-template-columns: 64px 1fr; align-items: center; }
+.z-legend__defs--status > div { grid-template-columns: minmax(150px, auto) 1fr; align-items: center; }
+.z-legend__defs--stances { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+.z-legend__defs--stances > div { grid-template-columns: 44px 1fr; }
+.z-legend--compact { grid-template-columns: 1fr; }

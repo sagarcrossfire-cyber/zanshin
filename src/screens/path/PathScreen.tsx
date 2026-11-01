@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
 import { Card } from '../../components/base/Card';
+import { Hanko } from '../../components/decor/Ornaments';
+import { IconLock } from '../../components/icons';
 import { Chip } from '../../components/base/Chip';
 import { EnsoRing, type EnsoState } from '../../components/signature/EnsoRing';
 import { loadCurriculum } from '../../data/packs';
@@ -21,6 +23,8 @@ function ensoState(state: Mastery['state'], stageLocked: boolean): EnsoState {
   if (state === 'rusty') return 'rusty';
   return 'active';
 }
+
+const ACT_KANJI: Record<string, string> = { shu: '守', ha: '破', ri: '離' };
 
 export function PathScreen() {
   const navigate = useNavigate();
@@ -61,10 +65,17 @@ export function PathScreen() {
 
   return (
     <div className="z-path">
-      <h2 className="z-title">The Path — Shu · Ha · Ri</h2>
+      <header className="z-path__head">
+        <p className="z-eyebrow">From controls to Tekken King</p>
+        <h2 className="z-page-title">The Path — Shu · Ha · Ri</h2>
+        <p className="z-path__lede">Shu: learn the form. Ha: break it to fit you. Ri: leave it behind. Each stage ends in a gate; a passed stage gets its seal and never re-locks.</p>
+      </header>
       <div className="z-path__stages">
         {views.map((view) => (
-          <Card key={view.stageId} title={`${view.act.toUpperCase()} · Stage ${view.index}: ${view.title}`}>
+          <Card key={view.stageId} className={`z-path__stage z-path__stage--${view.state}`} data-act={view.act}
+            title={`${view.act.toUpperCase()} · Stage ${view.index}: ${view.title}`}
+            headerAction={view.state === 'passed' ? <Hanko size={40} /> : view.state === 'locked' ? <span className="z-path__lock"><IconLock size={20} /></span> : <span className="z-path__open">Open</span>}>
+            <span className="z-path__kanji" aria-hidden="true">{ACT_KANJI[view.act] ?? ''}</span>
             <p className="z-body-l">{view.goal}</p>
             <p className="z-label">
               {view.state === 'passed'

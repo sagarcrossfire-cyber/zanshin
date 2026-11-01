@@ -3,13 +3,13 @@
 // immediately, so a reload resumes at the same step with values intact
 // (AC-ONB-3). Choosing the baseline at Calibration runs it before the
 // Placement step (P8); placement then reads the latest Assessment.
+import { BrushEnso, Hanko } from '../../components/decor/Ornaments';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
 import { Card } from '../../components/base/Card';
 import { Select } from '../../components/base/Select';
 import { Stepper } from '../../components/base/Stepper';
-import { CharacterHero } from '../../components/media/CharacterArt';
 import { TextField } from '../../components/base/TextField';
 import { InputString } from '../../components/signature/InputString';
 import { FLAGS } from '../../config/flags';
@@ -68,13 +68,18 @@ export function OnboardingScreen() {
     <div className="z-onboarding">
       <Stepper steps={STEPS} currentIndex={step} ariaLabel="Onboarding progress" onStepClick={(i) => { if (i < step) goTo(i); }} />
       {step === 0 && (
-        <Card title="Welcome to ZANSHIN">
-          <CharacterHero name="Yoshimitsu" />
+        <section className="z-onboarding__welcome" aria-labelledby="ob-welcome">
+          <div className="z-onboarding__mark" aria-hidden="true">
+            <BrushEnso size={180} />
+            <Hanko size={52} className="z-onboarding__seal" />
+          </div>
+          <p className="z-eyebrow">Yoshimitsu mastery</p>
+          <h3 id="ob-welcome" className="z-onboarding__title">Welcome to ZANSHIN</h3>
           <p className="z-body-l">A calm, candid coach for your Yoshimitsu — from first controls to Tekken King.</p>
           <p className="z-body-l">Your data stays on this device. No account, no cloud, no uploads.</p>
-          <p className="z-body-l">残心 — lingering mind: finish the move, then stay ready for the next one.</p>
+          <p className="z-onboarding__motto"><span lang="ja">残心</span> — lingering mind: finish the move, then stay ready for the next one.</p>
           <Button onClick={() => goTo(1)}>Get started</Button>
-        </Card>
+        </section>
       )}
       {step === 1 && (
         <Card title="Your profile">

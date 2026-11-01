@@ -4,6 +4,7 @@
 // last known state and a retry, never an error page (AC-PATCH-1). Release
 // 1.3.0 adds "Explain this update": a web-sourced brief on the changed
 // moves from the site's intel function, kept as a research note.
+import { PageHeader } from '../../components/layout/PageHeader';
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
@@ -156,6 +157,7 @@ export function PatchWatchScreen() {
 
   return (
     <div className="z-patch">
+      <PageHeader eyebrow="Balance patches" title="Patch Watch" lede="Your frame data against Wavu Wiki: check for updates, see what changed, and re-verify in Practice." />
       <Card title="Current data">
         <dl className="z-patch__facts">
           <dt>Patch</dt>
@@ -257,11 +259,20 @@ export function PatchWatchScreen() {
         {state.conflicts.length === 0 ? (
           <p className="z-body-l">No open data conflicts. Changed moves add verify tasks here after an update.</p>
         ) : (
-          <ul className="z-patch__changes">
+          <ul className="z-patch__conflicts">
             {state.conflicts.map((conflict) => (
-              <li key={conflict.id}>
-                {conflict.entityId} — {conflict.field}:{' '}
-                {conflict.values.map((v) => `${v.source}: ${v.value}`).join(' vs ')}
+              <li key={conflict.id} className="z-patch__conflict">
+                <p className="z-patch__conflict-head">
+                  {conflict.entityId.includes('-')
+                    ? <Link to={`/codex/moves/${encodeURIComponent(conflict.entityId)}`}>{conflict.entityId.replace(/^Yoshimitsu-?/, '') || conflict.entityId}</Link>
+                    : <strong>{conflict.entityId}</strong>}
+                  <span className="z-patch__field">{conflict.field}</span>
+                </p>
+                <dl className="z-patch__values">
+                  {conflict.values.map((v, i) => (
+                    <div key={i}><dt>{v.source}</dt><dd>{v.value}</dd></div>
+                  ))}
+                </dl>
               </li>
             ))}
           </ul>
