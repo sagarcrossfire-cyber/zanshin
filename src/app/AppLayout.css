@@ -27,6 +27,15 @@
   .z-topbar__badge .z-data-badge > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 }
 .z-offline, .z-safe-mode { margin: 0; padding: var(--space-2) var(--space-4); background: var(--glass-strong); color: var(--text-1); font-size: 13px; line-height: 18px; text-align: center; border-bottom: 1px solid var(--glass-border); }
+/* 1.4.1: the site sign-in expired, so updates cannot download. */
+.z-signin {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--space-3) var(--space-4);
+  margin: 0; padding: var(--space-3) var(--space-4);
+  background: var(--glass-strong); color: var(--text-1);
+  border-bottom: 1px solid var(--glass-border); border-top: 3px solid var(--warning);
+}
+.z-signin__text { margin: 0; max-width: 64ch; font-size: 14px; line-height: 20px; }
+.z-signin__actions { display: flex; gap: var(--space-2); flex: none; }
 .z-body { flex: 1; display: flex; min-height: 0; }
 .z-main { flex: 1; min-width: 0; padding: var(--space-5) var(--space-4); padding-bottom: calc(var(--space-6) + 72px); max-width: 880px; margin: 0 auto; width: 100%; }
 .z-rail { display: none; }

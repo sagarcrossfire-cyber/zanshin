@@ -70,5 +70,5 @@
     "build:standalone": "vite build --config vite.standalone.config.ts"
   },
   "type": "module",
-  "version": "1.4.0"
+  "version": "1.4.1"
 }
