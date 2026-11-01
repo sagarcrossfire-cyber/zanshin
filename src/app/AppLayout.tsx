@@ -1,8 +1,9 @@
 // App shell — spec §5.1/§4.5/§4.13. Top bar (screen title + data-status
 // badge), offline indicator, one toast region, bottom tab bar on phones,
 // left rail on tablets/desktops. Lab Mode scales type via the .z-lab class.
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Button } from '../components/base/Button';
 import { DataBadge } from '../components/base/DataBadge';
 import { Scene } from '../components/decor/Scene';
 import { IconCodex, IconLab, IconLog, IconPath, IconSettings, IconToday } from '../components/icons';
@@ -11,6 +12,7 @@ import { isSafeMode, setSafeMode } from '../config/safeMode';
 import { DATA_PATCH, DATA_SOURCE } from '../data/packs';
 import { runIntegrityChecks } from '../services/diagnostics';
 import { releaseWakeLock } from '../services/labMode';
+import { dismissSignInBanner, isSignInBannerVisible, signInAgain, subscribeSiteAccess } from '../services/siteAccess';
 import {
   mayShowUpdateToast,
   reloadForUpdate,
@@ -53,6 +55,7 @@ export function AppLayout() {
   const dismissToast = useAppStore((s) => s.dismissToast);
   const pushToast = useAppStore((s) => s.pushToast);
   const online = useAppStore((s) => s.online);
+  const signInExpired = useSyncExternalStore(subscribeSiteAccess, isSignInBannerVisible, () => false);
   const setOnline = useAppStore((s) => s.setOnline);
   const labMode = useAppStore((s) => s.labMode);
   const ready = useAppStore((s) => s.ready);
@@ -218,6 +221,18 @@ export function AppLayout() {
         <span className="z-topbar__badge"><DataBadge status="sourced" detail={`${DATA_SOURCE} · ${DATA_PATCH}`} /></span>
       </header>
       {safeBanner}
+      {signInExpired && (
+        <section className="z-signin" role="status" aria-label="Site sign-in">
+          <p className="z-signin__text">
+            <strong>Your sign-in to this site has expired.</strong> ZANSHIN still runs from its saved copy, but it
+            can&rsquo;t download updates until you sign in again. Your data stays on this device either way.
+          </p>
+          <div className="z-signin__actions">
+            <Button onClick={() => { void signInAgain(); }}>Sign in again</Button>
+            <Button variant="secondary" onClick={dismissSignInBanner}>Later</Button>
+          </div>
+        </section>
+      )}
       {!online && (
         <p className="z-offline" role="status">
           Offline — your data stays on this device and syncs nowhere.

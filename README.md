@@ -80,3 +80,4 @@ docs            amendments and release notes
 - 1.2.0 — bundled media served by the site, GitHub Actions pipeline with Netlify deploys, security and caching headers. `docs/RELEASE_1.2.0.md`.
 - 1.3.0 — intelligence: coach on frontier models through the site's own function, Look it up with sources, matchup primers, patch briefs, daily spend cap (schema v5). `docs/RELEASE_1.3.0.md`.
 - 1.4.0 — redesign "Ink and steel": four colour schemes, scene art behind every screen, uncropped stage heroes and portrait grid, a frame-data key and a readable move list. `docs/RELEASE_1.4.0.md`, `docs/redesign/`.
+- 1.4.1 — the app notices an expired site sign-in (which silently blocked updates) and offers "Sign in again"; a version already on the site is fetched right away. `docs/RELEASE_1.4.1.md`.

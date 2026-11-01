@@ -1,6 +1,9 @@
+import { readFileSync } from 'node:fs';
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as { version: string };
 
 /**
  * §13.8 LCP: the three font faces used by the first paint (body 400/500,
@@ -52,6 +55,25 @@ function fontPreloadPlugin(): Plugin {
   };
 }
 
+/**
+ * 1.4.1: /version.json names the deployed release. The app asks for it now
+ * and then (src/services/siteAccess.ts): a 401 means the site sign-in
+ * expired, a different version means a release is out. It is never
+ * precached, so the answer always comes from the site.
+ */
+function versionFilePlugin(): Plugin {
+  return {
+    name: 'zanshin-version-file',
+    generateBundle() {
+      this.emitFile({
+        fileName: 'version.json',
+        source: `${JSON.stringify({ format: 'zanshin-version', version: pkg.version })}\n`,
+        type: 'asset',
+      });
+    },
+  };
+}
+
 export default defineConfig({
   build: {
     chunkSizeWarningLimit: 220,
@@ -83,6 +105,7 @@ export default defineConfig({
   plugins: [
     react(),
     fontPreloadPlugin(),
+    versionFilePlugin(),
     VitePWA({
       injectRegister: null, // manual registration in main.tsx (Safe Mode skips it)
       // The site sits behind a sign-in (a private Netlify project). Browsers
@@ -109,8 +132,10 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,woff,woff2,json}'],
         // Bundled media (1.2.0) is seeded into IndexedDB by the app, not
         // precached: tens of megabytes do not belong in the service worker.
-        globIgnores: ['media/**'],
+        globIgnores: ['media/**', 'version.json'],
         navigateFallback: 'index.html',
+        // Netlify's own paths (functions, the login) always reach the site.
+        navigateFallbackDenylist: [/^\/\.netlify\//],
         // No runtime caching of Wavu's API (1.2.0): the app keeps its own
         // last-known state for Patch Watch and the importer, and a stale
         // cached API answer offline would make "Check for updates" claim the

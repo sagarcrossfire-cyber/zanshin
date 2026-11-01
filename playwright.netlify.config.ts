@@ -1,7 +1,7 @@
 // End-to-end run against `dist` served the way Netlify serves it (headers
 // from public/_headers, rules from public/_redirects), so the Content
 // Security Policy and caching headers are exercised before a deploy. Runs
-// the smoke, media and PWA specs on the desktop project only.
+// the smoke, media, PWA and site sign-in specs on the desktop project only.
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
@@ -12,7 +12,7 @@ export default defineConfig({
   reporter: [['list']],
   retries: 1,
   testDir: 'tests/e2e',
-  testMatch: ['smoke.spec.ts', 'media.spec.ts', 'pwa-resilience.spec.ts', 'today-path.spec.ts'],
+  testMatch: ['smoke.spec.ts', 'media.spec.ts', 'pwa-resilience.spec.ts', 'today-path.spec.ts', 'site-access.spec.ts'],
   timeout: 60000,
   use: { trace: 'retain-on-failure' },
   webServer: {

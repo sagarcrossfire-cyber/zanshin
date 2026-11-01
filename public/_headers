@@ -26,6 +26,8 @@
   Cache-Control: public, max-age=0, must-revalidate
 /media/manifest.json
   Cache-Control: public, max-age=0, must-revalidate
+/version.json
+  Cache-Control: no-store
 
 # Hashed assets and content-addressed media never change under the same name.
 /assets/*

@@ -11,7 +11,9 @@ import { isSafeMode } from './config/safeMode';
 import { SCHEMA_VERSION, V1_STORES, V2_STORES, V3_STORES, V4_STORES, V5_STORES } from './data/db';
 import { isDatabaseClosedError } from './data/dbErrors';
 import { ensureMigratedSafely } from './data/migrate';
+import { APP_VERSION } from './services/backup';
 import { recordError, reportUnexpectedError } from './services/errorReport';
+import { startSiteAccessWatch } from './services/siteAccess';
 import { setUpdatePending, setUpdateReloader } from './services/updateGate';
 import { useAppStore } from './stores/appStore';
 import './styles/tokens.css';
@@ -62,9 +64,13 @@ async function bootstrap(): Promise<void> {
   // The worker still installs on the first visit, just after first paint.
   if (!isSafeMode()) {
     const register = (): void => {
+      let registration: ServiceWorkerRegistration | undefined;
       const updateSW = registerSW({
         onNeedRefresh() {
           setUpdatePending(true);
+        },
+        onRegisteredSW(_url, registered) {
+          registration = registered;
         },
         onRegisterError(error) {
           recordError('pwa.registerSW', error);
@@ -72,6 +78,15 @@ async function bootstrap(): Promise<void> {
       });
       setUpdateReloader(() => {
         void updateSW(true);
+      });
+      // 1.4.1: notice an expired site sign-in (updates would fail silently)
+      // and, when the site already serves another version, ask the worker
+      // to fetch it now instead of on some later navigation.
+      startSiteAccessWatch({
+        appVersion: APP_VERSION,
+        onOtherVersion() {
+          registration?.update().catch((error: unknown) => recordError('pwa.update', error));
+        },
       });
     };
     const idle = (window as Window & { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback;
