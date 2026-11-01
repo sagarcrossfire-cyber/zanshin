@@ -8,8 +8,8 @@ import { DEFAULT_COACH_MODEL, isIntelModel, type IntelModel } from '../../intel/
 import { CoachUnavailable, type CoachProvider, type CoachRequest, type CoachResponse } from './index';
 
 export const ZANSHIN_COACH_URL = '/.netlify/functions/intel/coach';
-/** The function itself gives up at 9 s; this only covers a dead connection. */
-export const ZANSHIN_TIMEOUT_MS = 20_000;
+/** The function itself gives the provider 45 s; this only covers a dead connection. */
+export const ZANSHIN_TIMEOUT_MS = 50_000;
 
 export interface ZanshinConfig {
   model?: string;

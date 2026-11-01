@@ -7,6 +7,9 @@
 // https://docs.perplexity.ai/docs/agent-api/tools (shapes as of Oct 2026).
 
 export const AGENT_API_URL = 'https://api.perplexity.ai/v1/agent';
+/** 2.0 M1: Netlify's synchronous function limit is 60 s, so a call may run
+ * 45 s (it was 9 s, from the 1.3 belief that functions stop at 10 s). */
+export const AGENT_TIMEOUT_MS = 45_000;
 
 export {
   DEFAULT_COACH_MODEL, DEFAULT_RESEARCH_MODEL, INTEL_MODELS, isIntelModel, type IntelModel,
@@ -139,7 +142,7 @@ export interface AgentCallOptions {
 export async function callAgent(apiKey: string, body: AgentRequestBody, options: AgentCallOptions = {}): Promise<AgentResult> {
   const fetchFn = options.fetchFn ?? fetch;
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), options.timeoutMs ?? 9000);
+  const timer = setTimeout(() => controller.abort(), options.timeoutMs ?? AGENT_TIMEOUT_MS);
   const onAbort = (): void => controller.abort();
   options.signal?.addEventListener('abort', onAbort, { once: true });
   try {
