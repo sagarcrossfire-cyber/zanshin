@@ -2,7 +2,7 @@
 // touch IndexedDB. Every change persists immediately.
 import { loadCurriculum } from '../data/packs';
 import {
-  conflictsRepo, masteryRepo, matchSetsRepo, sessionsRepo, setsRepo, verificationsRepo,
+  conflictsRepo, masteryRepo, matchSetsRepo, sessionsRepo, setsRepo, stageStatusRepo, verificationsRepo,
 } from '../data/repos';
 import type { DataConflict, DrillSet, MatchSet, Session, SessionBlock, VerificationRecord } from '../data/schemas';
 import { computeMastery, type MasteryResult } from '../domain/engine/mastery';
@@ -125,7 +125,9 @@ export async function recomputeNodeMastery(nodeId: string, nowIso: string): Prom
   const curriculum = loadCurriculum();
   const node = curriculum.nodes.find((n) => n.id === nodeId);
   if (!node) return null;
-  const [sets, matchSets] = await Promise.all([setsRepo.allByNode(nodeId), matchSetsRepo.all()]);
+  const [sets, matchSets, stageStatus] = await Promise.all([
+    setsRepo.allByNode(nodeId), matchSetsRepo.all(), stageStatusRepo.get(node.stageId),
+  ]);
   const previous = await masteryRepo.get(nodeId);
   const drill = curriculum.drills.find((d) => d.nodeId === nodeId);
   const stageIndex = curriculum.stages.findIndex((s) => s.id === node.stageId);
@@ -141,7 +143,11 @@ export async function recomputeNodeMastery(nodeId: string, nowIso: string): Prom
     kpis,
     now: nowIso,
     previousState: previous?.state ?? null,
-    stageOpen: stageIndex === 0,
+    // 2.0 fix (RCA 2026-11-01): a stage is open when it is the first one or
+    // its stored status says open/passed. 1.x passed `stageIndex === 0`, so
+    // practising any Stage 1+ lesson saved it as locked and no later stage
+    // could ever reach its 80 %-solid gate.
+    stageOpen: stageIndex === 0 || stageStatus?.state === 'open' || stageStatus?.state === 'passed',
     prerequisitesMet: true,
   });
   await masteryRepo.put({

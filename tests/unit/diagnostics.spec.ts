@@ -43,8 +43,8 @@ describe('validateAllPacks', () => {
 describe('runIntegrityChecks (AC-DIAG-1)', () => {
   it('passes on an empty DB with no orphans and no repairs', async () => {
     const report = await runIntegrityChecks();
-    // Seven §14.2 checks plus Amendment 01B's media check.
-    expect(report.checks).toHaveLength(8);
+    // Seven §14.2 checks, Amendment 01B's media check, and 2.0's stage-lock repair.
+    expect(report.checks).toHaveLength(9);
     expect(report.checks.map((c) => c.id)).toContain('media');
     expect(report.checks.every((c) => c.passed)).toBe(true);
     expect(report.orphans).toEqual([]);
