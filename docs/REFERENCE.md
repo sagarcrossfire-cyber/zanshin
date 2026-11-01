@@ -166,6 +166,8 @@ way; otherwise fix and report after.
 | ESLint fails on files you never touched | Stray scratch files inside the repo | Keep scratch in the scratchpad, never the repo |
 | Blank app at runtime, "reading 'exports'" | Over-eager `manualChunks` split a CJS dependency across chunks | Only the gated library groups in `vite.config.ts` |
 | Contrast unit test fails after a token tweak | `--art-plate` mix share is part of the tested pair | Keep 90 % or re-run the contrast spec per scheme |
+| A size or colour changes after unrelated imports | Two single-class rules tie on specificity; bundle order decides | State the intended value on the more specific component rule; never rely on CSS order |
+| axe `label-content-name-mismatch` | `aria-label` doesn't contain the visible text | Make the label start with (or equal) the visible text |
 | Media audit 404s | Media root resolved relative to the script | Pass the media root explicitly |
 | E3 debrief "Mastery … → …" missing once (desktop, under load) | Open: debrief renders before mastery deltas are computed | Watch; if it recurs, make the debrief wait for the deltas (and test it) |
 
