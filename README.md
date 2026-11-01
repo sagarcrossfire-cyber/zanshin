@@ -8,7 +8,7 @@ Unofficial. TEKKEN is a registered trademark of Bandai Namco Entertainment Inc.;
 
 React 18 · TypeScript (strict) · Vite 6 · Zustand · Dexie (IndexedDB) · Zod · vite-plugin-pwa · Vitest · Playwright · axe.
 
-Rules the code base keeps (enforced by ESLint rules and `scripts/check-*.mjs`): only repositories touch IndexedDB; screens never call `fetch`; no colour literals outside `src/styles/tokens.css`; domain code is pure and covered at 90%+.
+Rules the code base keeps (enforced by ESLint rules and `scripts/check-*.mjs`): only repositories touch IndexedDB; screens never call `fetch`; no colour literals outside `src/styles/tokens.css`; domain code is pure and covered at 90%+. Since 1.4.0: every scheme passes WCAG AA for every text and signal colour (unit test), and no image may be cropped (end-to-end test).
 
 ## Running it
 
@@ -79,3 +79,4 @@ docs            amendments and release notes
 - 1.1.0 — local media library (import packs and files), home-screen install fix (schema v4). `docs/AMENDMENT_01B_LOCAL_MEDIA.md`.
 - 1.2.0 — bundled media served by the site, GitHub Actions pipeline with Netlify deploys, security and caching headers. `docs/RELEASE_1.2.0.md`.
 - 1.3.0 — intelligence: coach on frontier models through the site's own function, Look it up with sources, matchup primers, patch briefs, daily spend cap (schema v5). `docs/RELEASE_1.3.0.md`.
+- 1.4.0 — redesign "Ink and steel": four colour schemes, scene art behind every screen, uncropped stage heroes and portrait grid, a frame-data key and a readable move list. `docs/RELEASE_1.4.0.md`, `docs/redesign/`.

@@ -7,6 +7,7 @@ import { Button } from '../../components/base/Button';
 import { Card } from '../../components/base/Card';
 import { Hanko } from '../../components/decor/Ornaments';
 import { IconLock } from '../../components/icons';
+import { criteriaText } from '../../domain/engine/criteriaLabels';
 import { Chip } from '../../components/base/Chip';
 import { EnsoRing, type EnsoState } from '../../components/signature/EnsoRing';
 import { loadCurriculum } from '../../data/packs';
@@ -112,9 +113,9 @@ export function PathScreen() {
               <p className="z-label">Locked — Stage {nextLockedIndex} comes first.</p>
             )}
             {view.state === 'passed' && view.failedCriteria.length > 0 && (
-              <p className="z-label">Gate criteria currently unmet: {view.failedCriteria.join(', ')} (the seal stands — a passed stage never re-locks).</p>
+              <p className="z-label">Gate criteria currently unmet: {criteriaText(view.failedCriteria)} (the seal stands — a passed stage never re-locks).</p>
             )}
-            {view.state !== 'passed' && <Chip>{`Gate: ${view.failedCriteria.length === 0 ? 'criteria met' : `missed: ${view.failedCriteria.join(', ')}`}`}</Chip>}
+            {view.state !== 'passed' && <Chip>{`Gate: ${view.failedCriteria.length === 0 ? 'criteria met' : `still to do: ${criteriaText(view.failedCriteria)}`}`}</Chip>}
           </Card>
         ))}
       </div>

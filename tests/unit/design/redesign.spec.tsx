@@ -94,3 +94,11 @@ describe('frame-data key', () => {
     expect(SUFFIX_TIPS.c).toBe('Opponent crouching');
   });
 });
+
+describe('gate criteria in plain words', () => {
+  it('names every curriculum metric and falls back to spaced words', async () => {
+    const { criteriaText, criterionLabel } = await import('../../../src/domain/engine/criteriaLabels');
+    expect(criteriaText(['solidShare', 'drillSuccess'])).toBe('80% of nodes solid, drill success');
+    expect(criterionLabel('someNewMetric')).toBe('some new metric');
+  });
+});
