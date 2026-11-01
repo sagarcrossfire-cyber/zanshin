@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   capture:
-    if: ${{ !startsWith(github.event.head_commit.message, 'fixtures: captured') }}
+    if: "!startsWith(github.event.head_commit.message, 'fixtures-captured')"
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -27,5 +27,5 @@ jobs:
           git config user.name "zanshin-fixtures"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f tests/fixtures/ranked
-          git commit -m "fixtures: captured ranked responses (run ${{ github.run_id }})" || echo "nothing to commit"
+          git commit -m "fixtures-captured ranked responses (run ${{ github.run_id }})" || echo "nothing to commit"
           git push origin HEAD:${{ github.ref_name }}
