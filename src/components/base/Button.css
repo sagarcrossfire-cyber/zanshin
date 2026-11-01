@@ -5,7 +5,8 @@
   min-height: 44px; min-width: 44px; padding: var(--space-2) var(--space-5);
   border-radius: var(--radius-control); border: 1px solid transparent;
   font-family: var(--font-sans); font-weight: 600; font-size: 15px; line-height: 22px; text-decoration: none;
-  transition: background var(--dur-press) var(--ease-enter), border-color var(--dur-press) var(--ease-enter), box-shadow var(--dur-standard) var(--ease-enter), opacity var(--dur-press);
+  /* No opacity transition: a button that becomes enabled is fully legible at once. */
+  transition: background var(--dur-press) var(--ease-enter), border-color var(--dur-press) var(--ease-enter), box-shadow var(--dur-standard) var(--ease-enter);
 }
 .z-btn:active { transform: translateY(1px); }
 .z-btn:disabled { opacity: 0.45; cursor: not-allowed; }

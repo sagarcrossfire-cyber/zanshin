@@ -93,6 +93,7 @@ test('media pack: import, art across the app, stable layout, art off', async ({ 
   await completeOnboarding(page);
   await importPack(page);
 
+  await expect(page.getByRole('button', { name: 'Export media pack' })).toBeEnabled();
   const axeMedia = await new AxeBuilder({ page: page as never }).analyze();
   const seriousMedia = axeMedia.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
   expect(seriousMedia, JSON.stringify(seriousMedia, null, 2)).toEqual([]);
