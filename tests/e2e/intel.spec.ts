@@ -94,7 +94,7 @@ test('Ask through the site: the answer renders with one Next action and the chos
   await expect(page.getByText('Settings saved.')).toBeVisible();
 
   await page.goto('/coach');
-  await page.getByRole('tab', { name: 'Ask' }).click();
+  await page.getByRole('link', { name: 'Ask', exact: true }).click();
   await expect(page.getByText(/intelligence function \(Claude Sonnet 5.5\)/)).toBeVisible();
   await page.getByLabel('Ask the coach').fill('What should I drill today?');
   await page.getByRole('button', { name: 'Send' }).click();
@@ -116,7 +116,7 @@ test('Look it up: web answer with sources and the web badge; Keep stores a resea
   await mockIntel(page, seen);
   await completeOnboarding(page);
   await page.goto('/coach');
-  await page.getByRole('tab', { name: 'Look it up' }).click();
+  await page.getByRole('link', { name: 'Look it up', exact: true }).click();
   await page.getByLabel('What do you want to know?').fill('How do Yoshimitsu players deal with Kazuya f,f+2?');
   await page.getByRole('button', { name: 'Look it up' }).click();
   const answer = page.getByTestId('lookup-answer');
@@ -133,7 +133,7 @@ test('Look it up: web answer with sources and the web badge; Keep stores a resea
   await expect(answer.getByRole('button', { name: 'Kept', exact: true })).toBeDisabled();
   await expect(page.getByTestId('research-kept')).toHaveCount(1);
   await page.reload();
-  await page.getByRole('tab', { name: 'Look it up' }).click();
+  await page.getByRole('link', { name: 'Look it up', exact: true }).click();
   const kept = page.getByTestId('research-kept');
   await expect(kept).toHaveCount(1);
   await kept.locator('summary').click();
@@ -146,7 +146,7 @@ test('Look it up: the daily cap and a missing key are explained in plain words',
   await completeOnboarding(page);
   await page.route(INTEL, (route) => json(route, { capUsd: 3, error: 'Daily intel budget reached ($3.00 of $3.00). Try again tomorrow.', todayUsd: 3.01 }, 429));
   await page.goto('/coach');
-  await page.getByRole('tab', { name: 'Look it up' }).click();
+  await page.getByRole('link', { name: 'Look it up', exact: true }).click();
   await page.getByLabel('What do you want to know?').fill('Anything');
   await page.getByRole('button', { name: 'Look it up' }).click();
   await expect(page.getByRole('alert')).toContainText('Daily intel budget reached');
@@ -200,7 +200,7 @@ test('Diagnostics reports the intelligence function; axe passes on the new surfa
   for (const step of ['primer', 'lookup'] as const) {
     if (step === 'lookup') {
       await page.goto('/coach');
-      await page.getByRole('tab', { name: 'Look it up' }).click();
+      await page.getByRole('link', { name: 'Look it up', exact: true }).click();
       await page.getByLabel('What do you want to know?').fill('Kazuya');
       await page.getByRole('button', { name: 'Look it up' }).click();
       await expect(page.getByTestId('lookup-answer')).toBeVisible();

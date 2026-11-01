@@ -39,7 +39,9 @@ for (const theme of ['dark', 'light'] as const) {
 test('focus moves to the screen title on route change (§4.12)', async ({ page }) => {
   await completeOnboarding(page);
   await expect(page.locator('#main')).toBeVisible();
-  await page.locator('a:visible', { hasText: /^Codex$/ }).first().click();
+  // 2.0: the Codex lives under the Study hub (dock on phones, rail on desktops).
+  // By accessible name: the desktop rail adds an aria-hidden kanji to the text.
+  await page.getByRole('link', { name: 'Study', exact: true }).first().click();
   await expect(page).toHaveURL(/\/codex\/moves$/);
   // Focus lands on the title after navigation + render; poll for the
   // settled state instead of racing the route-change effect.

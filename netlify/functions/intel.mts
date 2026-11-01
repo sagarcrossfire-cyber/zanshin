@@ -3,10 +3,12 @@
 // briefs). The site's own sign-in gates who can call it; the daily spending
 // cap (INTEL_DAILY_CAP_USD, default 3) bounds what any day can cost. Logic
 // lives in src/server/intel so it is unit-tested; this file only wires the
-// environment and Netlify Blobs.
+// environment and Netlify Blobs. Each request logs one `ZT1` breadcrumb
+// (src/server/intel/handler.ts); the provider may take up to 45 s, inside
+// Netlify's 60 s synchronous limit.
 import { getStore } from '@netlify/blobs';
 import type { Context } from '@netlify/functions';
-import { createIntelHandler } from '../../src/server/intel/handler';
+import { INTEL_PROVIDER_TIMEOUT_MS, createIntelHandler } from '../../src/server/intel/handler';
 import { memoryStore, type IntelStore } from '../../src/server/intel/store';
 
 /** Blobs when the environment provides them; otherwise a per-instance memory
@@ -24,8 +26,16 @@ function blobStore(): { store: IntelStore; durable: boolean } {
         async get(key) {
           return (await store.get(key, { type: 'json' })) as unknown | null;
         },
+        async list(prefix) {
+          const { blobs } = await store.list({ prefix });
+          return blobs.map((blob) => blob.key);
+        },
         async set(key, value) {
           await store.setJSON(key, value);
+        },
+        async setIfNew(key, value) {
+          const { modified } = await store.setJSON(key, value, { onlyIfNew: true });
+          return modified;
         },
       },
     };
@@ -47,7 +57,7 @@ export default async (request: Request, _context: Context): Promise<Response> =>
     capUsd: Number.isFinite(capRaw) && capRaw >= 0 ? capRaw : 3,
     durableStore: durable,
     store,
-    timeoutMs: 9000,
+    timeoutMs: INTEL_PROVIDER_TIMEOUT_MS,
   });
   try {
     return await handler(request);

@@ -6,11 +6,10 @@
  * line; research is prose and never becomes frame data. */
 import { PageHeader } from '../../components/layout/PageHeader';
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
 import { Card } from '../../components/base/Card';
 import { SafeModeNote } from '../../components/base/SafeModeNote';
-import { Tabs } from '../../components/base/Tabs';
 import { TextField } from '../../components/base/TextField';
 import { Chip } from '../../components/base/Chip';
 import { isSafeMode } from '../../config/safeMode';
@@ -35,6 +34,11 @@ import './CoachScreen.css';
 
 type CoachTab = 'review' | 'debriefs' | 'ask' | 'lookup';
 
+/* 2.0: each Coach section has its own address (/coach/ask, /coach/review,
+ * /coach/debriefs, /coach/research) so the navigation, the palette and
+ * "Ask the coach about this" can link straight to it. /coach opens Ask. */
+const TAB_BY_SECTION: Record<string, CoachTab> = { ask: 'ask', review: 'review', debriefs: 'debriefs', research: 'lookup' };
+
 const LOOKUP_MODELS: Array<{ value: IntelModel; label: string }> = [
   { label: 'Sonar — grounded search, cheapest', value: 'perplexity/sonar' },
   { label: 'Claude Haiku 5.5 — fast', value: 'anthropic/claude-haiku-5-5' },
@@ -49,7 +53,7 @@ function CitationChips({ citations }: { citations: string[] }) {
   return (
     <div className="z-coach__citations">
       {resolved.map((c) => (
-        <Link key={c.id} to={`/codex/move/${encodeURIComponent(c.id)}`}>
+        <Link key={c.id} to={`/codex/moves/${encodeURIComponent(c.id)}`}>
           <Chip>{c.input}</Chip>
         </Link>
       ))}
@@ -76,7 +80,9 @@ export function CoachScreen() {
   const settings = useAppStore((s) => s.settings);
   const pushToast = useAppStore((s) => s.pushToast);
   const safeMode = isSafeMode();
-  const [tab, setTab] = useState<CoachTab>('review');
+  const params = useParams();
+  const [searchParams] = useSearchParams();
+  const tab: CoachTab = TAB_BY_SECTION[params['section'] ?? 'ask'] ?? 'ask';
   const [reviews, setReviews] = useState<CoachMessage[]>([]);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [reviewError, setReviewError] = useState('');
@@ -84,7 +90,11 @@ export function CoachScreen() {
   const [debriefs, setDebriefs] = useState<Record<string, string>>({});
   const [debriefLoading, setDebriefLoading] = useState<string | null>(null);
   const [messages, setMessages] = useState<CoachMessage[]>([]);
-  const [question, setQuestion] = useState('');
+  // "Ask the coach about this" (2.0) arrives as /coach/ask?about=<what>.
+  const [question, setQuestion] = useState(() => {
+    const about = searchParams.get('about');
+    return about === null || about.trim() === '' ? '' : `About ${about.trim().slice(0, 160)}: `;
+  });
   const [asking, setAsking] = useState(false);
   const [askError, setAskError] = useState('');
   const [copyQuestion, setCopyQuestion] = useState('');
@@ -236,17 +246,6 @@ export function CoachScreen() {
   return (
     <main className="z-coach">
       <PageHeader level={1} eyebrow="Your corner" title="Coach" lede="A weekly review from your numbers, session debriefs, questions answered from your data, and web research with sources." />
-      <Tabs
-        ariaLabel="Coach sections"
-        value={tab}
-        onChange={(id) => setTab(id as CoachTab)}
-        tabs={[
-          { id: 'review', label: 'Weekly review' },
-          { id: 'debriefs', label: 'Debriefs' },
-          { id: 'ask', label: 'Ask' },
-          { id: 'lookup', label: 'Look it up' },
-        ]}
-      />
 
       {tab === 'review' && (
         <section aria-label="Weekly review">

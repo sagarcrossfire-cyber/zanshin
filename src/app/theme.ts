@@ -51,6 +51,24 @@ export function readSchemeChoice(): SchemeChoice {
   }
 }
 
+/** 2.0: the browser/PWA status bar follows the scheme. The colour is read
+ * from the scheme's own token, so no colour literal lives here. */
+export function syncThemeColor(): void {
+  try {
+    const value = getComputedStyle(document.documentElement).getPropertyValue('--scene-top').trim();
+    if (value === '') return;
+    let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    if (meta === null) {
+      meta = document.createElement('meta');
+      meta.name = 'theme-color';
+      document.head.appendChild(meta);
+    }
+    meta.content = value;
+  } catch {
+    // No computed styles (tests, very old browsers): keep the static colour.
+  }
+}
+
 export function applyScheme(scheme: SchemeChoice): void {
   try {
     window.localStorage.setItem(SCHEME_STORAGE_KEY, scheme);
@@ -58,6 +76,7 @@ export function applyScheme(scheme: SchemeChoice): void {
     // Storage unavailable: the scheme still applies for this session.
   }
   document.documentElement.dataset.scheme = scheme;
+  syncThemeColor();
 }
 
 export function applyTheme(choice: ThemeChoice): void {
@@ -68,6 +87,7 @@ export function applyTheme(choice: ThemeChoice): void {
   }
   document.documentElement.dataset.theme = resolveTheme(choice, prefersDarkScheme());
   if (document.documentElement.dataset.scheme === undefined) document.documentElement.dataset.scheme = readSchemeChoice();
+  syncThemeColor();
 }
 
 /** Applies the stored theme and keeps it in sync with OS changes while 'system'. Returns a cleanup function. */

@@ -27,6 +27,13 @@ function Svg({ size = 24, children, ...rest }: IconProps & { children: ReactNode
 }
 
 /* ---------- Navigation (§4.6) ---------- */
+/* 2.0 hub icons (design.md §C.6): a makiwara striking post, a scroll, a
+ * summit with a flag. */
+export const IconTrain = (p: IconProps) => (<Svg {...p}><path d="M12 3v18" /><rect x="8.5" y="5.5" width="7" height="8" rx="1.5" /><path d="M8 21h8" /></Svg>);
+export const IconStudy = (p: IconProps) => (<Svg {...p}><path d="M6.5 4.5H17a2 2 0 0 1 0 4H8.5" /><path d="M6.5 4.5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2H17" /><path d="M8.5 8.5v11" /><path d="M11.5 12h5M11.5 15h3.5" /></Svg>);
+export const IconYou = (p: IconProps) => (<Svg {...p}><path d="M3 19.5 9.5 9l4 6 2.5-3.5 5 8z" /><path d="M15 7.5V3.5l3.5 1.4L15 6.2" /></Svg>);
+export const IconSidebar = (p: IconProps) => (<Svg {...p}><rect x="3.5" y="4.5" width="17" height="15" rx="2" /><path d="M9 4.5v15" /></Svg>);
+export const IconPlus = (p: IconProps) => (<Svg {...p}><path d="M12 5v14M5 12h14" /></Svg>);
 export const IconToday = (p: IconProps) => (<Svg {...p}><path d="M4 19a8 8 0 0 1 16 0" /><path d="M12 11V6" /><path d="M8 19h8" /></Svg>);
 export const IconPath = (p: IconProps) => (<Svg {...p}><circle cx="5" cy="19" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="19" cy="5" r="1.6" /><path d="M6.5 17.5 10.5 13.5M13.5 10.5 17.5 6.5" strokeDasharray="2 2.5" /></Svg>);
 export const IconLab = (p: IconProps) => (<Svg {...p}><circle cx="12" cy="13" r="7.5" /><path d="M12 9.5V13l2.5 1.5" /><path d="M9.5 2.5h5" /><path d="M12 2.5V6" /></Svg>);

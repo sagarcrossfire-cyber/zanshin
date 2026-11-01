@@ -505,6 +505,9 @@ export const settingsSchema = z.object({
   /** Add the images and clips the site itself serves (its /media folder) on
    * this device automatically; default true. Release 1.2.0. */
   mediaBundledAuto: z.boolean().optional(),
+  /** Send sanitized error reports to the site's diag function (2.0 M1);
+   * absent means true. Never carries notes, logs, coach text or keys. */
+  telemetry: z.boolean().optional(),
 });
 export type Settings = z.infer<typeof settingsSchema>;
 

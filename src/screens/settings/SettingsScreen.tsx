@@ -52,6 +52,8 @@ export function SettingsScreen() {
   const [kpi, setKpi] = useState<Record<string, { value: string; disabled: boolean }> | null>(null);
   const [includePacks, setIncludePacks] = useState(false);
   const [includeSecrets, setIncludeSecrets] = useState(false);
+  // Error reports (2.0 M1); null until changed, then the draft value.
+  const [telemetry, setTelemetry] = useState<boolean | null>(null);
   const [dataMessage, setDataMessage] = useState('');
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [restoreId, setRestoreId] = useState<string | null>(null);
@@ -126,6 +128,7 @@ export function SettingsScreen() {
 
   if (!profile || !settings || !draft || !coach || !lab || !kpi) return <main><p>Loading…</p></main>;
 
+  const telemetryOn = telemetry ?? settings.telemetry !== false;
   const set = (p: Partial<Profile>) => setDraft({ ...draft, ...p });
   const setCoachField = (p: Partial<typeof coach>) => setCoach({ ...coach, ...p });
   const setLabField = (p: Partial<typeof lab>) => setLab({ ...lab, ...p });
@@ -147,7 +150,7 @@ export function SettingsScreen() {
 
   const save = () => {
     void saveProfile(draft).then(() => {
-      void saveSettings({ theme, scheme, glyphMode: draft.glyphMode, ...coach, ...lab, kpiTargets: kpiTargets() }).then(() => {
+      void saveSettings({ theme, scheme, glyphMode: draft.glyphMode, ...coach, ...lab, kpiTargets: kpiTargets(), telemetry: telemetryOn }).then(() => {
         applyScheme(scheme);
         applyTheme(theme);
         pushToast('Settings saved.');
@@ -452,6 +455,9 @@ export function SettingsScreen() {
         <Button variant="secondary" onClick={resetKpiTargets}>Reset to defaults</Button>
       </Card>
       <Card title="Data">
+        <Toggle label="Send error reports to my site so problems can be fixed" checked={telemetryOn}
+          onChange={setTelemetry} />
+        <p className="z-label">A report carries the error text, the screen and the app version; never your notes, matches, coach chats or keys.</p>
         <Toggle label="Include game packs in the export" checked={includePacks}
           onChange={setIncludePacks} />
         <Toggle label="Include secrets in the export" checked={includeSecrets}
