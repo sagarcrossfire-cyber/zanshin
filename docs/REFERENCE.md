@@ -51,7 +51,7 @@ Current version: **1.4.1** (main `f4d858f`). Next: **2.0** (see `docs/v2/PLAN.md
 | Sagar's PC clone | `D:\RUDRA\zanshin` (device bash: `$HOME/mnt/RUDRA/zanshin`) |
 | Netlify site | `glistening-conkies-c028b3` · id `a72c64e3-9ba6-4ebe-9b66-57509c1fc41a` · https://glistening-conkies-c028b3.netlify.app |
 | Access | Team SSO login required for every request (incl. `sw.js`, functions). The sandbox and PC cannot open the site. |
-| Function | `netlify/functions/intel.mts` → `/.netlify/functions/intel/*` (health, usage, research, …), spend in Netlify Blobs |
+| Functions | `netlify/functions/intel.mts` → `/.netlify/functions/intel/*` (health, usage, research, …), spend in Netlify Blobs · `netlify/functions/diag.mts` → `/api/diag` (telemetry, §6) |
 | CI | `.github/workflows/ci.yml`: `gate` (release gate) · `quick` (types, lint, unit, build, bundle, doctor) → `e2e` (phone+desktop, then Netlify-headers run) · `media` → `deploy` (production, only when the gate says so) · `preview` (every same-repo PR, alias `pr-<n>`); monthly cron `17 9 1 * *` |
 | Netlify plan | Team "Sagar Patel's team" (`6ae4a3d7e593b12138d36fad`), **Free credit plan: 300 credits/month hard cap, site pauses at 0**. Production deploy = 15 credits; previews 0; bandwidth 20/GB; requests 2/10k; compute 10/GB-h. Usage is only visible on the Netlify Usage page (Sagar). |
 | 2.0 plan (for Sagar) | Claude Doc "ZANSHIN 2.0 — Plan": https://claude.ai/artifact/Mdq1Rc4FM8MWZUQj8fWTvk |
@@ -129,9 +129,35 @@ See `docs/ops/INVENTORY.md` for the full map (routes, modules, tables, tests). E
   deploys show 0 credits on the Usage page.
 - Blobs stores are site-wide and shared by previews and production: anything a preview writes (sync, telemetry)
   must use a store name scoped by `context.deploy.context`.
-- Scheduled functions run only on the published production deploy, in UTC, with a 30 s limit.
+- Scheduled functions run only on the published production deploy, in UTC, with a 30 s limit. Synchronous
+  functions have 60 s: `intel` gives Perplexity 45 s and the browser waits 50 s.
 - Housekeeping still open: PRs #9, #11, #12 (stale, cannot be closed through the proxy — Sagar can close them),
   #13 Dependabot.
+
+### Telemetry (2.0 M1)
+
+- **What is sent.** `src/services/errorReport.ts` turns every recorded error into one sanitized event
+  (schema shared with the server: `src/server/diag/schema.ts`; kinds error, unhandledrejection, sw, idb, quota,
+  intel, sync, boot-selftest, perf), one per fingerprint per session, by `sendBeacon` to `POST /api/diag`
+  (`netlify/functions/diag.mts`, rate limit 60/min). Never notes, match logs, coach text, keys or IP. Off switch:
+  Settings → Data "Send error reports…" (`settings.telemetry`, default on, mirrored in localStorage
+  `zanshin.telemetry`). Only from the site: on localhost (dev, preview, e2e) nothing is posted.
+- **Boot self-test.** The first open of each release in a browser posts `boot-selftest` with `checks.intel`
+  (ok · no-key · no-blobs · signed-out · offline · missing · error) and `checks.idbOpenMs`. No self-test line after a
+  release means no signed-in browser has opened it yet (look for 401s on `/sw.js`).
+- **The lines.** `diag` logs `ZT1 {event}` per accepted event. `intel` logs one
+  `ZT1 {"src":"intel","route","method","status","latencyMs","model","costUsd","cacheHit","capState","requestId"}` per
+  request (capState ok · near ≥ 80 % · reached · off); never the prompt or the answer.
+- **Read them** with the Netlify observability connector (`netlify-observability-services-reader`):
+  `get-request-logs` with `siteId` `a72c64e3-9ba6-4ebe-9b66-57509c1fc41a`, `from_ts`/`to_ts` in ms (24 h window on
+  Free), and filters `[{"field":"FunctionName","op":"=","value":"diag"}]` (or `intel`) and/or
+  `[{"field":"LogText","op":"=","value":"ZT1"}]`. Each request's `logs[]` holds the line; parse the JSON after
+  `ZT1 `. `get-request-detail` (request id, a window around it) adds UA class, geo and timings.
+- **Past 24 h.** Events are also kept in Blobs: store `diag` (production) or `diag-<deploy context>` (previews),
+  keys `<YYYY-MM-DD>/<ts>-<rand>`, at most about 500 a day. There is no Blobs reader in the connector yet; the
+  planned nightly digest will re-log a 7-day summary as a `ZT1` line.
+- **Spend ledger.** The `intel` store keeps one key per paid call, `usage/<day>/<requestId>~c<µUSD>~i<in>~o<out>`,
+  written with `onlyIfNew` and totalled by `list({prefix})`; the 1.3 single `usage/<day>` key is still read and added.
 
 ## 7. Root-cause analysis and self-heal protocol
 
@@ -169,6 +195,7 @@ way; otherwise fix and report after.
 | A size or colour changes after unrelated imports | Two single-class rules tie on specificity; bundle order decides | State the intended value on the more specific component rule; never rely on CSS order |
 | axe `label-content-name-mismatch` | `aria-label` doesn't contain the visible text | Make the label start with (or equal) the visible text |
 | Media audit 404s | Media root resolved relative to the script | Pass the media root explicitly |
+| Spend counter (or any counter) in Blobs lags or the cap overshoots | Read-modify-write on one key; Blobs is last-write-wins, parallel calls lose increments | One key per event (`onlyIfNew`), totalled by `list({prefix})`; test with a store whose reads answer late |
 | E3 debrief "Mastery … → …" missing once (desktop, under load) | Open: debrief renders before mastery deltas are computed | Watch; if it recurs, make the debrief wait for the deltas (and test it) |
 
 ## 8. Decisions (and why)

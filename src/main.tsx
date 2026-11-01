@@ -2,7 +2,8 @@
 // in P3. Bootstrap order (§14): the pre-migration snapshot guard runs
 // before any repository touches the database; global error handlers are
 // installed before render; the service worker registers last (never in
-// Safe Mode, §14.4).
+// Safe Mode, §14.4). Telemetry (2.0 M1) is configured first, so even a
+// failing migration guard is reported, and follows Settings once they load.
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
@@ -12,7 +13,10 @@ import { SCHEMA_VERSION, V1_STORES, V2_STORES, V3_STORES, V4_STORES, V5_STORES }
 import { isDatabaseClosedError } from './data/dbErrors';
 import { ensureMigratedSafely } from './data/migrate';
 import { APP_VERSION } from './services/backup';
-import { recordError, reportUnexpectedError } from './services/errorReport';
+import {
+  configureTelemetry, recordError, reportUnexpectedError, runBootSelfTest, setTelemetryEnabled, siteHostsDiag,
+} from './services/errorReport';
+import { intelHealth } from './services/intel';
 import { startSiteAccessWatch } from './services/siteAccess';
 import { setUpdatePending, setUpdateReloader } from './services/updateGate';
 import { useAppStore } from './stores/appStore';
@@ -20,7 +24,27 @@ import './styles/tokens.css';
 import './styles/fonts.css';
 import './styles/base.css';
 
+/** Boot self-test waits until first paint and the first requests are done. */
+const SELF_TEST_DELAY_MS = 4000;
+
 async function bootstrap(): Promise<void> {
+  // 0. Telemetry: release and schema first; the Settings choice once loaded
+  // (until then events wait in memory), then one boot self-test per release
+  // when the page is served by the site (a local server has no functions).
+  configureTelemetry({ release: APP_VERSION, schema: SCHEMA_VERSION });
+  let selfTestScheduled = false;
+  useAppStore.subscribe((state, previous) => {
+    if (!state.settings || state.settings === previous.settings) return;
+    const enabled = state.settings.telemetry !== false;
+    setTelemetryEnabled(enabled);
+    if (enabled && !selfTestScheduled && siteHostsDiag()) {
+      selfTestScheduled = true;
+      setTimeout(() => {
+        void runBootSelfTest({ health: () => intelHealth(), release: APP_VERSION });
+      }, SELF_TEST_DELAY_MS);
+    }
+  });
+
   // 1. Pre-migration snapshot (§14.2/§14.5, R3). Runs before the app's
   // Dexie singleton opens, so a pending upgrade is snapshotted first.
   try {

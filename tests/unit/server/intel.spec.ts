@@ -1,10 +1,24 @@
 // Release 1.3.0 — the intel function: routing, validation, the daily cap,
 // Perplexity response parsing, caching of primers and patch briefs, and the
 // shape every client call relies on. Perplexity is a mocked fetch.
-import { describe, expect, it, vi } from 'vitest';
-import { createIntelHandler, transcript, PRIMER_TTL_MS } from '../../../src/server/intel/handler';
-import { parseAgentResponse, AGENT_API_URL } from '../../../src/server/intel/perplexity';
-import { memoryStore, recentUsage } from '../../../src/server/intel/store';
+// 2.0 M1 — the per-call spend ledger (no lost increments under parallel
+// calls, the old single key still counted), the 45 s provider timeout, and
+// one ZT1 breadcrumb per request that never carries prompt or answer text.
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  INTEL_PROVIDER_TIMEOUT_MS, capStateOf, createIntelHandler as createHandler, transcript, PRIMER_TTL_MS, type IntelDeps,
+} from '../../../src/server/intel/handler';
+import { AGENT_TIMEOUT_MS, callAgent, parseAgentResponse, AGENT_API_URL } from '../../../src/server/intel/perplexity';
+import {
+  addUsage, ledgerKey, memoryStore, parseLedgerKey, readUsage, recentUsage, type IntelStore,
+} from '../../../src/server/intel/store';
+
+/** Handlers in this file stay quiet unless a test collects the breadcrumbs. */
+const createIntelHandler = (deps: IntelDeps) => createHandler({ log: () => undefined, ...deps });
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 const NOW = '2026-10-31T18:00:00.000Z';
 const BASE = 'https://zanshin.test/.netlify/functions/intel';
@@ -195,5 +209,151 @@ describe('intel handler', () => {
     const late = await timing(post('coach', { messages: [{ content: 'a', role: 'user' }], system: 's' }));
     expect(late.status).toBe(504);
     expect(((await late.json()) as { error: string }).error).toMatch(/too long/);
+  });
+});
+
+/** A memory store whose reads answer a macrotask later with what was there
+ * when they were sent, the way Blobs reads travel the network: parallel
+ * callers all read before any of them writes. The 1.3 ledger kept 1 of 5
+ * calls against this store (docs/ops/RCA_LOG.md 2026-11-01). */
+function slowStore(): IntelStore & { data: Map<string, unknown> } {
+  const inner = memoryStore();
+  const later = <T>(read: () => Promise<T>) => {
+    const value = read();
+    return new Promise<T>((resolve) => setTimeout(() => resolve(value), 0));
+  };
+  return {
+    data: inner.data,
+    get: (key) => later(() => inner.get(key)),
+    list: (prefix) => later(() => inner.list(prefix)),
+    set: (key, value) => inner.set(key, value),
+    setIfNew: (key, value) => inner.setIfNew(key, value),
+  };
+}
+
+describe('spend ledger (2.0 M1)', () => {
+  it('ledger keys carry the call\'s numbers and parse back', () => {
+    const key = ledgerKey('2026-11-01', 'abc/1~x', { costUsd: 0.0123, inputTokens: 800, outputTokens: 200 });
+    expect(key).toBe('usage/2026-11-01/abc-1-x~c12300~i800~o200');
+    expect(parseLedgerKey(key)).toEqual({ costUsd: 0.0123, inputTokens: 800, outputTokens: 200 });
+    expect(parseLedgerKey('usage/2026-11-01/garbage')).toBeNull();
+  });
+
+  it('parallel paid calls are all counted (the 1.3 read-modify-write lost them)', async () => {
+    const { calls, fetchFn } = mockFetch(() => okJson(agentReply('x', { cost: 0.01 })));
+    const store = slowStore();
+    let n = 0;
+    const handler = createIntelHandler({ apiKey: 'test-key', capUsd: 3, fetchFn, nowIso: () => NOW, requestId: () => `r${(n += 1)}`, store });
+    const responses = await Promise.all([1, 2, 3, 4, 5].map((i) => handler(post('coach', { messages: [{ content: `q${i}`, role: 'user' }], system: 's' }))));
+    expect(responses.map((r) => r.status)).toEqual([200, 200, 200, 200, 200]);
+    expect(calls).toHaveLength(5);
+    const today = await readUsage(store, '2026-10-31');
+    expect(today).toEqual({ costUsd: 0.05, day: '2026-10-31', inputTokens: 4000, outputTokens: 1000, requests: 5 });
+    expect([...store.data.keys()].filter((key) => key.startsWith('usage/2026-10-31/'))).toHaveLength(5);
+    expect(store.data.has('usage/2026-10-31')).toBe(false);
+  });
+
+  it('still counts the old single usage/<day> key, so the cap holds on rollout day', async () => {
+    const store = memoryStore({ 'usage/2026-10-31': { costUsd: 2.5, day: '2026-10-31', inputTokens: 100, outputTokens: 50, requests: 3 } });
+    const { calls, fetchFn } = mockFetch(() => okJson(agentReply('x', { cost: 0.6 })));
+    const handler = createIntelHandler({ apiKey: 'test-key', capUsd: 3, fetchFn, nowIso: () => NOW, store });
+    const first = await handler(post('coach', { messages: [{ content: 'a', role: 'user' }], system: 's' }));
+    expect(first.status).toBe(200);
+    expect(((await first.json()) as { usage: { todayUsd: number } }).usage.todayUsd).toBe(3.1);
+    expect((await handler(post('coach', { messages: [{ content: 'b', role: 'user' }], system: 's' }))).status).toBe(429);
+    expect(calls).toHaveLength(1);
+    const health = await (await handler(new Request(`${BASE}/health`))).json() as { today: { requests: number; costUsd: number } };
+    expect(health.today).toMatchObject({ costUsd: 3.1, requests: 4 });
+  });
+
+  it('a reused request id still records every call', async () => {
+    const store = memoryStore();
+    await addUsage(store, '2026-11-01', 'same', { costUsd: 0.1, inputTokens: 1, outputTokens: 1 }, NOW);
+    const total = await addUsage(store, '2026-11-01', 'same', { costUsd: 0.1, inputTokens: 1, outputTokens: 1 }, NOW);
+    expect(total).toMatchObject({ costUsd: 0.2, requests: 2 });
+  });
+
+  it('the usage report sums each of the last seven days', async () => {
+    const store = memoryStore({ 'usage/2026-10-30': { costUsd: 1, inputTokens: 10, outputTokens: 5, requests: 2 } });
+    await addUsage(store, '2026-10-30', 'a', { costUsd: 0.25, inputTokens: 1, outputTokens: 1 }, NOW);
+    await addUsage(store, '2026-10-31', 'b', { costUsd: 0.5, inputTokens: 1, outputTokens: 1 }, NOW);
+    const days = await recentUsage(store, NOW, 7);
+    expect(days.map((d) => d.day)).toEqual(['2026-10-31', '2026-10-30', '2026-10-29', '2026-10-28', '2026-10-27', '2026-10-26', '2026-10-25']);
+    expect(days[0]).toMatchObject({ costUsd: 0.5, requests: 1 });
+    expect(days[1]).toMatchObject({ costUsd: 1.25, requests: 3 });
+    expect(days[2]).toMatchObject({ costUsd: 0, requests: 0 });
+  });
+});
+
+describe('provider timeout (2.0 M1)', () => {
+  it('defaults to 45 s, inside Netlify\'s 60 s synchronous limit', async () => {
+    expect(INTEL_PROVIDER_TIMEOUT_MS).toBe(45_000);
+    expect(AGENT_TIMEOUT_MS).toBe(45_000);
+    vi.useFakeTimers();
+    const slow = vi.fn((_input: RequestInfo | URL, init?: RequestInit) => new Promise<Response>((_resolve, reject) => {
+      init?.signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')));
+    })) as unknown as typeof fetch;
+    let settled: unknown = 'pending';
+    const call = callAgent('test-key', { input: 'q', instructions: 'i', max_output_tokens: 10, model: 'perplexity/sonar' }, { fetchFn: slow })
+      .catch((error: unknown) => error);
+    void call.then((value) => { settled = value; });
+    await vi.advanceTimersByTimeAsync(44_000);
+    expect(settled).toBe('pending');
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(settled).toMatchObject({ name: 'PerplexityError', status: 504 });
+  });
+});
+
+describe('ZT1 breadcrumbs (2.0 M1)', () => {
+  function collect() {
+    const lines: string[] = [];
+    return { lines, log: (line: string) => { lines.push(line); }, events: () => lines.map((line) => JSON.parse(line.slice(4)) as Record<string, unknown>) };
+  }
+
+  it('capStateOf: ok, near from 80 %, reached, off without a cap', () => {
+    expect(capStateOf(0, 3)).toBe('ok');
+    expect(capStateOf(2.4, 3)).toBe('near');
+    expect(capStateOf(3, 3)).toBe('reached');
+    expect(capStateOf(5, 0)).toBe('off');
+  });
+
+  it('one line per request with route, status, latency, model, cost, cache hit and cap state', async () => {
+    const sink = collect();
+    const { fetchFn } = mockFetch(() => okJson(agentReply('PRIVATE ANSWER TEXT', { cost: 0.02 })));
+    let clock = 1000;
+    const handler = createHandler({
+      apiKey: 'test-key', capUsd: 3, clockMs: () => (clock += 250), fetchFn, log: sink.log, nowIso: () => NOW, requestId: () => 'req-1', store: memoryStore(),
+    });
+    await handler(post('coach', { messages: [{ content: 'MY PRIVATE QUESTION', role: 'user' }], model: 'anthropic/claude-sonnet-5-5', system: 'SECRET SYSTEM PROMPT' }));
+    expect(sink.lines).toHaveLength(1);
+    expect(sink.lines[0]?.startsWith('ZT1 {')).toBe(true);
+    expect(sink.events()[0]).toEqual({
+      cacheHit: false, capState: 'ok', costUsd: 0.02, latencyMs: 250, method: 'POST', model: 'anthropic/claude-sonnet-5-5',
+      requestId: 'req-1', route: 'coach', src: 'intel', status: 200,
+    });
+    for (const secret of ['PRIVATE ANSWER', 'PRIVATE QUESTION', 'SECRET SYSTEM', 'test-key']) expect(sink.lines[0]).not.toContain(secret);
+  });
+
+  it('names cache hits, the reached cap, unknown routes and thrown errors', async () => {
+    const sink = collect();
+    const { fetchFn } = mockFetch(() => okJson(agentReply('primer', { cost: 3 })));
+    const store = memoryStore();
+    const handler = createHandler({ apiKey: 'test-key', capUsd: 3, fetchFn, log: sink.log, nowIso: () => NOW, store });
+    await handler(new Request(`${BASE}/primer/Kazuya`));
+    await handler(new Request(`${BASE}/primer/Kazuya`));
+    await handler(post('coach', { messages: [{ content: 'a', role: 'user' }], system: 's' }));
+    await handler(new Request(`${BASE}/%3Cscript%3E`));
+    const [paid, cached, capped, unknown] = sink.events();
+    expect(paid).toMatchObject({ cacheHit: false, capState: 'reached', costUsd: 3, route: 'primer', status: 200 });
+    expect(cached).toMatchObject({ cacheHit: true, model: 'perplexity/sonar', route: 'primer', status: 200 });
+    expect(capped).toMatchObject({ capState: 'reached', route: 'coach', status: 429 });
+    expect(unknown).toMatchObject({ route: 'unknown', status: 404 });
+
+    const broken = createHandler({
+      apiKey: 'test-key', capUsd: 3, fetchFn, log: sink.log, nowIso: () => NOW,
+      store: { ...memoryStore(), get: async () => { throw new Error('blobs down'); } },
+    });
+    await expect(broken(new Request(`${BASE}/health`))).rejects.toThrow('blobs down');
+    expect(sink.events()[4]).toMatchObject({ route: 'health', status: 500 });
   });
 });
