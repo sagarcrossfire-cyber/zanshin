@@ -1,0 +1,116 @@
+{
+  "startedAt": 1793560257,
+  "userAgent": "ZANSHIN-fixtures/1.0 (+https://github.com/sagarcrossfire-cyber/zanshin; personal Tekken 8 training app, one-off test fixture capture, 3 requests)",
+  "requests": [
+    {
+      "url": "https://wank.wavu.wiki/api/replays?before=1793553057",
+      "at": 1793560257,
+      "status": 200,
+      "ms": 1092,
+      "bytes": 3172055,
+      "headers": {
+        "date": "Sun, 01 Nov 2026 19:10:58 GMT",
+        "content-type": "application/json;charset=UTF-8",
+        "server": "cloudflare",
+        "vary": "Accept-Encoding",
+        "content-encoding": "gzip"
+      }
+    },
+    {
+      "url": "https://wank.wavu.wiki/player/3nJB6TjEFTQQ",
+      "at": 1793560261,
+      "status": 200,
+      "ms": 282,
+      "bytes": 501474,
+      "headers": {
+        "date": "Sun, 01 Nov 2026 19:11:01 GMT",
+        "content-type": "text/html;charset=UTF-8",
+        "server": "cloudflare",
+        "vary": "Accept-Encoding",
+        "content-encoding": "gzip"
+      }
+    },
+    {
+      "url": "https://wank.wavu.wiki/player/3nJB6TjEFTQQ",
+      "at": 1793560264,
+      "status": 200,
+      "ms": 290,
+      "bytes": 501474,
+      "headers": {
+        "date": "Sun, 01 Nov 2026 19:11:04 GMT",
+        "content-type": "text/html;charset=UTF-8",
+        "server": "cloudflare",
+        "vary": "Accept-Encoding",
+        "content-encoding": "gzip"
+      }
+    }
+  ],
+  "errors": [],
+  "before": 1793553057,
+  "replayCount": 5574,
+  "replayKeys": [
+    "battle_at",
+    "battle_type",
+    "game_version",
+    "p1_area_id",
+    "p1_chara_id",
+    "p1_lang",
+    "p1_name",
+    "p1_polaris_id",
+    "p1_power",
+    "p1_rank",
+    "p1_rating_before",
+    "p1_rating_change",
+    "p1_region_id",
+    "p1_rounds",
+    "p1_user_id",
+    "p2_area_id",
+    "p2_chara_id",
+    "p2_lang",
+    "p2_name",
+    "p2_polaris_id",
+    "p2_power",
+    "p2_rank",
+    "p2_rating_before",
+    "p2_rating_change",
+    "p2_region_id",
+    "p2_rounds",
+    "p2_user_id",
+    "stage_id",
+    "winner"
+  ],
+  "battleTypes": {
+    "2": 5574
+  },
+  "player": {
+    "polarisId": "3nJB6TjEFTQQ",
+    "side": "p1",
+    "charaId": 3,
+    "battleAt": 1793553054,
+    "rank": 15
+  },
+  "playerPage": {
+    "status": 200,
+    "hasGameList": true,
+    "hasRatingGroup": true,
+    "battleAtCells": 435,
+    "printDateTime": 436,
+    "hxGets": [
+      "/player/3nJB6TjEFTQQ"
+    ],
+    "forms": [
+      "<form class=\"flex-row-wrap col-gap-2\"\n   hx-get=\"/player/3nJB6TjEFTQQ\"\n   hx-trigger=\"change\"\n   hx-select=\".profile-filters-target\"\n   hx-target=\".profile-filters-target\"\n   hx-swap=\"outerHTML\"\n   hx-replace-url=\"true\"\n   hx-indicator=\".htmx-progress\">"
+    ],
+    "selects": [
+      "char",
+      "opp_char",
+      "graph"
+    ]
+  },
+  "playerMore": {
+    "path": "/player/3nJB6TjEFTQQ",
+    "status": 200,
+    "bytes": 501474
+  },
+  "finishedAt": 1793560264
+}
