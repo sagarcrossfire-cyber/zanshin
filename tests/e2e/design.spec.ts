@@ -65,6 +65,7 @@ test('no art is cropped: the stage hero shows the whole figure, icons are square
   for (const route of ['/today', '/matchups/Kazuya']) {
     await page.goto(route);
     await expect(page.locator('.z-hero img.z-hero__img--loaded')).toBeVisible({ timeout: 20000 });
+    await page.waitForTimeout(500); // let the entrance finish
     const inside = await page.locator('.z-hero').evaluate((hero) => {
       const box = hero.getBoundingClientRect();
       const img = hero.querySelector('img.z-hero__img')!.getBoundingClientRect();
