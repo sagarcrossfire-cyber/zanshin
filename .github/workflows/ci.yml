@@ -42,6 +42,52 @@ env:
 # which Playwright's --with-deps does not support yet.
 
 jobs:
+  # Netlify's Free plan has 300 credits a month and every production deploy
+  # costs 15 (docs/REFERENCE.md §6, 2026-11-01). Production deploys happen only
+  # on a release (package.json version changed), a manual run, "[deploy]" in
+  # the commit message, or the monthly media refresh when the media changed.
+  # Pull requests get a free preview deploy instead.
+  gate:
+    name: Release gate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      production: ${{ steps.decide.outputs.production }}
+      preview: ${{ steps.decide.outputs.preview }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: decide
+        env:
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+          DISPATCH_DEPLOY: ${{ inputs.deploy }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          production=false; preview=false
+          now=$(node -p "require('./package.json').version")
+          case "$EVENT" in
+            pull_request)
+              if [ "$HEAD_REPO" = "$GITHUB_REPOSITORY" ]; then preview=true; reason="pull request: free preview deploy"
+              else reason="pull request from a fork: no deploy"; fi ;;
+            workflow_dispatch)
+              if [ "$DISPATCH_DEPLOY" = "true" ]; then production=true; reason="manual run with deploy"
+              else reason="manual run without deploy"; fi ;;
+            schedule)
+              production=true; reason="monthly media refresh (deploys only if the media changed)" ;;
+            *)
+              was=$(git show "$BEFORE:package.json" 2>/dev/null | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).version)}catch{console.log('')}})" || true)
+              if [ "$now" != "$was" ]; then production=true; reason="release ${was:-?} to $now"
+              elif printf '%s' "$COMMIT_MSG" | grep -qF '[deploy]'; then production=true; reason="[deploy] in the commit message"
+              else reason="version unchanged ($now): no production deploy, 15 Netlify credits saved"; fi ;;
+          esac
+          echo "production=$production" >> "$GITHUB_OUTPUT"
+          echo "preview=$preview" >> "$GITHUB_OUTPUT"
+          echo "::notice title=Release gate::$reason"
+          printf '### Release gate\n\n%s\n' "$reason" >> "$GITHUB_STEP_SUMMARY"
+
   quick:
     name: Types, lint, unit tests, build
     runs-on: ubuntu-24.04
@@ -59,6 +105,7 @@ jobs:
       - run: npm run validate:data
       - run: npm run build
       - run: node scripts/check-bundle.mjs
+      - run: npm run doctor
       - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
@@ -105,8 +152,8 @@ jobs:
     name: Bundled media from Wavu Wiki
     runs-on: ubuntu-24.04
     timeout-minutes: 40
-    needs: quick
-    if: github.event_name != 'pull_request'
+    needs: [quick, gate]
+    if: needs.gate.outputs.production == 'true' || needs.gate.outputs.preview == 'true'
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -152,8 +199,8 @@ jobs:
     name: Deploy to Netlify
     runs-on: ubuntu-24.04
     timeout-minutes: 20
-    needs: [e2e, media]
-    if: github.event_name != 'pull_request' && (github.event_name != 'workflow_dispatch' || inputs.deploy)
+    needs: [gate, e2e, media]
+    if: needs.gate.outputs.production == 'true'
     environment:
       name: production
       url: https://glistening-conkies-c028b3.netlify.app
@@ -181,13 +228,26 @@ jobs:
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          EVENT: ${{ github.event_name }}
         run: |
           if [ -z "$NETLIFY_AUTH_TOKEN" ] || [ -z "$NETLIFY_SITE_ID" ]; then
             echo "::warning::NETLIFY_AUTH_TOKEN or NETLIFY_SITE_ID is not set; built but not deployed. Add both under Settings → Secrets and variables → Actions, then re-run this workflow."
             printf '### Not deployed\n\nAdd `NETLIFY_AUTH_TOKEN` and `NETLIFY_SITE_ID` as repository secrets and re-run.\n' >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
-          npx --yes netlify-cli@latest deploy --prod --dir=dist --functions=netlify/functions --no-build \
+          if [ "$EVENT" = "schedule" ]; then
+            # Monthly refresh: skip the 15-credit deploy when the media files
+            # (content-addressed names) match the live deploy's.
+            live=$(npx --yes netlify-cli@27.16.1 api listSiteFiles --data "{\"site_id\":\"$NETLIFY_SITE_ID\"}" \
+              | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{try{console.log(JSON.parse(s).map(f=>f.path).filter(p=>p.startsWith('/media/')&&p!=='/media/manifest.json').sort().join('\\n'))}catch{console.log('unknown')}})")
+            here=$(cd dist && find media -type f ! -name manifest.json | sed 's#^#/#' | LC_ALL=C sort)
+            if [ "$live" = "$here" ]; then
+              echo "::notice title=Deploy skipped::bundled media unchanged since the live deploy"
+              printf '### Not deployed\n\nBundled media unchanged since the live deploy.\n' >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+          fi
+          npx --yes netlify-cli@27.16.1 deploy --prod --dir=dist --functions=netlify/functions --no-build \
             --message "GitHub Actions ${GITHUB_SHA::7}: $(git log -1 --pretty=%s)" | tee deploy.log
           printf '### Deployed\n\n%s\n' "$(grep -Eo 'https://[^ ]+' deploy.log | sort -u | tr '\n' ' ')" >> "$GITHUB_STEP_SUMMARY"
           # The intel function (release 1.3.0). The site is private, so an
@@ -200,3 +260,37 @@ jobs:
           name: zanshin-site
           path: dist
           retention-days: 14
+
+  preview:
+    name: Preview deploy (free, behind sign-in)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    needs: [gate, quick, media]
+    if: needs.gate.outputs.preview == 'true'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v8
+        with:
+          name: site-media
+          path: public/media
+      - run: npm run build
+      - name: Deploy preview
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          if [ -z "$NETLIFY_AUTH_TOKEN" ] || [ -z "$NETLIFY_SITE_ID" ]; then
+            echo "::warning::Netlify secrets are not available to this run; no preview."
+            exit 0
+          fi
+          npx --yes netlify-cli@27.16.1 deploy --dir=dist --functions=netlify/functions --no-build \
+            --alias "pr-$PR" --message "PR #$PR ${GITHUB_SHA::7}" --json > preview.json
+          url=$(node -p "require('./preview.json').deploy_url")
+          echo "::notice title=Preview::$url (behind the Netlify login)"
+          printf '### Preview\n\n%s (behind the Netlify login)\n' "$url" >> "$GITHUB_STEP_SUMMARY"

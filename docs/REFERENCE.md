@@ -52,7 +52,8 @@ Current version: **1.4.1** (main `f4d858f`). Next: **2.0** (see `docs/v2/PLAN.md
 | Netlify site | `glistening-conkies-c028b3` · id `a72c64e3-9ba6-4ebe-9b66-57509c1fc41a` · https://glistening-conkies-c028b3.netlify.app |
 | Access | Team SSO login required for every request (incl. `sw.js`, functions). The sandbox and PC cannot open the site. |
 | Function | `netlify/functions/intel.mts` → `/.netlify/functions/intel/*` (health, usage, research, …), spend in Netlify Blobs |
-| CI | `.github/workflows/ci.yml`: `quick` → `e2e` (phone+desktop, then Netlify-headers run) + `media` → `deploy` (main only, `netlify deploy --no-build`); monthly cron `17 9 1 * *` |
+| CI | `.github/workflows/ci.yml`: `gate` (release gate) · `quick` (types, lint, unit, build, bundle, doctor) → `e2e` (phone+desktop, then Netlify-headers run) · `media` → `deploy` (production, only when the gate says so) · `preview` (every same-repo PR, alias `pr-<n>`); monthly cron `17 9 1 * *` |
+| Netlify plan | Team "Sagar Patel's team" (`6ae4a3d7e593b12138d36fad`), **Free credit plan: 300 credits/month hard cap, site pauses at 0**. Production deploy = 15 credits; previews 0; bandwidth 20/GB; requests 2/10k; compute 10/GB-h. Usage is only visible on the Netlify Usage page (Sagar). |
 | 2.0 plan (for Sagar) | Claude Doc "ZANSHIN 2.0 — Plan": https://claude.ai/artifact/Mdq1Rc4FM8MWZUQj8fWTvk |
 | claude.ai Project | "Tekken" (memory writes must go under `/projects/01a195bb-5c3d-73d6-a035-8788605b42bd/`) |
 
@@ -87,10 +88,16 @@ See `docs/ops/INVENTORY.md` for the full map (routes, modules, tables, tests). E
 5. On failure: **RCA protocol (section 7)**. Read failures with
    `gh api repos/sagarcrossfire-cyber/zanshin/check-runs/<id>/annotations` (Actions logs and artifacts are blocked).
 6. Squash-merge: `gh api -X PUT repos/…/pulls/<n>/merge -f merge_method=squash -f commit_title="… (#n)"`.
-7. Watch the `main` run through `Deploy to Netlify`, then verify: Netlify MCP `get-project` (current deploy id) →
+7. **Production deploys cost credits, so they happen only on a release.** The `gate` job deploys production when
+   `package.json`'s version changed in the push, on a manual run with `deploy`, with `[deploy]` in the commit message,
+   or on the monthly media refresh when the media files changed. Every other merge to `main` runs the tests and
+   stops. Each PR gets a free preview at `https://pr-<n>--glistening-conkies-c028b3.netlify.app` (behind the same
+   login); its URL is a `Preview` notice in the check-run annotations. Batch work into releases; never bump the
+   version just to see a change live — use the preview.
+8. After a release merge, watch the `main` run through `Deploy to Netlify`, then verify: Netlify MCP `get-project` (current deploy id) →
    `get-deploy-for-site` (published, header/redirect rule counts) → `get-request-logs` (live requests, e.g.
    `/version.json` 200). The site itself cannot be opened from here.
-8. Update this file, `README.md` (versions list), `docs/RELEASE_<v>.md`, `package.json` + `APP_VERSION`
+9. Update this file, `README.md` (versions list), `docs/RELEASE_<v>.md`, `package.json` + `APP_VERSION`
    (`src/services/backup.ts`) — `scripts/doctor.mjs` checks they agree.
 
 ## 6. Environment facts and limits
@@ -104,6 +111,16 @@ See `docs/ops/INVENTORY.md` for the full map (routes, modules, tables, tests). E
 - vite-plugin-pwa `registerSW` does not re-fetch `sw.js` for an existing registration; browsers check on
   navigation. A browser whose Netlify SSO session expired gets 401 for everything while the SW serves the old
   shell (incident 2026-11-01).
+- Netlify credits, from Sagar's Usage page on 2026-11-01 13:39 UTC: **117.5 / 300 left**, cycle Oct 29 → Nov 29
+  2026. Spent: production deploys 180 (12 × 15), web requests 0.7 (3,638), compute < 1, bandwidth 1.7, **AI
+  inference 0** (the intel function calls Perplexity's Agent API with Sagar's own key, never Netlify's AI Gateway).
+  The release gate (2026-11-01) stops per-merge deploys; budget ≤ 3 production deploys per cycle for 2.0. Sagar
+  stays on Free unless he says otherwise; Personal ($9/month, 1,000 credits, auto top-up) is the fallback. Avoid
+  credit-hungry features (Netlify AI Gateway, Netlify DB). Ask Sagar once to confirm that `--alias` preview
+  deploys show 0 credits on the Usage page.
+- Blobs stores are site-wide and shared by previews and production: anything a preview writes (sync, telemetry)
+  must use a store name scoped by `context.deploy.context`.
+- Scheduled functions run only on the published production deploy, in UTC, with a 30 s limit.
 - Housekeeping still open: PRs #9, #11, #12 (stale, cannot be closed through the proxy — Sagar can close them),
   #13 Dependabot.
 
@@ -147,7 +164,8 @@ way; otherwise fix and report after.
 
 | Date | Decision | Why |
 | --- | --- | --- |
-| 2026-11-01 | 2.0 is built in milestones, each shipped to production when green | Sagar gets value early and can redirect; every milestone is self-contained and tested |
+| 2026-11-01 | Production deploys only on releases; PRs get free previews | Free plan: 300 credits/month, 15 per production deploy; 9 deploys in 16 h had used ~135 |
+| 2026-11-01 | 2.0 is built in milestones, each merged when green and reviewable on its PR preview; production gets releases | Sagar sees each milestone on its preview and can redirect; credits go only on releases |
 | 2026-11-01 | Sync between PC and phone is in 2.0 scope | He uses both (answer 2026-11-01) |
 | 2026-11-01 | `version.json` probe + Sign in again (1.4.1) | Expired SSO silently blocked updates |
 | 2026-10-31 | Perplexity behind a Netlify Function with a daily cap | Key never reaches the browser; spend bounded |
