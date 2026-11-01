@@ -67,7 +67,8 @@
     "validate:data": "tsx scripts/validate-data.ts",
     "verify": "npm run verify:quick && npm run validate:data && npm run build && node scripts/check-bundle.mjs && npm run test:e2e",
     "verify:quick": "npm run typecheck && npm run lint && npm run test",
-    "build:standalone": "vite build --config vite.standalone.config.ts"
+    "build:standalone": "vite build --config vite.standalone.config.ts",
+    "doctor": "node scripts/doctor.mjs"
   },
   "type": "module",
   "version": "1.4.1"
