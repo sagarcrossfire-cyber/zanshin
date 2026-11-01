@@ -70,6 +70,15 @@ See `docs/ops/INVENTORY.md` for the full map (routes, modules, tables, tests). E
 - Schemes: `data-theme` (dark/light) + `data-scheme` (manji/crimson/heat) on `<html>`; every scheme is unit-tested
   for WCAG AA on every text and signal colour (`tests/unit/design/contrast.spec.ts`).
 - "No cropped image" is an e2e rule (`tests/e2e/design.spec.ts`); ambient blurred copies carry `data-ambient`.
+- **Navigation (2.0):** `src/app/hubs.ts` is the single map of routes → five hubs (Today · Train · Coach · Study ·
+  You) → sections (→ Codex views). The dock (phone), rail (tablet/desktop, collapsible with `[`), section chips,
+  top-bar eyebrow and the Ctrl/Cmd+K palette (`src/app/paletteIndex.ts`, lazy `CommandPalette`) all read it; a new
+  screen needs one entry there (and a test row in `tests/unit/nav/hubs.spec.ts`). Hub memory in sessionStorage
+  (`navMemory.ts`). Coach sections are routes (`/coach/ask|review|debriefs|research`; `/coach` → Ask;
+  `?about=` pre-fills a question — `AskCoachLink`). Lab Mode renders only `LabStrip` (hold or press twice to exit).
+  Nav colours are the derived `--nav-*` tokens.
+- Kanji render from a 5 kB subset font ("Zanshin Kanji", `scripts/subset-kanji.py`); a unit test fails if `src/`
+  uses a kanji the subset lacks.
 - Updates: `version.json` (build-emitted, not precached, `no-store`) is probed by `src/services/siteAccess.ts`;
   401/403 → "Sign in again" banner; another version → `registration.update()` → "Update available, reload" toast,
   which never interrupts a Lab session (`src/services/updateGate.ts`).

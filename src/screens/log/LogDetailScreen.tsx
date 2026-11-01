@@ -1,5 +1,6 @@
 // Match Log detail + replay reviews — spec §5.12. Reviews are the
 // §5.12 checklist: counts plus up to three insights, tied to the set.
+import { AskCoachLink } from '../../components/coach/AskCoachLink';
 import { answerKindLabel } from '../../domain/engine/criteriaLabels';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -95,6 +96,7 @@ export function LogDetailScreen() {
   return (
     <main>
       <h1>Match set — {set.opponentCharacter}</h1>
+      <AskCoachLink about={`my ${set.wins}–${set.games - set.wins} set vs ${set.opponentCharacter}`} />
       <Card title={`${new Date(set.at).toLocaleString()} · ${set.mode}`}>
         <p>Result: {set.wins}–{set.games - set.wins} of {set.games} games.</p>
         {set.opponentRank && <p>Opponent rank: {set.opponentRank}</p>}

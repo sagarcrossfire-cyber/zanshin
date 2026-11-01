@@ -24,13 +24,14 @@ async function setProvider(page: Page, provider: string, extra?: (page: Page) =>
 
 test('AC-COACH-1: with no provider, the weekly review and Copy Context work offline', async ({ page }) => {
   await completeOnboarding(page);
-  await page.goto('/coach');
+  // 2.0: /coach opens Ask; the weekly review has its own address.
+  await page.goto('/coach/review');
   await expect(page.locator('#main').getByRole('heading', { name: 'Coach' })).toBeVisible();
   await page.getByRole('button', { name: 'Generate review' }).click();
   await expect(page.getByText(/Week of/)).toBeVisible();
   await expect(page.getByText(/Next action:/)).toBeVisible();
 
-  await page.getByRole('tab', { name: 'Ask' }).click();
+  await page.getByRole('link', { name: 'Ask', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Copy context for any AI' })).toBeVisible();
   await expect(page.getByText('No AI provider configured')).toBeVisible();
 });
@@ -39,7 +40,7 @@ test('AC-COACH-2/4: mock provider round-trips; every answer ends with exactly on
   await completeOnboarding(page);
   await setProvider(page, 'mock');
   await page.goto('/coach');
-  await page.getByRole('tab', { name: 'Ask' }).click();
+  await page.getByRole('link', { name: 'Ask', exact: true }).click();
   await page.getByLabel('Ask the coach').fill('What should I drill today?');
   await page.getByRole('button', { name: 'Send' }).click();
   const reply = page.locator('.z-coach__message--coach').last();
@@ -58,7 +59,7 @@ test('AC-COACH-2: an unreachable provider falls back to the rules coach with a v
     await p.getByLabel('Model').fill('test-model');
   });
   await page.goto('/coach');
-  await page.getByRole('tab', { name: 'Ask' }).click();
+  await page.getByRole('link', { name: 'Ask', exact: true }).click();
   await page.getByLabel('Ask the coach').fill('Help me improve.');
   await page.getByRole('button', { name: 'Send' }).click();
   const reply = page.locator('.z-coach__message--coach').last();

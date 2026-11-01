@@ -3,6 +3,7 @@
 // Lab tasks generated from problem moves, on-demand pack import, and (1.3.0)
 // a web-sourced matchup primer from the site's intel function, kept on the
 // device as a research note with the 'web' badge.
+import { AskCoachLink } from '../../components/coach/AskCoachLink';
 import { answerKindLabel } from '../../domain/engine/criteriaLabels';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
@@ -166,6 +167,7 @@ export function CharacterScreen() {
       <CharacterHero name={character} eyebrow="Yoshimitsu vs">
         <h1>{character}</h1>
         <p className="z-mu-page__record"><strong>{wins}–{games - wins}</strong> · {games} games · {problems.length} problem {problems.length === 1 ? 'move' : 'moves'}</p>
+        <AskCoachLink about={`the ${character} matchup`} />
       </CharacterHero>
       <div className="z-mu-page__grid">
       <Card title="Record" className="z-mu-page__record-card">

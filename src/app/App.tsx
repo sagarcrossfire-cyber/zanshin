@@ -98,7 +98,8 @@ export function AppRoutes() {
           <Route path="/log/:matchSetId/edit" element={<RequireOnboarding allowFromStep={4}><Bounded label="/log/:matchSetId/edit"><LogFormScreen /></Bounded></RequireOnboarding>} />
           <Route path="/log/:matchSetId" element={<RequireOnboarding allowFromStep={4}><Bounded label="/log/:matchSetId"><LogDetailScreen /></Bounded></RequireOnboarding>} />
           <Route path="/progress" element={<RequireOnboarding><Bounded label="/progress"><ProgressScreen /></Bounded></RequireOnboarding>} />
-          <Route path="/coach" element={<RequireOnboarding><Bounded label="/coach"><CoachScreen /></Bounded></RequireOnboarding>} />
+          <Route path="/coach" element={<Navigate to="/coach/ask" replace />} />
+          <Route path="/coach/:section" element={<RequireOnboarding><Bounded label="/coach"><CoachScreen /></Bounded></RequireOnboarding>} />
           <Route path="/cards" element={<RequireOnboarding><Bounded label="/cards"><CardsScreen /></Bounded></RequireOnboarding>} />
           <Route path="/cards/review" element={<RequireOnboarding><Bounded label="/cards/review"><CardReviewScreen /></Bounded></RequireOnboarding>} />
           <Route path="/patch" element={<RequireOnboarding><Bounded label="/patch"><PatchWatchScreen /></Bounded></RequireOnboarding>} />

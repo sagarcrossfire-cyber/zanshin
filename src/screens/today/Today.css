@@ -71,7 +71,7 @@
 .z-timeline__kind { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-2); }
 .z-timeline__minutes { font-family: var(--font-mono); font-size: 13px; color: var(--text-2); font-weight: 500; }
 .z-timeline__reason { font-size: 13px; line-height: 18px; color: var(--text-2); overflow-wrap: anywhere; }
-.z-timeline__swap { min-height: 40px; padding: var(--space-1) var(--space-3); }
+.z-timeline__swap { min-height: 44px; padding: var(--space-1) var(--space-3); } /* 44 px target (§13.7); stated here so CSS order cannot shrink it */
 .z-today__plan-foot { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
 
 /* Focus meters. */

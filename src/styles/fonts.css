@@ -9,3 +9,17 @@
 @import '@fontsource/ibm-plex-mono/400.css';
 @import '@fontsource/ibm-plex-mono/500.css';
 @import '@fontsource/ibm-plex-mono/600.css';
+
+/* 2.0: the kanji the app shows (残心, the Shu-Ha-Ri and hub marks), subset from
+ * Shippori Mincho B1 ExtraBold (SIL OFL 1.1; licence beside the file) by
+ * scripts/subset-kanji.py. ~5 kB instead of the ~1 MB Japanese file, so the
+ * marks render the same on every device and offline. */
+@font-face {
+  font-family: 'Zanshin Kanji';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400 900;
+  src: url('./fonts/zanshin-kanji-800.woff2') format('woff2');
+  unicode-range: U+3040-30FF, U+3400-9FFF, U+F900-FAFF;
+}
+
