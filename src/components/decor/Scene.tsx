@@ -37,8 +37,10 @@ function SceneArt({ name }: { name: string }) {
 export function Scene() {
   const location = useLocation();
   const name = sceneCharacter(location.pathname);
-  // The Lab runner keeps a quieter scene: no character, no embers.
+  // The Lab runner keeps a quieter scene: no character, no embers. Screens
+  // with a stage hero already show their character, so the scene leaves it out.
   const quiet = location.pathname.startsWith('/lab/session');
+  const hasStage = location.pathname === '/today' || /^\/matchups\/[^/]+/.test(location.pathname);
   return (
     <div className="z-scene" aria-hidden="true">
       <div className="z-scene__glow" />
@@ -46,7 +48,7 @@ export function Scene() {
       <div className="z-scene__grain" />
       <BrushEnso className="z-scene__enso" size={520} />
       <span className="z-scene__kanji">残心</span>
-      {!quiet && <SceneArt name={name} />}
+      {!quiet && !hasStage && <SceneArt name={name} />}
       {!quiet && <Embers />}
     </div>
   );

@@ -2,6 +2,7 @@
 // plan; tallies use large steppers; "What beat me" becomes a problem move
 // in one tap (AC-LOG-4). Saving recomputes mastery (§7.1) via
 // recomputeAllMastery so Today, Progress and weaknesses update at once.
+import { PageHeader } from '../../components/layout/PageHeader';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
@@ -198,7 +199,8 @@ export function LogFormScreen() {
 
   return (
     <div className="z-log">
-      <Card title={editing ? 'Edit match set' : 'Log a match set'}>
+      <PageHeader eyebrow="Match Log" title={editing ? 'Edit match set' : 'Log a match set'} lede="Who you played, how it went, and what happened. Thirty seconds after a set is enough." />
+      <Card title="The set">
         <TextField id="log-at" label="Date and time" type="datetime-local" value={at} onChange={setAt} />
         <Select id="log-mode" label="Mode" value={mode} onChange={(v) => setMode(v as MatchSet['mode'])}
           options={[

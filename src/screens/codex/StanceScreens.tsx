@@ -2,6 +2,7 @@
 // pack; each sheet lists entries (manual and from moves), the fastest attack
 // per hit level, plus-on-block routes into the stance, best uses, risks,
 // how opponents answer, and drills.
+import { PageHeader } from '../../components/layout/PageHeader';
 import { useMemo } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Card } from '../../components/base/Card';
@@ -21,7 +22,7 @@ export function StanceMapScreen() {
   const stances = useMemo(() => loadStances(), []);
   return (
     <div className="z-codex">
-      <p className="z-body-l">Yoshimitsu’s stance network as a map, not a list. Tab reaches every node; arrow keys move between stances.</p>
+      <PageHeader eyebrow="Codex · Yoshimitsu" title="Stances" lede="Yoshimitsu’s stance network as a map, not a list. Tab reaches every node; arrow keys move between stances." />
       <StanceMap onSelect={(stance) => navigate(`/codex/stances/${stance}`)} />
       <ul className="z-codex__list">
         {STANCE_ORDER.map((id) => {

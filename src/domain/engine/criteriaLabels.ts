@@ -19,5 +19,28 @@ export function criterionLabel(id: string): string {
 }
 
 export function criteriaText(ids: string[]): string {
-  return ids.map(criterionLabel).join(', ');
+  return [...new Set(ids.map(criterionLabel))].join(', ');
+}
+
+const ANSWER_KIND_LABELS: Record<string, string> = {
+  punish: 'Punish', 'block-high': 'Block high', 'block-low': 'Block low', duck: 'Duck',
+  'sidestep-left': 'Sidestep left', 'sidestep-right': 'Sidestep right', backdash: 'Backdash',
+  interrupt: 'Interrupt', parry: 'Parry', flash: 'Flash',
+};
+
+/** "sidestep-left" → "Sidestep left" for problem-move answers. */
+export function answerKindLabel(kind: string): string {
+  return ANSWER_KIND_LABELS[kind] ?? kind.replace(/-/g, ' ');
+}
+
+/** Plan reasons come from the engine in its own words ("mastery 0.42,
+ * never practiced"); this turns the numbers into what a player reads. */
+export function plainReason(reason: string): string {
+  return reason
+    .replace(/mastery (\d+(?:\.\d+)?)/g, (_m, value: string) => {
+      const pct = Math.round(Number(value) * 100);
+      return pct === 0 ? 'new' : `mastery ${pct}%`;
+    })
+    .replace(/never practiced/g, 'not practised yet')
+    .replace(/practiced/g, 'practised');
 }

@@ -9,7 +9,9 @@ export interface StepperProps {
 }
 
 export function Stepper({ steps, currentIndex, large = true, onStepClick, ariaLabel = 'Progress' }: StepperProps) {
+  const currentLabel = steps[currentIndex]?.label;
   return (
+    <div className="z-stepper-wrap">
     <ol className={`z-stepper${large ? ' z-stepper--large' : ''}`} aria-label={ariaLabel}>
       {steps.map((s, i) => {
         const done = i < currentIndex; const current = i === currentIndex;
@@ -25,5 +27,8 @@ export function Stepper({ steps, currentIndex, large = true, onStepClick, ariaLa
         );
       })}
     </ol>
+    {/* Phones show dots only; this line names the current step there. */}
+    {currentLabel && <p className="z-stepper__caption" aria-hidden="true">Step {currentIndex + 1} of {steps.length} · {currentLabel}</p>}
+    </div>
   );
 }

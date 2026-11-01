@@ -13,16 +13,15 @@
 .z-scene__pattern {
   position: absolute; inset: 0;
   background: var(--pattern-ink);
-  -webkit-mask-image: var(--pattern-seigaiha); mask-image: var(--pattern-seigaiha);
-  -webkit-mask-size: 56px 28px; mask-size: 56px 28px;
   opacity: var(--pattern-opacity);
 }
 /* Fade the pattern out towards the middle of the screen so text stays calm. */
 .z-scene__pattern {
-  -webkit-mask-image: var(--pattern-seigaiha), linear-gradient(180deg, black 0%, transparent 45%, transparent 70%, black 100%);
-  mask-image: var(--pattern-seigaiha), linear-gradient(180deg, black 0%, transparent 45%, transparent 70%, black 100%);
+  /* Each scheme has its own pattern: seigaiha (Manji, Washi), asanoha (Crimson), lattice (Heat). */
+  -webkit-mask-image: var(--scene-pattern), linear-gradient(180deg, black 0%, transparent 45%, transparent 70%, black 100%);
+  mask-image: var(--scene-pattern), linear-gradient(180deg, black 0%, transparent 45%, transparent 70%, black 100%);
   -webkit-mask-composite: source-in; mask-composite: intersect;
-  -webkit-mask-size: 56px 28px, 100% 100%; mask-size: 56px 28px, 100% 100%;
+  -webkit-mask-size: var(--scene-pattern-size), 100% 100%; mask-size: var(--scene-pattern-size), 100% 100%;
 }
 .z-scene__grain { position: absolute; inset: 0; background-image: var(--pattern-grain); opacity: 0.05; mix-blend-mode: overlay; }
 .z-scene__enso { position: absolute; left: -140px; top: 22vh; width: 520px; height: 520px; opacity: 0.06; transform: rotate(-12deg); }
@@ -32,16 +31,16 @@
   color: var(--text-1); opacity: 0.035; letter-spacing: 0.1em;
 }
 .z-scene__art {
-  position: absolute; right: -2vw; bottom: 0;
-  width: min(48vw, 760px); height: 92vh;
+  position: absolute; right: 0; bottom: 0;
+  width: min(40vw, 680px); height: 88vh;
   opacity: var(--scene-art-opacity);
-  -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 35%), linear-gradient(0deg, transparent 0%, black 18%);
-  mask-image: linear-gradient(90deg, transparent 0%, black 35%), linear-gradient(0deg, transparent 0%, black 18%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 30%), linear-gradient(0deg, transparent 0%, black 5%);
+  mask-image: linear-gradient(90deg, transparent 0%, black 30%), linear-gradient(0deg, transparent 0%, black 5%);
   -webkit-mask-composite: source-in; mask-composite: intersect;
 }
 .z-scene__art img { width: 100%; height: 100%; object-fit: contain; object-position: right bottom; filter: saturate(1.1) drop-shadow(0 0 40px var(--scene-glow-1)); }
 @media (max-width: 599px) {
-  .z-scene__art { width: 92vw; height: 70vh; right: -18vw; opacity: calc(var(--scene-art-opacity) * 0.5); }
+  .z-scene__art { width: 80vw; height: 62vh; right: 0; opacity: calc(var(--scene-art-opacity) * 0.45); }
   .z-scene__kanji { font-size: 72px; }
   .z-scene__enso { width: 360px; height: 360px; left: -160px; }
 }

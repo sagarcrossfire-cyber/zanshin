@@ -21,8 +21,12 @@
 .z-stepper::-webkit-scrollbar { display: none; }
 .z-stepper__step { flex: none; }
 .z-stepper__step[aria-current="step"] .z-stepper__dot { background: var(--accent); color: var(--on-accent); }
+@media (min-width: 600px) { .z-stepper { flex-wrap: wrap; overflow-x: visible; } }
+.z-stepper__caption { display: none; margin: var(--space-2) 0 0; font-size: 13px; font-weight: 600; color: var(--text-1); }
 @media (max-width: 599px) {
-  .z-stepper { gap: var(--space-1); }
+  .z-stepper { gap: var(--space-1); justify-content: space-between; }
   .z-stepper--large .z-stepper__dot { width: 36px; height: 36px; font-size: 14px; }
-  .z-stepper__step:not([aria-current="step"]) .z-stepper__label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .z-stepper--large .z-stepper__step { padding: var(--space-1); }
+  .z-stepper__label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .z-stepper__caption { display: block; }
 }

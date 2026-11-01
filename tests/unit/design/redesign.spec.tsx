@@ -102,3 +102,27 @@ describe('gate criteria in plain words', () => {
     expect(criterionLabel('someNewMetric')).toBe('some new metric');
   });
 });
+
+describe('move names never carry markup', () => {
+  it('cleanMoveName turns Wavu dotlists into "A / B" and decodes entities', async () => {
+    const { cleanMoveName } = await import('../../../src/data/import/clean');
+    expect(cleanMoveName('<div class="dotlist">\n\n* Sword Sweep\n* Samurai Cutter\n</div>')).toBe('Sword Sweep / Samurai Cutter');
+    expect(cleanMoveName(['Enma&', '039;s Flame'].join('#'))).toBe("Enma's Flame");
+    expect(cleanMoveName('  ')).toBeUndefined();
+    expect(cleanMoveName(undefined)).toBeUndefined();
+  });
+  it('no bundled move name contains a tag', () => {
+    expect(loadMovesYoshimitsu().filter((move) => /[<>]/.test((move.name ?? '').replace(' > ', ''))).map((m) => m.name)).toEqual([]);
+  });
+});
+
+describe('plain words for engine values', () => {
+  it('answer kinds, plan reasons and duplicate criteria', async () => {
+    const { answerKindLabel, plainReason, criteriaText } = await import('../../../src/domain/engine/criteriaLabels');
+    expect(answerKindLabel('sidestep-left')).toBe('Sidestep left');
+    expect(answerKindLabel('some-new-kind')).toBe('some new kind');
+    expect(plainReason('Decode 10 inputs: mastery 0.00, never practiced')).toBe('Decode 10 inputs: new, not practised yet');
+    expect(plainReason('Guard: mastery 0.42, last practiced 3 days ago')).toBe('Guard: mastery 42%, last practised 3 days ago');
+    expect(criteriaText(['drillSuccess', 'drillSuccess', 'solidShare'])).toBe('drill success, 80% of nodes solid');
+  });
+});

@@ -84,11 +84,17 @@ function toggle<T>(list: T[], value: T): T[] {
 }
 
 const LEGEND_KEY = 'zanshin:legend-open';
+/** First visit: open on wide screens, closed on phones (where it would push
+ * the list three screens down); after that, whatever was chosen last. */
 function readLegendOpen(): boolean {
+  const wide = typeof window !== 'undefined' && typeof window.innerWidth === 'number' && window.innerWidth >= 900;
   try {
-    return globalThis.localStorage?.getItem(LEGEND_KEY) !== 'closed';
+    const stored = globalThis.localStorage?.getItem(LEGEND_KEY);
+    if (stored === 'open') return true;
+    if (stored === 'closed') return false;
+    return wide;
   } catch {
-    return true;
+    return wide;
   }
 }
 function writeLegendOpen(open: boolean): void {
@@ -273,7 +279,8 @@ export function MoveExplorerScreen() {
                     {move.counterHit !== undefined && move.counterHit !== move.hit && <span className="z-moves__ch"><abbr title="Counter hit">CH</abbr> <FrameValue value={move.counterHit} showTierIcon={false} /></span>}
                   </span>
                   <span className="z-moves__cell z-moves__meta">
-                    <DataBadge status={status} compact detail={`${move.provenance.source} · ${move.provenance.patch}`} />
+                    {/* Unverified is the default for published data; the list only flags what differs. */}
+                    {status !== 'unverified' && <DataBadge status={status} compact detail={`${move.provenance.source} · ${move.provenance.patch}`} />}
                     <ClipBadge moveId={move.id} />
                   </span>
                 </Link>

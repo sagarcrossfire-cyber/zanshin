@@ -25,6 +25,10 @@ function ensoState(state: Mastery['state'], stageLocked: boolean): EnsoState {
   return 'active';
 }
 
+const NODE_STATE_WORDS: Record<string, string> = {
+  locked: 'Locked', learning: 'Learning', practicing: 'Practising', solid: 'Solid', mastered: 'Mastered', rusty: 'Rusty',
+};
+
 const ACT_KANJI: Record<string, string> = { shu: '守', ha: '破', ri: '離' };
 
 export function PathScreen() {
@@ -96,8 +100,9 @@ export function PathScreen() {
                         ring's own label carries title, score and state), so
                         the visible text is always part of the name (WCAG 2.5.3). */}
                     <Link to={`/path/${nodeId}`}>
-                      <EnsoRing score={row?.score ?? 0} state={ensoState(row?.state ?? 'learning', view.state === 'locked')} label={node.title} size={72} />
-                      <span>{node.title}</span>
+                      <EnsoRing score={row?.score ?? 0} state={ensoState(row?.state ?? 'learning', view.state === 'locked')} label={node.title} size={56} />
+                      <span className="z-path__node-title">{node.title}</span>
+                      <span className="z-path__node-state">{NODE_STATE_WORDS[row?.state ?? 'learning'] ?? row?.state}</span>
                     </Link>
                   </li>
                 );

@@ -3,6 +3,7 @@
 // the top two weaknesses, due cards, the week in consistency terms, and
 // quick actions. Swaps persist per date in localStorage (D-024); the patch
 // banner arrives with P10's dataStatus.
+import { plainReason } from '../../domain/engine/criteriaLabels';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
@@ -252,7 +253,7 @@ export function TodayScreen() {
                     {drill ? (nodeId ? <Link to={`/path/${nodeId}`}>{drill.title}</Link> : <span>{drill.title}</span>) : null}
                     <span className="z-timeline__minutes">{block.minutes} min</span>
                   </p>
-                  <p className="z-timeline__reason">{block.reason}</p>
+                  <p className="z-timeline__reason">{plainReason(block.reason)}</p>
                 </div>
                 {drill && <Button variant="secondary" className="z-timeline__swap" onClick={() => swapBlock(i)}>Swap</Button>}
               </li>
@@ -275,10 +276,9 @@ export function TodayScreen() {
                 : Math.min(1, weakness.target / Math.max(weakness.value, 0.0001));
               return (
                 <li key={weakness.metric} className="z-meter">
-                  <div className="z-meter__row">
-                    <span className="z-meter__label">{weakness.label}</span>
-                    <span className="z-meter__value z-data">{weakness.value.toFixed(1)} <span className="z-caption">target {weakness.target} {trendArrow(weakness)}</span></span>
-                  </div>
+                  <p className="z-meter__row">
+                    <span className="z-meter__label">{weakness.label}:</span> <strong className="z-data">{weakness.value.toFixed(1)}</strong> vs target {weakness.target} {trendArrow(weakness)}
+                  </p>
                   <span className="z-meter__track" aria-hidden="true"><span style={{ width: `${Math.round(ratio * 100)}%` }} /></span>
                   <span className="z-caption">{weakness.direction === 'higher' ? 'Higher is better' : 'Lower is better'} · {Math.round(weakness.sample)} in sample</span>
                 </li>

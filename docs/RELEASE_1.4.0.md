@@ -23,6 +23,13 @@ Sagar's brief: art was cut off (the Today hero), the move list's numbers had no 
 - `src/components/layout/PageHeader.tsx`; `DataBadge` gains `compact` (label only, detail in a tooltip).
 - Importer: `mapCargoRow` decodes entities in `Move.name`; the bundled pack was decoded once.
 
+## Independent QA
+
+A separate reviewer agent, which had not seen the work, rendered every route on a phone and a desktop in all four schemes with art in Wavu's shapes, measured crops, overflow and contrast, and ran axe. It found three blockers and a set of misses against the brief; all were fixed before release:
+
+- Blockers: three move names were raw HTML "dotlists" (now "Sword Sweep / Samurai Cutter", in the importer and the pack); the stance map's labels rendered at ~57 px because they were sized in pixels inside a stretched SVG (now viewBox units with a halo); the Combos and Stances lists lost their row layout when the move list got its grid (restored).
+- The phone hero still trimmed ~10 % of the figure and a floor gradient faded the feet: on phones the figure now has its own band above the text, and the floor glow sits behind the feet. Text no longer sits on figures (nameplates below portraits). Long phone values wrapped instead of being cut. Phone titles fit (the data badge shrinks to its icon). Engine words are now plain ("sidestep-left" → "Sidestep left", "mastery 0.00, never practiced" → "new, not practised yet", gate ids → "80% of nodes solid"). The key gained input notation, move badges, a fair account of bracketed values and a distinct capital-letter hit level; it opens by default only on wide screens. Fewer boxes: Path lessons are rows, Today's stats are one strip, quick actions are pills, phone move rows have no boxed cells, the key has no boxes inside boxes. Eyebrows over art and the active phone tab now pass AA in every scheme. Each scheme has its own pattern (seigaiha, asanoha, lattice). Page headers on every screen; accent checkboxes; markdown bullets restored.
+
 ## Tests
 
 - Unit: every scheme's text and signal colours ≥ 4.5 : 1 on every surface and the two dark overrides define the same tokens (`tests/unit/design/contrast.spec.ts`); scheme persistence, scene character, entity decoding, the key's content (`tests/unit/design/redesign.spec.tsx`). 840 in all.

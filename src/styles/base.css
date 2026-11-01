@@ -108,3 +108,7 @@ img, svg { display: block; max-width: 100%; }
 
 /* Thin themed scrollbars. */
 * { scrollbar-color: var(--line-strong) transparent; scrollbar-width: thin; }
+
+/* Native checkboxes and radios take the scheme's accent and a comfortable size. */
+input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width: 18px; height: 18px; vertical-align: -3px; }
+.z-check { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; }

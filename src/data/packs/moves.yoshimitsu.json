@@ -2741,7 +2741,7 @@
     "character": "Yoshimitsu",
     "num": 107,
     "input": "FC.DF+1",
-    "name": "<div class=\"dotlist\">\n\n* Sword Sweep\n* Samurai Cutter\n</div>",
+    "name": "Sword Sweep / Samurai Cutter",
     "aliases": [
       "1SS.FC.DF+1"
     ],
@@ -7134,7 +7134,7 @@
     "id": "Yoshimitsu-NSS.f+3+4",
     "character": "Yoshimitsu",
     "input": "NSS.f+3+4",
-    "name": "<div class=\"dotlist\">\n\n* Bull Rush\n* Chariot Tackle\n</div>",
+    "name": "Bull Rush / Chariot Tackle",
     "aliases": [],
     "altInputs": [],
     "stance": "NSS",
@@ -7449,7 +7449,7 @@
     "id": "Yoshimitsu-b+1+2",
     "character": "Yoshimitsu",
     "input": "b+1+2",
-    "name": "<div class=\"dotlist\">\n\n* No Sword Stance\n* Mutou no Kiwami\n</div>",
+    "name": "No Sword Stance / Mutou no Kiwami",
     "aliases": [],
     "altInputs": [
       "BT.b+1+2"

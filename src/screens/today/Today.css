@@ -81,8 +81,9 @@
   display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4);
   border-radius: var(--radius-card); background: var(--glass); border: 1px solid var(--glass-border);
 }
-.z-meter__row { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); }
-.z-meter__label { font-weight: 600; }
+.z-meter__row { color: var(--text-2); }
+.z-meter__row strong { color: var(--text-1); font-size: 17px; }
+.z-meter__label { font-weight: 600; color: var(--text-1); }
 .z-meter__track { display: block; height: 8px; border-radius: 8px; background: var(--line); overflow: hidden; }
 .z-meter__track span { display: block; height: 100%; border-radius: 8px; background: linear-gradient(90deg, var(--fa-punish), var(--fa-plus)); }
 
@@ -98,3 +99,19 @@
 .z-quick__tile > svg:first-child { color: var(--accent); }
 .z-quick__tile > svg:last-child { color: var(--text-3); }
 .z-quick__tile:hover { border-color: var(--accent-line); background: var(--accent-soft); }
+
+/* QA pass: one glass strip instead of three tiles; quick actions as a row of pills. */
+.z-today__stats {
+  gap: 0; border-radius: var(--radius-card); background: var(--glass); border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: var(--shadow-panel); overflow: hidden;
+}
+.z-today__stats .z-stat-tile { background: transparent; border: 0; border-radius: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.z-today__stats .z-stat-tile + .z-stat-tile { border-left: 1px solid var(--line); }
+.z-today__stats .z-stat-tile:hover { background: var(--accent-soft); transform: none; }
+@media (max-width: 599px) {
+  .z-today__stats .z-stat-tile--focus { border-left: 0; border-top: 1px solid var(--line); }
+}
+.z-quick { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.z-quick__tile { display: inline-flex; min-height: 44px; padding: var(--space-2) var(--space-4); border-radius: var(--radius-pill); gap: var(--space-2); font-size: 14px; }
+.z-quick__tile > svg:last-child { display: none; }
+.z-quick__tile > svg:first-child { width: 20px; height: 20px; }

@@ -3,6 +3,7 @@
 // Lab tasks generated from problem moves, on-demand pack import, and (1.3.0)
 // a web-sourced matchup primer from the site's intel function, kept on the
 // device as a research note with the 'web' badge.
+import { answerKindLabel } from '../../domain/engine/criteriaLabels';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
@@ -214,7 +215,7 @@ export function CharacterScreen() {
         {problems.map((problemMove) => (
           <div key={problemMove.id}>
             <p>
-              <InputString input={problemMove.input} /> — {problemMove.answer.kind}: {problemMove.answer.detail}
+              <InputString input={problemMove.input} /> — {answerKindLabel(problemMove.answer.kind)}: {problemMove.answer.detail}
               {problemMove.verified ? ' (verified)' : ' (unverified)'}
             </p>
             <p>{problemMove.description}</p>
@@ -251,10 +252,10 @@ export function CharacterScreen() {
           onChange={(v) => setAnswerKind(v as AnswerKind)}
           options={ANSWER_KINDS.map((k) => ({ value: k.value, label: k.label }))} />
         <TextField id="mu-answer-detail" label="Answer detail" value={answerDetail} onChange={setAnswerDetail} />
-        <label>
+        <label className="z-check">
           <input type="checkbox" checked={verified} onChange={(e) => setVerified(e.target.checked)} /> Verified against the pack
         </label>
-        <Button onClick={() => void addProblemMove()}>Add problem move</Button>
+        <div><Button onClick={() => void addProblemMove()}>Add problem move</Button></div>
       </Card>
 
       <Card title="Notes">

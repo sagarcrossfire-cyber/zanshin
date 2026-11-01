@@ -59,16 +59,31 @@ test('no art is cropped: the stage hero shows the whole figure, icons are square
   await completeOnboarding(page);
   const figure = page.locator('.z-hero img.z-hero__img--loaded');
   await expect(figure).toBeVisible({ timeout: 20000 });
-  // The figure is contained: its rendered picture fits inside its box.
+  // The figure is contained, and its box sits wholly inside the stage (no
+  // overflow trimming it at the edge), on phones and desktops alike.
   expect(await figure.evaluate((img: HTMLImageElement) => getComputedStyle(img).objectFit)).toBe('contain');
+  for (const route of ['/today', '/matchups/Kazuya']) {
+    await page.goto(route);
+    await expect(page.locator('.z-hero img.z-hero__img--loaded')).toBeVisible({ timeout: 20000 });
+    const inside = await page.locator('.z-hero').evaluate((hero) => {
+      const box = hero.getBoundingClientRect();
+      const img = hero.querySelector('img.z-hero__img')!.getBoundingClientRect();
+      return img.left >= box.left - 1 && img.right <= box.right + 1 && img.top >= box.top - 1 && img.bottom <= box.bottom + 1;
+    });
+    expect(inside, `hero figure inside its stage on ${route}`).toBe(true);
+  }
   for (const route of ['/today', '/matchups', '/matchups/Kazuya', '/log', '/log/new', '/codex/moves', '/settings']) {
     await page.goto(route);
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(400);
     expect(await croppedImages(page), `cropped art on ${route}`).toEqual([]);
   }
+  // Scene art stands behind screens without a stage hero; with one, the hero shows the figure.
+  await page.goto('/codex/moves');
+  await expect(page.locator('[data-scene-art="Yoshimitsu"] img')).toBeVisible();
   await page.goto('/matchups/Kazuya');
-  await expect(page.locator('[data-scene-art="Kazuya"] img')).toBeVisible();
+  await expect(page.locator('.z-hero img.z-hero__img--loaded')).toBeVisible();
+  await expect(page.locator('[data-scene-art]')).toHaveCount(0);
   const icon = page.locator('.z-art-icon').first();
   await page.goto('/matchups');
   await expect(icon).toBeVisible();
@@ -80,11 +95,17 @@ test('frame-data key: open on the move list, explains the columns, remembers bei
   await completeOnboarding(page);
   await page.goto('/codex/moves');
   const legend = page.getByTestId('frame-legend');
+  const toggle = page.getByRole('button', { name: 'How to read frame data' });
+  // Open by default on wide screens, closed on phones (it is three screens tall there).
+  const wide = (page.viewportSize()?.width ?? 0) >= 900;
+  await expect(toggle).toHaveAttribute('aria-expanded', wide ? 'true' : 'false');
+  if (!wide) await toggle.click();
   await expect(legend).toBeVisible();
+  await expect(legend.getByRole('heading', { name: 'Reading an input' })).toBeVisible();
   await expect(legend.getByRole('heading', { name: /On block/ })).toBeVisible();
   await expect(legend.getByText('Launch punishable')).toBeVisible();
   await expect(legend.getByText('Opponent airborne')).toBeVisible();
-  await page.getByRole('button', { name: 'How to read frame data' }).click();
+  await toggle.click();
   await expect(legend).toHaveCount(0);
   await page.reload();
   await expect(page.getByText('319 of 319 moves')).toBeVisible();
@@ -96,7 +117,7 @@ test('frame-data key: open on the move list, explains the columns, remembers bei
   expect(await page.locator('.z-moves__list').innerText()).not.toMatch(/&(\u0023\d+|[a-z]+);/);
   // The detail page leads with four labelled numbers.
   await page.getByText("Enma's Flame").click();
-  await expect(page.getByRole('region', { name: 'Frame data' })).toContainText('On block');
+  await expect(page.getByRole('region', { name: 'Frame data', exact: true })).toContainText('On block');
 });
 
 for (const [scheme, label] of [['manji', 'Manji Night'], ['crimson', 'Crimson Dojo'], ['heat', 'Heat Surge']] as const) {

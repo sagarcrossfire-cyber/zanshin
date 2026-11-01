@@ -3,6 +3,7 @@
 // immediately, so a reload resumes at the same step with values intact
 // (AC-ONB-3). Choosing the baseline at Calibration runs it before the
 // Placement step (P8); placement then reads the latest Assessment.
+import { plainReason } from '../../domain/engine/criteriaLabels';
 import { BrushEnso, Hanko } from '../../components/decor/Ornaments';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
@@ -270,7 +271,7 @@ function PlacementStep({ profile, onBack, onFinish }: { profile: Profile; onBack
         <p className="z-body-l">Your first plan ({plan.total} minutes):</p>
         <ul className="z-onboarding__plan">
           {plan.blocks.map((block, i) => (
-            <li key={`${block.kind}-${i}`}>{block.minutes} min — {block.reason}</li>
+            <li key={`${block.kind}-${i}`}>{block.minutes} min — {plainReason(block.reason)}</li>
           ))}
         </ul>
         <div className="z-onboarding__actions">
@@ -293,7 +294,7 @@ function PlacementStep({ profile, onBack, onFinish }: { profile: Profile; onBack
       <p className="z-body-l">Your first plan ({plan.total} minutes):</p>
       <ul className="z-onboarding__plan">
         {plan.blocks.map((block, i) => (
-          <li key={`${block.kind}-${i}`}>{block.minutes} min — {block.reason}</li>
+          <li key={`${block.kind}-${i}`}>{block.minutes} min — {plainReason(block.reason)}</li>
         ))}
       </ul>
       <div className="z-onboarding__actions">

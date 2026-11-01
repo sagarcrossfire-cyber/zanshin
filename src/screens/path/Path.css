@@ -22,18 +22,20 @@
 .z-path__stage > :not(.z-path__kanji) { position: relative; z-index: 1; }
 .z-path__lock { color: var(--text-3); display: inline-flex; }
 .z-path__open { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--on-accent); background: var(--accent); padding: 3px 10px; border-radius: var(--radius-pill); }
-.z-path__nodes { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--space-3); }
+.z-path__nodes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+/* One row per lesson: ring, title, state — a list, not a grid of tiles. */
 .z-path__node a {
-  display: flex; flex-direction: column; gap: var(--space-2); align-items: center; text-align: center;
-  padding: var(--space-3); border-radius: var(--radius-control); text-decoration: none; color: var(--text-1);
-  background: var(--glass-strong); border: 1px solid var(--glass-border); min-height: 100%;
-  transition: border-color var(--dur-standard) var(--ease-enter), transform var(--dur-standard) var(--ease-enter);
+  display: grid; grid-template-columns: 56px 1fr auto; align-items: center; gap: var(--space-4);
+  padding: var(--space-2) var(--space-2); border-radius: var(--radius-control); text-decoration: none; color: var(--text-1);
+  transition: background var(--dur-standard) var(--ease-enter);
 }
-.z-path__node a:hover { border-color: var(--accent-line); transform: translateY(-1px); }
-.z-path__node a > span { font-size: 14px; line-height: 18px; font-weight: 600; }
+.z-path__node + .z-path__node a { border-top: 1px solid var(--line); border-radius: 0; }
+.z-path__node a:hover { background: var(--accent-soft); }
+.z-path__node .z-enso__label { display: none; }
+.z-path__node-title { font-weight: 600; }
+.z-path__node-state { font-size: 12px; color: var(--text-2); letter-spacing: 0.04em; }
 .z-path__detail { display: flex; flex-direction: column; gap: var(--space-4); max-width: 900px; margin: 0 auto; }
 @media (max-width: 599px) {
-  .z-path__nodes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .z-path__stages::before { left: 22px; }
 }
 .z-path__stage .z-chip { white-space: normal; height: auto; overflow-wrap: anywhere; }

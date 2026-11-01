@@ -1,5 +1,6 @@
 // Match Log detail + replay reviews — spec §5.12. Reviews are the
 // §5.12 checklist: counts plus up to three insights, tied to the set.
+import { answerKindLabel } from '../../domain/engine/criteriaLabels';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
@@ -109,7 +110,7 @@ export function LogDetailScreen() {
             <ul>
               {beatProblems.map((p) => (
                 <li key={p.id}>
-                  <InputString input={p.input} /> — {p.answer.kind}: {p.answer.detail}
+                  <InputString input={p.input} /> — {answerKindLabel(p.answer.kind)}: {p.answer.detail}
                   {p.verified ? ' (verified)' : ' (unverified)'}
                 </li>
               ))}

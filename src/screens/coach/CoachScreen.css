@@ -14,3 +14,5 @@
 .z-coach__unverified { color: var(--warning); font-size: 13px; }
 .z-coach__citations { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
 .z-coach__ask-form { display: flex; flex-direction: column; gap: var(--space-3); }
+.z-coach__message-body ul, .z-coach .z-card ul:not([class]) { list-style: disc; padding-left: var(--space-5); }
+.z-coach__message-body li::marker, .z-coach .z-card li::marker { color: var(--accent); }

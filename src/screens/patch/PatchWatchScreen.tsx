@@ -264,7 +264,7 @@ export function PatchWatchScreen() {
               <li key={conflict.id} className="z-patch__conflict">
                 <p className="z-patch__conflict-head">
                   {conflict.entityId.includes('-')
-                    ? <Link to={`/codex/moves/${encodeURIComponent(conflict.entityId)}`}>{conflict.entityId.replace(/^Yoshimitsu-?/, '') || conflict.entityId}</Link>
+                    ? <Link to={`/codex/moves/${encodeURIComponent(conflict.entityId)}`}>{conflict.entityId}</Link>
                     : <strong>{conflict.entityId}</strong>}
                   <span className="z-patch__field">{conflict.field}</span>
                 </p>

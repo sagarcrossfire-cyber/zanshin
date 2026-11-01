@@ -9,3 +9,8 @@
 .z-research__citations { margin: 0; padding-left: var(--space-5); font-size: 13px; display: flex; flex-direction: column; gap: var(--space-1); }
 .z-research__cite-id { font-family: var(--font-mono); color: var(--text-2); }
 .z-research__actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+/* QA pass: markdown keeps its bullets and spacing (the base reset removes them). */
+.z-research__body > * + * { margin-top: var(--space-2); }
+.z-research__body ul { list-style: disc; padding-left: var(--space-5); display: flex; flex-direction: column; gap: var(--space-1); }
+.z-research__body li::marker { color: var(--accent); }
+.z-research__body p > strong:only-child { display: block; margin-top: var(--space-2); font-family: var(--font-display); font-size: 16px; color: var(--text-1); }

@@ -1,6 +1,6 @@
 // §9.1 — Wavu Wiki Cargo importer, the primary data source. Shared by the build script and the in-app updater; no fetch in screens.
 import { moveSchema, type Move, type Provenance } from '../schemas';
-import { cleanNotes, decodeEntities, normalizeCrush, stripWikitext } from './clean';
+import { cleanMoveName, cleanNotes, decodeEntities, normalizeCrush, stripWikitext } from './clean';
 import { parseBlockMin, parseStancePrefix, parseStartupFrame } from './parse';
 import { deriveTags } from './tags';
 
@@ -274,7 +274,7 @@ export function mapCargoRow(
     input,
     parentId,
     // Wavu's Cargo API returns names entity-escaped (Enma&#039;s Flame).
-    name: decodeEntities(rowString(row, 'Move.name') ?? '').trim() || undefined,
+    name: cleanMoveName(rowString(row, 'Move.name')),
     aliases: splitList(cleanField(rowString(row, 'Move.alias'))),
     altInputs: splitList(cleanField(rowString(row, 'Move.alt'))),
     stance: parseStancePrefix(input),
