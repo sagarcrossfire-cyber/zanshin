@@ -21,6 +21,10 @@ import './Path.css';
 
 const NodeMasteryChart = lazy(() => import('./NodeMasteryChart'));
 
+const MASTERY_WORDS: Record<string, string> = {
+  locked: 'locked', learning: 'still learning', practicing: 'practising', solid: 'solid', mastered: 'mastered', rusty: 'rusty — practise again',
+};
+
 export function NodeDetailScreen() {
   const { nodeId } = useParams<{ nodeId: string }>();
   const navigate = useNavigate();
@@ -106,10 +110,10 @@ export function NodeDetailScreen() {
 
       <Card title="Mastery breakdown">
         <ul>
-          <li>Knowledge (K): {mastery?.K === null || mastery?.K === undefined ? 'no evidence yet' : `${Math.round(mastery.K * 100)}%`} — {sets.length === 0 && mastery?.K === null ? 'no card grades yet (flashcards arrive in P8)' : `${mastery?.evidenceDays.length ?? 0} practice day(s)`}</li>
+          <li>Knowledge (K): {mastery?.K === null || mastery?.K === undefined ? 'no evidence yet' : `${Math.round(mastery.K * 100)}%`} — {sets.length === 0 && mastery?.K === null ? 'no flashcard grades yet' : `${mastery?.evidenceDays.length ?? 0} practice day(s)`}</li>
           <li>Execution (E): {mastery?.E === null || mastery?.E === undefined ? 'no evidence yet' : `${Math.round(mastery.E * 100)}%`} — {sets.length} sets, {successes}/{reps} successes</li>
-          <li>Application (A): {mastery?.A === null || mastery?.A === undefined ? 'no evidence yet' : `${Math.round(mastery.A * 100)}%`} — KPI evidence arrives with match logging (P7)</li>
-          <li>Score: {mastery?.score ?? 0} · State: {mastery?.state ?? 'learning'}{mastery?.placed ? ' (placed)' : ''}</li>
+          <li>Application (A): {mastery?.A === null || mastery?.A === undefined ? 'no evidence yet' : `${Math.round(mastery.A * 100)}%`} — from the matches you log</li>
+          <li>Mastery: {Math.round((mastery?.score ?? 0) * 100)}% · {MASTERY_WORDS[mastery?.state ?? 'learning'] ?? mastery?.state}{mastery?.placed ? ' (placed by your baseline)' : ''}</li>
         </ul>
       </Card>
 

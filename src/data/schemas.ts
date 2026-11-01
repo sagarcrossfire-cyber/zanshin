@@ -471,6 +471,8 @@ export type ErrorRecord = z.infer<typeof errorRecordSchema>;
 export const settingsSchema = z.object({
   id: z.literal('settings'),
   theme: z.enum(['system', 'dark', 'light']),
+  /** Dark colour scheme (release 1.4.0); absent means Manji Night. */
+  scheme: z.enum(['manji', 'crimson', 'heat']).optional(),
   glyphMode: z.enum(['numeric', 'playstation', 'xbox']).optional(),
   labAudioCues: z.boolean(),
   labWakeLock: z.boolean(),

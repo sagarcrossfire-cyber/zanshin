@@ -1,5 +1,6 @@
 // Match Log list — spec §5.12. Recent opponents first (§5.11); record,
 // win rate, last played. Import entry lives here.
+import { PageHeader } from '../../components/layout/PageHeader';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
@@ -44,7 +45,7 @@ export function LogListScreen() {
 
   return (
     <main>
-      <h1>Match Log</h1>
+      <PageHeader level={1} eyebrow="Ranked and casual" title="Match Log" lede="Every set you log feeds your weaknesses, the plan and the coach." />
       <p>
         <Link to="/log/new"><Button>Log a match set</Button></Link>{' '}
         <Link to="/log/import"><Button variant="secondary">Import matches</Button></Link>

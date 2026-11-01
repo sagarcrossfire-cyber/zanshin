@@ -5,3 +5,15 @@
 .z-onboarding__choices { display: flex; flex-direction: column; gap: var(--space-3); margin: var(--space-3) 0; }
 .z-onboarding__choice { display: flex; gap: var(--space-3); align-items: flex-start; border: 1px solid var(--line); border-radius: var(--radius-control); padding: var(--space-3); cursor: pointer; min-height: 44px; }
 .z-onboarding__plan { margin: var(--space-2) 0; padding-left: var(--space-5); }
+
+/* 1.4.0 welcome: ensō and seal, display title, glass panel. */
+.z-onboarding__welcome {
+  position: relative; display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-8) var(--space-6);
+  border-radius: 22px; background: var(--glass); border: 1px solid var(--glass-border); box-shadow: var(--shadow-panel);
+  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); overflow: hidden;
+}
+.z-onboarding__welcome .z-btn { align-self: flex-start; margin-top: var(--space-3); min-height: 52px; padding: var(--space-3) var(--space-8); }
+.z-onboarding__mark { position: relative; width: 180px; height: 180px; margin-bottom: var(--space-2); }
+.z-onboarding__seal { position: absolute; right: 18px; bottom: 26px; }
+.z-onboarding__title { font-family: var(--font-display); font-weight: 800; font-size: 40px; line-height: 46px; margin: 0; }
+.z-onboarding__motto { font-family: var(--font-display); font-size: 18px; line-height: 28px; color: var(--text-2); border-left: 3px solid var(--accent); padding-left: var(--space-3); }

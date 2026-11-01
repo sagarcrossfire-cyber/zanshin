@@ -1,0 +1,23 @@
+/* Settings — release 1.4.0 appearance picker. Each swatch carries its own
+ * data-theme/data-scheme, so it previews the real scheme tokens. */
+.z-scheme-picker { border: 0; margin: var(--space-4) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.z-scheme-picker__options { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--space-3); }
+.z-scheme-swatch {
+  position: relative; display: flex; flex-direction: column; gap: var(--space-2);
+  padding: var(--space-3); border-radius: var(--radius-control); cursor: pointer;
+  border: 1px solid var(--glass-border); background: var(--glass-strong);
+  transition: border-color var(--dur-standard) var(--ease-enter), transform var(--dur-press) var(--ease-enter);
+}
+.z-scheme-swatch:hover { border-color: var(--accent-line); }
+.z-scheme-swatch input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.z-scheme-swatch:has(input:checked) { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.z-scheme-swatch:has(input:focus-visible) { outline: 2px solid var(--info); outline-offset: 2px; }
+.z-scheme-swatch__chips { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; height: 40px; border-radius: var(--radius-chip); overflow: hidden; border: 1px solid var(--line-strong); }
+.z-scheme-swatch__bg { background: linear-gradient(160deg, var(--scene-top), var(--scene-bottom)); }
+.z-scheme-swatch__accent { background: var(--accent); }
+.z-scheme-swatch__accent2 { background: var(--accent-2); }
+.z-scheme-swatch__plus { background: var(--fa-plus); }
+.z-scheme-swatch__launch { background: var(--fa-launch); }
+.z-scheme-swatch__text { display: flex; flex-direction: column; gap: 2px; }
+.z-settings { display: flex; flex-direction: column; gap: var(--space-5); max-width: 900px; margin: 0 auto; }
+.z-settings > .z-card .z-field + .z-field, .z-settings > .z-card .z-field + .z-toggle, .z-settings > .z-card .z-toggle + .z-field { margin-top: var(--space-3); }

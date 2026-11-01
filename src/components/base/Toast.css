@@ -7,9 +7,11 @@
 .z-toast {
   pointer-events: auto;
   display: flex; align-items: center; gap: var(--space-3);
-  background: var(--raised); color: var(--text-1); border: 1px solid var(--line-strong);
+  background: var(--glass-strong); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); color: var(--text-1); border: 1px solid var(--glass-border);
   border-radius: var(--radius-control); padding: var(--space-3) var(--space-4);
   box-shadow: var(--shadow-overlay);
 }
 .z-toast__msg { flex: 1; font-size: 15px; line-height: 22px; }
 .z-toast__action { font-weight: 600; color: var(--info); min-height: 44px; padding: 0 var(--space-2); }
+
+@media (max-width: 599px) { .z-toast-region { bottom: calc(var(--space-3) + 84px); } }

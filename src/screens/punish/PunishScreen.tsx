@@ -2,6 +2,7 @@
 // Lab routine. Route-ready; the coordinator wires /punish. Screens use
 // repos/services only (no Dexie/fetch calls); profile/settings come from
 // the app store.
+import { PageHeader } from '../../components/layout/PageHeader';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
@@ -415,7 +416,7 @@ export function PunishScreen() {
 
   return (
     <main className="z-punish">
-      <h1>Punish Trainer</h1>
+      <PageHeader level={1} eyebrow="Make them pay" title="Punish Trainer" lede="Learn what you can punish and with what, then drill it until it is automatic." />
       <Tabs
         ariaLabel="Punish Trainer modes"
         value={tab}

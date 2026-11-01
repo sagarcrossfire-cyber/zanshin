@@ -43,7 +43,7 @@ export default function ProgressCharts({ data, weeklyMinutes }: { data: Progress
             <XAxis dataKey="label" />
             <YAxis domain={[0, 100]} />
             <Tooltip />
-            <Line type="monotone" dataKey="value" name="Mastery index" stroke="var(--mastery)" dot />
+            <Line type="monotone" dataKey="value" name="Mastery index" stroke="var(--mastery)" strokeWidth={2.5} dot={{ fill: "var(--mastery)", r: 3 }} />
           </LineChart>
         </ResponsiveContainer>
       </ChartBlock>
@@ -55,7 +55,7 @@ export default function ProgressCharts({ data, weeklyMinutes }: { data: Progress
             <XAxis dataKey="label" />
             <YAxis domain={[0, 1]} tickFormatter={(v: number) => `${Math.round(v * 100)}%`} />
             <Tooltip formatter={(v) => [`${Math.round(Number(v) * 100)}%`, 'Success']} />
-            <Line type="monotone" dataKey="value" name="Success rate" stroke="var(--text-1)" dot />
+            <Line type="monotone" dataKey="value" name="Success rate" stroke="var(--accent)" strokeWidth={2.5} dot={{ fill: "var(--accent)", r: 3 }} />
           </LineChart>
         </ResponsiveContainer>
       </ChartBlock>
@@ -67,7 +67,7 @@ export default function ProgressCharts({ data, weeklyMinutes }: { data: Progress
             <XAxis dataKey="label" />
             <YAxis domain={[0, 1]} tickFormatter={(v: number) => `${Math.round(v * 100)}%`} />
             <Tooltip formatter={(v) => [`${Math.round(Number(v) * 100)}%`, 'Accuracy']} />
-            <Line type="monotone" dataKey="value" name="Accuracy" stroke="var(--text-1)" dot />
+            <Line type="monotone" dataKey="value" name="Accuracy" stroke="var(--accent)" strokeWidth={2.5} dot={{ fill: "var(--accent)", r: 3 }} />
           </LineChart>
         </ResponsiveContainer>
       </ChartBlock>
@@ -79,7 +79,7 @@ export default function ProgressCharts({ data, weeklyMinutes }: { data: Progress
             <XAxis dataKey="label" />
             <YAxis domain={[0, 'auto']} />
             <Tooltip />
-            <Line type="monotone" dataKey="value" name="Missed per game" stroke="var(--text-1)" dot />
+            <Line type="monotone" dataKey="value" name="Missed per game" stroke="var(--accent)" strokeWidth={2.5} dot={{ fill: "var(--accent)", r: 3 }} />
             <ReferenceLine y={2} stroke="var(--line-strong)" strokeDasharray="4 4" label="Target 2.0" />
           </LineChart>
         </ResponsiveContainer>
@@ -105,7 +105,7 @@ export default function ProgressCharts({ data, weeklyMinutes }: { data: Progress
             <XAxis dataKey="label" />
             <YAxis domain={[0, 100]} tickFormatter={(v: number) => `${v}%`} />
             <Tooltip formatter={(v) => [`${Math.round(Number(v))}%`, 'Win rate']} />
-            <Bar dataKey="value" name="Win rate" fill="var(--text-1)" />
+            <Bar dataKey="value" name="Win rate" fill="var(--accent)" radius={[6, 6, 0, 0]} maxBarSize={56} />
           </BarChart>
         </ResponsiveContainer>
         {data.winRate.belowMinimum.length > 0 && (
@@ -123,7 +123,7 @@ export default function ProgressCharts({ data, weeklyMinutes }: { data: Progress
             <XAxis dataKey="label" />
             <YAxis domain={[0, 'auto']} />
             <Tooltip />
-            <Bar dataKey="value" name="Minutes" fill="var(--text-1)" />
+            <Bar dataKey="value" name="Minutes" fill="var(--accent-2)" radius={[6, 6, 0, 0]} maxBarSize={56} />
             <ReferenceLine y={weeklyMinutes} stroke="var(--line-strong)" strokeDasharray="4 4" label="Weekly budget" />
           </BarChart>
         </ResponsiveContainer>

@@ -1,6 +1,117 @@
-.z-today { display: flex; flex-direction: column; gap: var(--space-4); max-width: 860px; margin: 0 auto; }
-.z-today__blocks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
-.z-today__block { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: var(--space-2); }
-.z-today__reason { max-width: 100%; min-width: 0; }
-.z-today__reason .z-chip { white-space: normal; overflow-wrap: anywhere; }
-.z-today__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+/* Today — spec §5.3, redrawn for 1.4.0: a stage hero with the one primary
+ * action, three glanceable stat tiles, the plan as a timeline, focus
+ * meters and quick-action tiles. Tokens only. */
+.z-today { display: flex; flex-direction: column; gap: var(--space-8); max-width: 980px; margin: 0 auto; }
+.z-today__headline { font-family: var(--font-display); font-weight: 800; font-size: 34px; line-height: 40px; margin: 0; }
+@media (min-width: 1024px) { .z-today__headline { font-size: 48px; line-height: 54px; } }
+.z-today__lede { font-size: 17px; line-height: 26px; color: var(--text-1); max-width: 34ch; }
+.z-today__cta { margin-top: var(--space-2); display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.z-today__cta .z-btn { min-height: 52px; padding: var(--space-3) var(--space-6); font-size: 16px; }
+
+/* Notices: slim banners instead of full cards. */
+.z-notice {
+  display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4);
+  border-radius: var(--radius-card); background: var(--glass); border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-left: 3px solid var(--info);
+}
+.z-notice > svg { flex: none; color: var(--info); margin-top: 2px; }
+.z-notice--warning { border-left-color: var(--warning); }
+.z-notice--warning > svg { color: var(--warning); }
+.z-notice__actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
+
+/* Stat tiles. */
+.z-today__stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); }
+@media (max-width: 599px) { .z-today__stats { grid-template-columns: 1fr 1fr; } .z-stat-tile--focus { grid-column: 1 / -1; } }
+.z-stat-tile {
+  position: relative; display: flex; flex-direction: column; gap: 2px; min-width: 0;
+  padding: var(--space-4); border-radius: var(--radius-card); text-decoration: none; color: var(--text-1);
+  background: var(--glass); border: 1px solid var(--glass-border); box-shadow: var(--shadow-panel);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  transition: border-color var(--dur-standard) var(--ease-enter), transform var(--dur-standard) var(--ease-enter);
+}
+.z-stat-tile:hover { border-color: var(--accent-line); transform: translateY(-1px); }
+.z-stat-tile__label { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+.z-stat-tile__value { font-family: var(--font-display); font-weight: 800; font-size: 34px; line-height: 40px; }
+.z-stat-tile__value--text { font-size: 20px; line-height: 26px; }
+.z-stat-tile__of { font-size: 18px; color: var(--text-2); }
+.z-stat-tile__note { font-size: 13px; line-height: 18px; color: var(--text-2); }
+.z-stat-tile__bar { display: block; height: 4px; margin-top: var(--space-2); border-radius: 4px; background: var(--line); overflow: hidden; }
+.z-stat-tile__bar span { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius: 4px; }
+
+/* The plan as a timeline. */
+.z-today__plan { display: flex; flex-direction: column; gap: var(--space-4); }
+.z-today__plan-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
+.z-today__plan-total { color: var(--text-2); }
+.z-today__plan-total strong { font-family: var(--font-display); font-size: 24px; color: var(--text-1); }
+.z-timeline { position: relative; display: flex; flex-direction: column; gap: var(--space-3); padding-left: 0; }
+.z-timeline::before {
+  content: ''; position: absolute; left: 21px; top: 22px; bottom: 22px; width: 2px;
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  opacity: 0.45;
+}
+.z-timeline__item {
+  position: relative; display: grid; grid-template-columns: 44px 1fr auto; gap: var(--space-3); align-items: center;
+  padding: var(--space-3) var(--space-4) var(--space-3) 0;
+  border-radius: var(--radius-card); background: var(--glass); border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+}
+.z-timeline__node {
+  position: relative; z-index: 1; justify-self: center; margin-left: var(--space-4);
+  display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%;
+  background: var(--raised); border: 2px solid var(--accent); color: var(--accent);
+}
+.z-timeline__item { padding-left: 0; }
+.z-timeline__item > .z-timeline__node { margin-left: 4px; }
+.z-timeline__item--verify .z-timeline__node { border-color: var(--warning); color: var(--warning); }
+.z-timeline__item--application .z-timeline__node { border-color: var(--accent-2); color: var(--accent-2); }
+.z-timeline__item--gate .z-timeline__node { border-color: var(--mastery); color: var(--mastery); }
+.z-timeline__item--review .z-timeline__node { border-color: var(--heat); color: var(--heat); }
+.z-timeline__body { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.z-timeline__title { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-2); font-weight: 600; }
+.z-timeline__kind { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-2); }
+.z-timeline__minutes { font-family: var(--font-mono); font-size: 13px; color: var(--text-2); font-weight: 500; }
+.z-timeline__reason { font-size: 13px; line-height: 18px; color: var(--text-2); overflow-wrap: anywhere; }
+.z-timeline__swap { min-height: 40px; padding: var(--space-1) var(--space-3); }
+.z-today__plan-foot { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+
+/* Focus meters. */
+.z-today__focus { display: flex; flex-direction: column; gap: var(--space-4); }
+.z-meters { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-3); }
+.z-meter {
+  display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4);
+  border-radius: var(--radius-card); background: var(--glass); border: 1px solid var(--glass-border);
+}
+.z-meter__row { color: var(--text-2); }
+.z-meter__row strong { color: var(--text-1); font-size: 17px; }
+.z-meter__label { font-weight: 600; color: var(--text-1); }
+.z-meter__track { display: block; height: 8px; border-radius: 8px; background: var(--line); overflow: hidden; }
+.z-meter__track span { display: block; height: 100%; border-radius: 8px; background: linear-gradient(90deg, var(--fa-punish), var(--fa-plus)); }
+
+/* Quick actions. */
+.z-today__quick { display: flex; flex-direction: column; gap: var(--space-4); }
+.z-quick { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-3); }
+.z-quick__tile {
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--space-3);
+  min-height: 60px; padding: var(--space-3) var(--space-4); border-radius: var(--radius-card);
+  background: var(--glass); border: 1px solid var(--glass-border); color: var(--text-1); text-decoration: none; font-weight: 600;
+  transition: border-color var(--dur-standard) var(--ease-enter), background var(--dur-standard) var(--ease-enter);
+}
+.z-quick__tile > svg:first-child { color: var(--accent); }
+.z-quick__tile > svg:last-child { color: var(--text-3); }
+.z-quick__tile:hover { border-color: var(--accent-line); background: var(--accent-soft); }
+
+/* QA pass: one glass strip instead of three tiles; quick actions as a row of pills. */
+.z-today__stats {
+  gap: 0; border-radius: var(--radius-card); background: var(--glass); border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: var(--shadow-panel); overflow: hidden;
+}
+.z-today__stats .z-stat-tile { background: transparent; border: 0; border-radius: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.z-today__stats .z-stat-tile + .z-stat-tile { border-left: 1px solid var(--line); }
+.z-today__stats .z-stat-tile:hover { background: var(--accent-soft); transform: none; }
+@media (max-width: 599px) {
+  .z-today__stats .z-stat-tile--focus { border-left: 0; border-top: 1px solid var(--line); }
+}
+.z-quick { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.z-quick__tile { display: inline-flex; min-height: 44px; padding: var(--space-2) var(--space-4); border-radius: var(--radius-pill); gap: var(--space-2); font-size: 14px; }
+.z-quick__tile > svg:last-child { display: none; }
+.z-quick__tile > svg:first-child { width: 20px; height: 20px; }

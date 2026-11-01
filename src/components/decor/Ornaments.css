@@ -1,0 +1,28 @@
+/* Ornaments — release 1.4.0. Tokens only. */
+.z-orn-enso { color: var(--accent); }
+.z-orn-stroke { display: block; width: 100%; height: 12px; color: var(--accent); }
+.z-orn-katana { display: flex; align-items: center; gap: var(--space-3); color: var(--line-strong); margin: var(--space-6) 0; }
+.z-orn-katana svg { flex: none; color: var(--text-3); }
+.z-orn-katana__line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--line-strong)); }
+.z-orn-katana__line:last-child { background: linear-gradient(90deg, var(--line-strong), transparent); }
+.z-orn-hanko {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  border-radius: 6px; background: var(--seal); color: var(--on-accent);
+  font-family: var(--font-display); font-weight: 800; line-height: 1;
+  transform: rotate(-4deg);
+}
+[data-theme="dark"] .z-orn-hanko { color: var(--text-1); }
+
+.z-orn-embers { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.z-orn-embers span {
+  position: absolute; bottom: -12px; width: 3px; height: 3px; border-radius: 50%;
+  background: var(--accent-2); box-shadow: 0 0 8px 2px var(--accent-2);
+  opacity: 0; animation: z-ember-rise linear infinite;
+}
+@keyframes z-ember-rise {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  10% { opacity: 0.55; }
+  70% { opacity: 0.25; }
+  100% { transform: translate3d(40px, -95vh, 0); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .z-orn-embers { display: none; } }

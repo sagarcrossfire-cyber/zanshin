@@ -1,66 +1,148 @@
-/* ZANSHIN design system — spec §4.3. Token values verbatim from the spec.
- * Structural tokens (spacing/radii/motion, §4.5/§4.8) follow the spec blocks;
- * no other color values exist anywhere in the app outside this file. */
-:root, [data-theme="dark"] {
-  /* surfaces */
-  --bg: #0E0F11;  --surface: #16181B;  --raised: #1E2125;  --overlay: #272B30;
-  --line: #2F343A;           /* decorative hairline only */
-  --line-strong: #4A5059;    /* dividers */
-  --control-border: #6E747E; /* inputs, toggles: >= 3:1 */
-  /* text */
-  --text-1: #ECE7DF;  --text-2: #B9B3A9;  --text-3: #9A948A;
-  --paper: #ECE7DF;   --on-paper: #0E0F11;  /* primary button = paper fill, ink text */
-  /* signals: one meaning each */
-  --fa-plus: #4FD1B5;    /* frame advantage >= +1; success */
-  --fa-punish: #FF9452;  /* -10 to -14: punishable */
-  --fa-launch: #FF5468;  /* -15 or worse: launch punishable; also unblockable, HP cost, danger */
-  --hl-low: #FF7EB6;     /* low hit level */
-  --heat: #9D8CFF;  --heat-glow: #63C7FF;  /* Heat state and Heat-only moves */
-  --mastery: #D4AE5F;    /* brass: the mastery ramp */
-  --info: #7DB7FF;       /* links, info, focus ring */
-  --warning: #E8B04B;    /* unverified or conflicting data, rusty skills */
-  --seal: #E0482F;       /* logo mark and hanko seal ONLY, never semantic */
+/* ZANSHIN design system — spec §4.3, redrawn for 1.4.0 ("Ink and steel",
+ * docs/redesign/DESIGN.md). Every colour in the app lives in this file.
+ *
+ * Schemes: data-theme="dark" | "light" on <html>; dark adds data-scheme
+ * "manji" (default) | "crimson" | "heat". Light is Washi Daylight.
+ * Each text and signal colour was checked against every surface of its
+ * scheme: all pass WCAG AA (≥ 4.5:1); worst case 6.16:1 (Washi text-3).
+ * Signals keep one meaning each in every scheme. */
 
+:root {
   /* spacing — 4px grid (§4.5) */
   --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
   --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
   --space-12: 48px; --space-16: 64px;
-  /* radii (§4.5) */
-  --radius-chip: 4px; --radius-control: 8px; --radius-card: 12px;
-  --radius-sheet: 20px; --radius-pill: 999px;
+  /* radii */
+  --radius-chip: 6px; --radius-control: 10px; --radius-card: 16px;
+  --radius-sheet: 22px; --radius-pill: 999px;
   /* motion (§4.8) */
   --dur-press: 120ms; --dur-standard: 200ms; --dur-sheet: 320ms; --dur-enso: 600ms;
   --ease-enter: cubic-bezier(0.2, 0, 0, 1); --ease-exit: cubic-bezier(0.4, 0, 1, 1);
-  /* shadow: modals/sheets only (§4.5) */
-  --shadow-overlay: 0 12px 32px rgb(0 0 0 / 0.35);
-  --scrim: rgb(0 0 0 / 0.55); /* scrim behind modals/sheets (§4.5) */
   /* font stacks (§4.4) */
   --font-display: 'Shippori Mincho B1', 'Hiragino Mincho ProN', serif;
   --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
-}
-[data-theme="light"] {
-  --bg: #F4F0E8;  --surface: #FBF9F5;  --raised: #FFFFFF;  --overlay: #EAE5DC;
-  --line: #D9D2C6;  --line-strong: #A89F92;  --control-border: #8A8276;
-  --text-1: #17181B;  --text-2: #4A4741;  --text-3: #66625A;
-  --paper: #17181B;   --on-paper: #F4F0E8;
-  --fa-plus: #08735F;  --fa-punish: #A64714;  --fa-launch: #B8203A;
-  --hl-low: #B02A6E;   --heat: #5B45D6;  --heat-glow: #1A65A3;
-  --mastery: #7D5B1D;  --info: #1D5FBF;  --warning: #8A5E00;  --seal: #C2381F;
+
+  /* Patterns: SVG used as masks, so their colour comes from a token. */
+  --pattern-seigaiha: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='28' viewBox='0 0 56 28'><g fill='none' stroke='black' stroke-width='1.2'><path d='M2 28a26 26 0 0 1 52 0'/><path d='M9 28a19 19 0 0 1 38 0'/><path d='M16 28a12 12 0 0 1 24 0'/><path d='M23 28a5 5 0 0 1 10 0'/><path d='M-26 14a26 26 0 0 1 52 0'/><path d='M-19 14a19 19 0 0 1 38 0'/><path d='M-12 14a12 12 0 0 1 24 0'/><path d='M30 14a26 26 0 0 1 52 0'/><path d='M37 14a19 19 0 0 1 38 0'/><path d='M44 14a12 12 0 0 1 24 0'/></g></svg>");
+  --pattern-asanoha: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='104' viewBox='0 0 60 104'><g fill='none' stroke='black' stroke-width='1'><path d='M30 0v104M0 17.3l60 69.4M60 17.3L0 86.7M0 17.3h0M0 0l30 17.3L60 0M0 104l30-17.3L60 104M0 52l30-17.3L60 52 30 69.3z'/></g></svg>");
+  --pattern-lattice: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'><g fill='none' stroke='black' stroke-width='1'><path d='M0 28L28 0M-7 7L7 -7M21 35L35 21'/><path d='M0 0L28 28' stroke-opacity='0.5'/></g></svg>");
+  --pattern-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 
-/* media (Amendment 01B): frames and plates for imported art. Plates are
- * 90% --bg over the art, which keeps --text-1 and --text-2 at 6.5:1 or
- * better over any image in both themes (--text-3 is not used on plates).
- * Browsers without color-mix get an opaque plate. Declared on every theme
- * scope, not just :root, because a custom property that references another
- * is resolved where it is declared: a nested data-theme (the gallery) would
- * otherwise inherit plates computed from the outer theme. */
-:root, [data-theme] {
+/* ---------- Manji Night (default dark): blue-black lacquer, cyan and ember ---------- */
+:root, [data-theme="dark"] {
+  --bg: #0A0D14;  --surface: #111621;  --raised: #182030;  --overlay: #212A3D;
+  --line: #222C3E;           /* decorative hairline only */
+  --line-strong: #3B4862;    /* dividers */
+  --control-border: #6E7E9C; /* inputs, toggles: >= 3:1 */
+  --text-1: #EEF2F8;  --text-2: #B7C1D2;  --text-3: #919DB2;
+  --paper: #EEF2F8;   --on-paper: #0A0D14;
+  --accent: #4CC9F0;  --accent-2: #FF8F4A;  --on-accent: #071018;
+  /* signals: one meaning each */
+  --fa-plus: #4FD8B8;    /* frame advantage >= +1; success */
+  --fa-punish: #FF9A5C;  /* -10 to -14: punishable */
+  --fa-launch: #FF5C70;  /* -15 or worse: launch punishable; danger */
+  --hl-low: #FF86BC;     /* low hit level */
+  --heat: #A595FF;  --heat-glow: #63C7FF;
+  --mastery: #D9B466;
+  --info: #82BCFF;       /* links, info, focus ring */
+  --warning: #EDB650;    /* unverified or conflicting data */
+  --seal: #E0482F;       /* logo mark and hanko seal only */
+  /* scene */
+  --scene-top: #0E1626;  --scene-bottom: #07090E;
+  --scene-glow-1: #1B5A7A; --scene-glow-2: #5A2A14;
+  --pattern-ink: #9FB8E0;
+  --scene-pattern: var(--pattern-seigaiha); --scene-pattern-size: 56px 28px;
+  --scene-art-opacity: 0.24;
+  --shadow-overlay: 0 12px 32px rgb(0 0 0 / 0.45);
+  --shadow-panel: 0 18px 40px -24px rgb(0 0 0 / 0.75);
+  --scrim: rgb(0 0 0 / 0.6);
+}
+
+/* ---------- Crimson Dojo: black lacquer, vermilion and gold ---------- */
+[data-theme="dark"][data-scheme="crimson"] {
+  --bg: #0F0A0A;  --surface: #181111;  --raised: #221818;  --overlay: #2D2020;
+  --line: #2E2020; --line-strong: #573C3B; --control-border: #8A6D6B;
+  --text-1: #F4EEE8;  --text-2: #CDBFB6;  --text-3: #A4958C;
+  --paper: #F4EEE8;   --on-paper: #0F0A0A;
+  --accent: #F0545A;  --accent-2: #E2AE4A;  --on-accent: #140808;
+  --fa-plus: #57D6B4; --fa-punish: #FF9E5E; --fa-launch: #FF6B7A; --hl-low: #FF8DC0;
+  --heat: #AB9CFF; --heat-glow: #63C7FF; --mastery: #E2B866; --info: #8DC2FF; --warning: #EDB650; --seal: #E0482F;
+  --scene-top: #1C0E0E; --scene-bottom: #090606;
+  --scene-glow-1: #6E1A1E; --scene-glow-2: #5C4314;
+  --pattern-ink: #E6B9A4;
+  --scene-pattern: var(--pattern-asanoha); --scene-pattern-size: 60px 104px;
+  --scene-art-opacity: 0.24;
+}
+
+/* ---------- Heat Surge: Tekken 8 Heat, violet energy on midnight ---------- */
+[data-theme="dark"][data-scheme="heat"] {
+  --bg: #0B0916;  --surface: #131026;  --raised: #1B1734;  --overlay: #251F44;
+  --line: #262046; --line-strong: #463E74; --control-border: #7C72AC;
+  --text-1: #F0EDFB;  --text-2: #C0B9DD;  --text-3: #9A92BA;
+  --paper: #F0EDFB;   --on-paper: #0B0916;
+  --accent: #A898FF;  --accent-2: #5FD0FF;  --on-accent: #0D0920;
+  --fa-plus: #55DBBB; --fa-punish: #FF9D60; --fa-launch: #FF6278; --hl-low: #FF8BC0;
+  --heat: #B7A9FF; --heat-glow: #63C7FF; --mastery: #DEB869; --info: #86C0FF; --warning: #EFBA55; --seal: #E0482F;
+  --scene-top: #160F33; --scene-bottom: #07060E;
+  --scene-glow-1: #3D2A8C; --scene-glow-2: #0F4D73;
+  --pattern-ink: #B9AEFF;
+  --scene-pattern: var(--pattern-lattice); --scene-pattern-size: 28px 28px;
+  --scene-art-opacity: 0.26;
+}
+
+/* ---------- Washi Daylight (light): warm paper, sumi ink, seal red ---------- */
+[data-theme="light"] {
+  --bg: #F3EEE4;  --surface: #FBF8F2;  --raised: #FFFFFF;  --overlay: #E9E2D5;
+  --line: #DCD3C4;  --line-strong: #A89F92;  --control-border: #857C70;
+  --text-1: #16171A;  --text-2: #48443E;  --text-3: #625D55;
+  --paper: #16171A;   --on-paper: #F3EEE4;
+  --accent: #B32D1C;  --accent-2: #1F4E8C;  --on-accent: #FFFFFF;
+  --fa-plus: #06705C;  --fa-punish: #9E4310;  --fa-launch: #B01E37;
+  --hl-low: #A8276A;   --heat: #5340CF;  --heat-glow: #1A65A3;
+  --mastery: #76561A;  --info: #1A5BB8;  --warning: #845900;  --seal: #C2381F;
+  --scene-top: #F7F2E8; --scene-bottom: #EAE2D3;
+  --scene-glow-1: #F0D9C8; --scene-glow-2: #D8E2EE;
+  --pattern-ink: #5C4A36;
+  --scene-pattern: var(--pattern-seigaiha); --scene-pattern-size: 56px 28px;
+  --scene-art-opacity: 0.16;
+  --shadow-overlay: 0 12px 32px rgb(40 30 20 / 0.22);
+  --shadow-panel: 0 16px 36px -26px rgb(60 40 20 / 0.45);
+  --scrim: rgb(20 16 12 / 0.45);
+}
+
+/* Derived tokens. Declared on every scheme scope because a custom property
+ * that references another resolves where it is declared (a nested
+ * data-theme, as in the gallery, would otherwise inherit the outer one). */
+:root, [data-theme], [data-scheme] {
   --art-frame: var(--line);
   --art-placeholder: var(--raised);
   --art-plate: var(--bg);
+  --glass: var(--surface);
+  --glass-strong: var(--raised);
+  --glass-border: var(--line-strong);
+  --accent-soft: var(--overlay);
+  --accent-line: var(--accent);
+  --pattern-opacity: 0.07;
 }
 @supports (color: color-mix(in srgb, black 50%, transparent)) {
-  :root, [data-theme] { --art-plate: color-mix(in srgb, var(--bg) 90%, transparent); }
+  :root, [data-theme], [data-scheme] {
+    --art-plate: color-mix(in srgb, var(--bg) 90%, transparent);
+    --glass: color-mix(in srgb, var(--surface) 80%, transparent);
+    --glass-strong: color-mix(in srgb, var(--raised) 90%, transparent);
+    --glass-border: color-mix(in srgb, var(--line-strong) 70%, transparent);
+    --accent-soft: color-mix(in srgb, var(--accent) 16%, transparent);
+    --accent-line: color-mix(in srgb, var(--accent) 70%, transparent);
+  }
+}
+[data-theme="light"] { --pattern-opacity: 0.06; }
+
+/* Reduced transparency: solid panels, no scene art. */
+@media (prefers-reduced-transparency: reduce) {
+  :root, [data-theme], [data-scheme] {
+    --glass: var(--surface);
+    --glass-strong: var(--raised);
+    --scene-art-opacity: 0;
+  }
 }

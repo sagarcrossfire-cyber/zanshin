@@ -2,6 +2,7 @@
 // that can be practiced alone; "Practice this" creates a draft Lab session
 // of segment drills followed by the full route (AC-COMBO-2). Success rate
 // is successes divided by reps across the combo's sets (AC-COMBO-3).
+import { PageHeader } from '../../components/layout/PageHeader';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
@@ -63,9 +64,10 @@ export function ComboLibraryScreen() {
 
   return (
     <div className="z-codex">
+      <PageHeader eyebrow="Codex · Yoshimitsu" title="Combos" lede="Routes from beginner to wall carry, each with its starter and difficulty. Practise the segments alone, then the whole route." />
       {[...grouped.entries()].map(([kind, list]) => (
         <section key={kind} aria-label={KIND_LABELS[kind]}>
-          <h2 className="z-title">{KIND_LABELS[kind]}</h2>
+          <h2 className="z-section-title">{KIND_LABELS[kind]}</h2>
           <ul className="z-codex__list">
             {list.map((combo) => {
               const sets = [

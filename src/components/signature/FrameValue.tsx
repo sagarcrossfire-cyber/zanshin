@@ -6,7 +6,7 @@ import { IconTierPlus, IconTierSafe, IconTierPunish, IconTierLaunch } from '../i
 import './FrameValue.css';
 
 export const SUFFIX_TIPS: Record<string, string> = {
-  a: 'Opponent airborne', b: 'Recovers back-turned', c: 'Recovers crouching',
+  a: 'Opponent airborne', b: 'Recovers back-turned', c: 'Opponent crouching',
   d: 'Downed', g: 'Opponent can guard during recovery', s: 'Stagger', w: 'Wall crush',
 };
 const SUFFIX_SPOKEN: Record<string, string> = {

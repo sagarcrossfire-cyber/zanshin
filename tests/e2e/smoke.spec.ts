@@ -8,6 +8,6 @@ test('P0 smoke: /today loads with no console errors', async ({ page }) => {
   });
   page.on('pageerror', (err) => errors.push(String(err)));
   await page.goto('/today');
-  await expect(page.getByText('ZANSHIN')).toBeVisible();
+  await expect(page.getByText('Welcome to ZANSHIN')).toBeVisible();
   expect(errors).toEqual([]);
 });

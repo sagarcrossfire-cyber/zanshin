@@ -26,3 +26,13 @@
   flex-direction: column;
   gap: var(--space-2);
 }
+
+/* 1.4.0: each open conflict is a small comparison, not a sentence. */
+.z-patch__conflicts { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-3); }
+.z-patch__conflict { padding: var(--space-3) var(--space-4); border-radius: var(--radius-control); background: var(--glass-strong); border: 1px solid var(--glass-border); border-left: 3px solid var(--warning); display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.z-patch__conflict-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); font-weight: 600; }
+.z-patch__field { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--warning); border: 1px solid var(--warning); border-radius: var(--radius-pill); padding: 1px 8px; }
+.z-patch__values { margin: 0; display: flex; flex-direction: column; gap: var(--space-1); }
+.z-patch__values > div { display: grid; grid-template-columns: minmax(110px, 40%) 1fr; gap: var(--space-2); }
+.z-patch__values dt { font-size: 12px; color: var(--text-2); }
+.z-patch__values dd { margin: 0; font-size: 13px; overflow-wrap: anywhere; }

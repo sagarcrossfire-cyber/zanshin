@@ -5,10 +5,13 @@
 .z-field__error { font-size: 12px; line-height: 16px; color: var(--fa-launch); }
 .z-field__control {
   min-height: 44px; width: 100%; padding: var(--space-2) var(--space-3);
-  background: var(--surface); color: var(--text-1);
+  background: var(--glass-strong); color: var(--text-1);
   border: 1px solid var(--control-border); border-radius: var(--radius-control);
   font-size: 15px; line-height: 22px;
+  transition: border-color var(--dur-press) var(--ease-enter), box-shadow var(--dur-standard) var(--ease-enter);
 }
+.z-field__control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); outline: none; }
+.z-field__control:focus-visible { outline: 2px solid var(--info); outline-offset: 2px; }
 .z-field__control::placeholder { color: var(--text-3); }
 .z-field__control[aria-invalid="true"] { border-color: var(--fa-launch); }
 .z-field__control:disabled { opacity: 0.45; }

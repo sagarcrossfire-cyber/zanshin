@@ -1,5 +1,6 @@
 // Settings — spec §5.2/§5.1. Every onboarding field is editable here
 // (AC-ONB-4), plus theme and glyph mode. Edits are local until Save.
+import { PageHeader } from '../../components/layout/PageHeader';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
@@ -10,7 +11,7 @@ import { TextField } from '../../components/base/TextField';
 import { Toggle } from '../../components/base/Toggle';
 import { InputString } from '../../components/signature/InputString';
 import { MediaImage } from '../../components/media/MediaImage';
-import { applyTheme, type ThemeChoice } from '../../app/theme';
+import { SCHEMES, applyScheme, applyTheme, readSchemeChoice, type SchemeChoice, type ThemeChoice } from '../../app/theme';
 import { isSafeMode } from '../../config/safeMode';
 import { CONTROLLER_GLYPH, CONTROLLERS, DAY_NAMES, PLATFORM_GLYPH, RANKS, SESSION_MINUTES_OPTIONS } from '../../config/ranks';
 import { useAppStore } from '../../stores/appStore';
@@ -28,6 +29,7 @@ import {
 import { restoreSnapshot, resetWithSnapshot, snapshotPreview, takeSnapshot } from '../../services/snapshots';
 import { BACKUP_EXPORT_KEY } from '../../services/backupPrompt';
 import { metaRepo, snapshotsRepo } from '../../data/repos';
+import './Settings.css';
 import type { Snapshot } from '../../data/schemas';
 import { DATA_PATCH, PACK_VERSION } from '../../data/packs';
 import '../onboarding/OnboardingScreen.css';
@@ -41,6 +43,7 @@ export function SettingsScreen() {
   const safeMode = isSafeMode();
   const [draft, setDraft] = useState<Profile | null>(null);
   const [theme, setTheme] = useState<ThemeChoice>('system');
+  const [scheme, setScheme] = useState<SchemeChoice>(() => readSchemeChoice());
   const [coach, setCoach] = useState<Pick<Settings, 'aiProvider' | 'aiApiKey' | 'aiBaseUrl' | 'aiModel' | 'aiRequestsPerHour'> | null>(null);
   const [testResult, setTestResult] = useState('');
   const [testing, setTesting] = useState(false);
@@ -61,6 +64,7 @@ export function SettingsScreen() {
   }, [profile, draft]);
   useEffect(() => {
     if (settings) setTheme(settings.theme);
+    if (settings?.scheme) setScheme(settings.scheme);
   }, [settings]);
   useEffect(() => {
     if (settings && !coach) {
@@ -143,7 +147,8 @@ export function SettingsScreen() {
 
   const save = () => {
     void saveProfile(draft).then(() => {
-      void saveSettings({ theme, glyphMode: draft.glyphMode, ...coach, ...lab, kpiTargets: kpiTargets() }).then(() => {
+      void saveSettings({ theme, scheme, glyphMode: draft.glyphMode, ...coach, ...lab, kpiTargets: kpiTargets() }).then(() => {
+        applyScheme(scheme);
         applyTheme(theme);
         pushToast('Settings saved.');
       });
@@ -230,6 +235,7 @@ export function SettingsScreen() {
 
   return (
     <div className="z-settings">
+      <PageHeader eyebrow="Make it yours" title="Settings" lede="Profile, appearance, the coach, Lab defaults, targets and your data." />
       {safeMode && <SafeModeNote what="Saving settings, importing, restoring and resetting" />}
       <Card title="Profile">
         <TextField id="set-name" label="Display name" value={draft.displayName}
@@ -299,14 +305,42 @@ export function SettingsScreen() {
             if (Number.isFinite(hours) && hours >= 0) set({ tekken8Hours: hours });
           }} />
       </Card>
-      <Card title="Display">
+      <Card title="Appearance">
         <Select id="set-theme" label="Theme" value={theme}
           options={[
             { value: 'system', label: 'System' },
             { value: 'dark', label: 'Dark' },
-            { value: 'light', label: 'Light' },
+            { value: 'light', label: 'Light (Washi Daylight)' },
           ]}
-          onChange={(v) => setTheme(v as ThemeChoice)} />
+          onChange={(v) => { setTheme(v as ThemeChoice); applyTheme(v as ThemeChoice); }} />
+        <fieldset className="z-scheme-picker">
+          <legend className="z-label">Dark scheme</legend>
+          <div className="z-scheme-picker__options">
+            {SCHEMES.map((option) => (
+              <label key={option.id} className="z-scheme-swatch" data-scheme-preview={option.id}>
+                <input
+                  type="radio"
+                  name="set-scheme"
+                  value={option.id}
+                  checked={scheme === option.id}
+                  onChange={() => { setScheme(option.id); applyScheme(option.id); }}
+                />
+                <span className="z-scheme-swatch__chips" aria-hidden="true" data-theme="dark" data-scheme={option.id}>
+                  <span className="z-scheme-swatch__bg" />
+                  <span className="z-scheme-swatch__accent" />
+                  <span className="z-scheme-swatch__accent2" />
+                  <span className="z-scheme-swatch__plus" />
+                  <span className="z-scheme-swatch__launch" />
+                </span>
+                <span className="z-scheme-swatch__text">
+                  <strong>{option.label}</strong>
+                  <span className="z-caption">{option.note}</span>
+                </span>
+              </label>
+            ))}
+          </div>
+          <p className="z-caption">Changes apply as you choose; Save keeps them. The light theme is always Washi Daylight.</p>
+        </fieldset>
         <Select id="set-glyph" label="Button glyphs" value={draft.glyphMode}
           options={[
             { value: 'playstation', label: 'PlayStation (△ ○ × □)' },

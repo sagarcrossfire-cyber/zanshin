@@ -47,3 +47,9 @@
 .z-cards__announcement {
   min-height: 22px;
 }
+
+/* 1.4.0: decks as a grid of glass tiles; the review card is a lit "flash card". */
+.z-cards { max-width: 1000px; padding: 0; gap: var(--space-5); }
+.z-cards__decks { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-3); }
+.z-cards__decks .z-card { height: 100%; border-top: 3px solid var(--heat); }
+.z-cards__front { font-family: var(--font-display); font-size: 24px; line-height: 32px; }

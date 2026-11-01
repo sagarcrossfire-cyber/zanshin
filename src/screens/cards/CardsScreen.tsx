@@ -2,6 +2,7 @@
 // wires /cards. Seed cards are generated (and auto-generated on first
 // mount when the table is empty) through the cards service; screens use
 // repos/services only.
+import { PageHeader } from '../../components/layout/PageHeader';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
@@ -99,7 +100,7 @@ export function CardsScreen() {
 
   return (
     <main className="z-cards">
-      <h1>Flashcards</h1>
+      <PageHeader level={1} eyebrow="Memory" title="Flashcards" />
       <p>
         Spaced repetition, {caps.newPerDay} new and {caps.reviewsPerDay} reviews a day.
         The practice day rolls over at {boundary}.

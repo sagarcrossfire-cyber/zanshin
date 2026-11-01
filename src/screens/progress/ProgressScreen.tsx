@@ -3,6 +3,7 @@
 // --mastery), bars start at zero, no dual axes, sample size always shown, a
 // chart without enough data is hidden with the reason stated. Charts are
 // lazy-loaded (§13.8) so Recharts ships only with this route.
+import { PageHeader } from '../../components/layout/PageHeader';
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { Card } from '../../components/base/Card';
 import { Skeleton } from '../../components/base/Skeleton';
@@ -54,6 +55,7 @@ export function ProgressScreen() {
 
   return (
     <div className="z-progress">
+      <PageHeader eyebrow="The long game" title="Progress" lede="Mastery, minutes and match numbers over time. Consistency counts, not streaks." />
       <Suspense fallback={<Skeleton label="Loading charts…" />}>
         <ProgressCharts data={data} weeklyMinutes={profile.weeklyMinutes} />
       </Suspense>

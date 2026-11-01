@@ -2,6 +2,7 @@
 // The local media library: import a media pack or single files, choose how
 // art and clips behave, review what is stored, export it, delete it.
 // Everything stays in this browser; the app never downloads media.
+import { PageHeader } from '../../components/layout/PageHeader';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
@@ -277,6 +278,7 @@ export function MediaScreen() {
   return (
     <div className="z-settings">
       <p><Link to="/settings">← Back to Settings</Link></p>
+      <PageHeader eyebrow="Settings" title="Images and clips" lede="Character art, move clips and rank badges: where they come from and what is stored on this device." />
       {safeMode && <SafeModeNote what="Importing and deleting media" />}
 
       <Card title="Your media library">

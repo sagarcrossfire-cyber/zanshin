@@ -99,7 +99,7 @@ test('AC-LOG-4/AC-MU-1: "what beat me" becomes a problem move with drill + card'
   await page.goto('/matchups/Kazuya');
   // The move itself renders as PlayStation glyphs (InputString), so assert
   // the plain-text answer plus the Lab action.
-  await expect(page.getByText(/punish: Block and launch with df\+2/)).toBeVisible();
+  await expect(page.getByText(/Punish: Block and launch with df\+2/)).toBeVisible();
   await expect(page.getByRole('button', { name: 'Practice in Lab' })).toBeVisible();
 });
 

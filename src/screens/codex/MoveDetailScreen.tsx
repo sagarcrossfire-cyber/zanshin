@@ -10,7 +10,8 @@ import { Card } from '../../components/base/Card';
 import { DataBadge } from '../../components/base/DataBadge';
 import { TextField } from '../../components/base/TextField';
 import { FrameBar } from '../../components/signature/FrameBar';
-import { FrameValue } from '../../components/signature/FrameValue';
+import { FrameValue, frameTier } from '../../components/signature/FrameValue';
+import { FrameLegend } from '../../components/codex/FrameLegend';
 import { HitLevelChips } from '../../components/signature/HitLevelChips';
 import { InputString } from '../../components/signature/InputString';
 import { MoveClipCard } from '../../components/media/MoveClip';
@@ -21,7 +22,10 @@ import { opponentAnswers, parseFrameParts, riskSentences, splitNotes, wavuMoveUr
 import { useAppStore } from '../../stores/appStore';
 import './Codex.css';
 
+const TIER_WORDS = { plus: 'your turn', safe: 'safe', punish: 'punishable', launch: 'launch punishable' } as const;
+
 export function MoveDetailScreen() {
+  const [legendOpen, setLegendOpen] = useState(false);
   const { moveId } = useParams<{ moveId: string }>();
   const profile = useAppStore((s) => s.profile);
   const glyphMode = profile?.glyphMode ?? 'playstation';
@@ -118,7 +122,30 @@ export function MoveDetailScreen() {
         </Card>
       )}
 
-      <Card title="Stats">
+      <section className="z-move-stats" aria-label="Frame data">
+        <div className="z-move-stat">
+          <span className="z-move-stat__label">Startup</span>
+          <span className="z-move-stat__value z-data">{move.startup.replace(/^,/, '') || '—'}</span>
+          <span className="z-move-stat__note">frames to hit</span>
+        </div>
+        <div className={`z-move-stat${move.block !== undefined ? ` z-move-stat--${frameTier(move.block)}` : ''}`}>
+          <span className="z-move-stat__label">On block</span>
+          <span className="z-move-stat__value">{move.block !== undefined ? <FrameValue value={move.block} /> : <span className="z-data">—</span>}</span>
+          <span className="z-move-stat__note">{move.block !== undefined ? TIER_WORDS[frameTier(move.block)] : 'not published'}</span>
+        </div>
+        <div className={`z-move-stat${move.hit !== undefined ? ` z-move-stat--${frameTier(move.hit)}` : ''}`}>
+          <span className="z-move-stat__label">On hit</span>
+          <span className="z-move-stat__value">{move.hit !== undefined ? <FrameValue value={move.hit} /> : <span className="z-data">—</span>}</span>
+          <span className="z-move-stat__note">{move.counterHit !== undefined ? <>CH <FrameValue value={move.counterHit} showTierIcon={false} /></> : 'after it hits'}</span>
+        </div>
+        <div className="z-move-stat">
+          <span className="z-move-stat__label">Damage</span>
+          <span className="z-move-stat__value z-data">{move.damage || '—'}</span>
+          <span className="z-move-stat__note">per hit</span>
+        </div>
+      </section>
+
+      <Card title="All stats">
         <dl className="z-codex__stats">
           <dt>Damage</dt><dd>{move.damage}</dd>
           <dt>Startup</dt><dd>{move.startup.replace(/^,/, '')}</dd>
@@ -131,6 +158,13 @@ export function MoveDetailScreen() {
           {move.total !== undefined && (<><dt>Total frames</dt><dd>{move.total}</dd></>)}
         </dl>
       </Card>
+
+      <section className="z-move-legend" aria-label="How to read frame data">
+        <button type="button" className="z-moves__legend-toggle" aria-expanded={legendOpen} onClick={() => setLegendOpen((open) => !open)}>
+          <span>How to read frame data</span>
+        </button>
+        {legendOpen && <FrameLegend compact />}
+      </section>
 
       {(role || bullets.length > 0) && (
         <Card title="Use it for">

@@ -72,3 +72,19 @@ export function cleanMove(move: Move): Move {
     crush: move.crush === undefined ? undefined : normalizeCrush(move.crush),
   };
 }
+
+/** Release 1.4.0: a move name fit to show. Wavu sends some names entity-
+ *  escaped (Enma&#039;s Flame) and some as an HTML "dotlist" of alternatives
+ *  (<div class="dotlist">* Sword Sweep * Samurai Cutter</div>), which become
+ *  "Sword Sweep / Samurai Cutter". Pure. */
+export function cleanMoveName(raw: string | undefined): string | undefined {
+  if (raw === undefined) return undefined;
+  const decoded = decodeEntities(raw);
+  if (!/[<>]/.test(decoded) && !/^\s*\*/.test(decoded)) return decoded.trim() || undefined;
+  const items = decoded
+    .replace(/<[^>]*>/g, '\n')
+    .split(/\n|\s\*\s|^\*\s/)
+    .map((item) => item.replace(/^\s*\*\s*/, '').trim())
+    .filter((item) => item !== '' && item !== '*');
+  return items.length > 0 ? items.join(' / ') : undefined;
+}

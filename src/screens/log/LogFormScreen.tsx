@@ -2,6 +2,7 @@
 // plan; tallies use large steppers; "What beat me" becomes a problem move
 // in one tap (AC-LOG-4). Saving recomputes mastery (§7.1) via
 // recomputeAllMastery so Today, Progress and weaknesses update at once.
+import { PageHeader } from '../../components/layout/PageHeader';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
@@ -37,6 +38,14 @@ const TALLY_FIELDS: Array<{ key: keyof Tallies; label: string }> = [
   { key: 'heatConverted', label: 'Heat converted' },
   { key: 'heatWasted', label: 'Heat wasted' },
   { key: 'okiConverted', label: 'Oki converted' },
+];
+
+/** Release 1.4.0: tallies grouped by what happened, instead of one long list. */
+const TALLY_GROUPS: Array<{ title: string; keys: Array<keyof Tallies> }> = [
+  { title: 'Punishing', keys: ['missedPunishes', 'hitWhileMinus'] },
+  { title: 'Flash and spin', keys: ['flashHit', 'flashBlocked', 'flashWhiffed', 'spinEscaped', 'spinPunished'] },
+  { title: 'Defence', keys: ['throwsBroken', 'throwsMissed', 'lowsBlocked', 'lowsEaten'] },
+  { title: 'Heat and oki', keys: ['heatConverted', 'heatWasted', 'okiConverted'] },
 ];
 
 const ANSWER_KINDS: Array<{ value: AnswerKind; label: string }> = [
@@ -190,7 +199,8 @@ export function LogFormScreen() {
 
   return (
     <div className="z-log">
-      <Card title={editing ? 'Edit match set' : 'Log a match set'}>
+      <PageHeader eyebrow="Match Log" title={editing ? 'Edit match set' : 'Log a match set'} lede="Who you played, how it went, and what happened. Thirty seconds after a set is enough." />
+      <Card title="The set">
         <TextField id="log-at" label="Date and time" type="datetime-local" value={at} onChange={setAt} />
         <Select id="log-mode" label="Mode" value={mode} onChange={(v) => setMode(v as MatchSet['mode'])}
           options={[
@@ -214,10 +224,18 @@ export function LogFormScreen() {
       </Card>
 
       <Card title="Tallies">
-        {TALLY_FIELDS.map((field) => (
-          <CountStepper key={field.key} label={field.label} value={tallies[field.key]}
-            onChange={(v) => setTallies({ ...tallies, [field.key]: v })} />
-        ))}
+        <p className="z-caption">Count what happened across the set. Tap + as it happens, or fill it in after.</p>
+        <div className="z-log__groups">
+          {TALLY_GROUPS.map((group) => (
+            <fieldset key={group.title} className="z-log__group">
+              <legend className="z-log__group-title">{group.title}</legend>
+              {TALLY_FIELDS.filter((field) => group.keys.includes(field.key)).map((field) => (
+                <CountStepper key={field.key} label={field.label} value={tallies[field.key]}
+                  onChange={(v) => setTallies({ ...tallies, [field.key]: v })} />
+              ))}
+            </fieldset>
+          ))}
+        </div>
       </Card>
 
       <Card title="What beat me">

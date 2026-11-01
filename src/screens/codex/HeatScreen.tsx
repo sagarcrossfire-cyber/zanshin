@@ -2,6 +2,7 @@
 // (§10.8). Every fact carries its source and patch (AC-HEAT-1); every Heat
 // Engager links to its move detail (AC-HEAT-2). Season 3 gauge numbers are
 // flagged as possibly stale per §10.2.
+import { PageHeader } from '../../components/layout/PageHeader';
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '../../components/base/Card';
@@ -66,6 +67,7 @@ export function HeatScreen() {
 
   return (
     <div className="z-codex">
+      <PageHeader eyebrow="Codex · Tekken 8 system" title="Heat" lede="How Heat works, Yoshimitsu’s Heat Engagers and Heat-only moves, and when to spend it." />
       <Card title="Heat — the gauge">
         <HeatGauge state="available" />
         <p className="z-body-l">900 frames, draining steadily. Heat Burst consumes 300. The gauge numbers may be stale after patch 3.00.02 — a Stage 4 verify task checks them in Practice.</p>

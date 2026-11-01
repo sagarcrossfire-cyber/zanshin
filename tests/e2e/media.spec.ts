@@ -8,7 +8,8 @@
 import AxeBuilder from '@axe-core/playwright';
 import { createHash } from 'node:crypto';
 import { expect, test, type Page } from '@playwright/test';
-import { zipSync, zlibSync, type Zippable } from 'fflate';
+import { zipSync, type Zippable } from 'fflate';
+import { grayPng } from './helpers/png';
 
 async function completeOnboarding(page: Page) {
   await page.goto('/');
@@ -19,54 +20,6 @@ async function completeOnboarding(page: Page) {
   await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByRole('button', { name: "Start today's plan" }).click();
   await expect(page).toHaveURL(/\/today$/);
-}
-
-// ---- A tiny grayscale PNG encoder (no color values involved) -------------
-const CRC_TABLE = Array.from({ length: 256 }, (_, n) => {
-  let c = n;
-  for (let k = 0; k < 8; k += 1) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-  return c >>> 0;
-});
-
-function crc32(bytes: Uint8Array): number {
-  let c = 0xffffffff;
-  for (const b of bytes) c = (CRC_TABLE[(c ^ b) & 0xff] ?? 0) ^ (c >>> 8);
-  return (c ^ 0xffffffff) >>> 0;
-}
-
-function pngChunk(type: string, data: Uint8Array): Uint8Array {
-  const out = new Uint8Array(12 + data.length);
-  const view = new DataView(out.buffer);
-  view.setUint32(0, data.length);
-  for (let i = 0; i < 4; i += 1) out[4 + i] = type.charCodeAt(i);
-  out.set(data, 8);
-  view.setUint32(8 + data.length, crc32(out.subarray(4, 8 + data.length)));
-  return out;
-}
-
-function grayPng(width: number, height: number): Uint8Array {
-  const raw = new Uint8Array((width + 1) * height);
-  for (let y = 0; y < height; y += 1) {
-    for (let x = 0; x < width; x += 1) raw[y * (width + 1) + 1 + x] = Math.round(((x + y) / (width + height)) * 255);
-  }
-  const header = new Uint8Array(13);
-  const view = new DataView(header.buffer);
-  view.setUint32(0, width);
-  view.setUint32(4, height);
-  header[8] = 8; // bit depth; color type 0 (grayscale), default compression, filter, no interlace
-  const parts = [
-    Uint8Array.of(137, 80, 78, 71, 13, 10, 26, 10),
-    pngChunk('IHDR', header),
-    pngChunk('IDAT', zlibSync(raw)),
-    pngChunk('IEND', new Uint8Array(0)),
-  ];
-  const out = new Uint8Array(parts.reduce((sum, p) => sum + p.length, 0));
-  let offset = 0;
-  for (const part of parts) {
-    out.set(part, offset);
-    offset += part.length;
-  }
-  return out;
 }
 
 // ---- The media pack ---------------------------------------------------------
@@ -140,6 +93,7 @@ test('media pack: import, art across the app, stable layout, art off', async ({ 
   await completeOnboarding(page);
   await importPack(page);
 
+  await expect(page.getByRole('button', { name: 'Export media pack' })).toBeEnabled();
   const axeMedia = await new AxeBuilder({ page: page as never }).analyze();
   const seriousMedia = axeMedia.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
   expect(seriousMedia, JSON.stringify(seriousMedia, null, 2)).toEqual([]);
@@ -158,7 +112,7 @@ test('media pack: import, art across the app, stable layout, art off', async ({ 
   await startMediaShiftWatch(page);
   const heroBefore = await hero.boundingBox();
   await expect(hero.locator('img.z-hero__img--loaded')).toBeVisible();
-  await expect(hero.locator('img')).toHaveAttribute('src', /^blob:/);
+  await expect(hero.locator('img.z-hero__img')).toHaveAttribute('src', /^blob:/);
   await expect(hero.locator('.z-hero__plate')).toBeVisible();
   await page.waitForTimeout(500);
   const heroAfter = await hero.boundingBox();
@@ -209,7 +163,7 @@ test('media pack: import, art across the app, stable layout, art off', async ({ 
   // The library survives a reload, and the hero is reserved before bytes load.
   await page.goto('/today');
   await page.reload();
-  await expect(page.locator('.z-hero img')).toBeVisible();
+  await expect(page.locator('.z-hero img.z-hero__img')).toBeVisible();
 
   // Art off: the app goes back to its ink look everywhere.
   await page.goto('/settings/media');

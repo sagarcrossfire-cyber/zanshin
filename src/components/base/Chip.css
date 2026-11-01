@@ -1,15 +1,16 @@
-/* Chip — spec §4.4 label, §4.5 4px radius. */
+/* Chip — spec §4.4 label, §4.5. Release 1.4.0: softer pills on glass. */
 .z-chip {
   display: inline-flex; align-items: center; gap: var(--space-1);
-  min-height: 28px; padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-chip); border: 1px solid var(--line-strong);
-  font-size: 13px; line-height: 18px; font-weight: 500; letter-spacing: 0.02em;
-  color: var(--text-1); background: transparent; white-space: nowrap;
+  min-height: 28px; padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill); border: 1px solid var(--glass-border);
+  font-size: 13px; line-height: 18px; font-weight: 500; letter-spacing: 0.01em;
+  color: var(--text-1); background: var(--glass-strong); white-space: nowrap;
 }
-.z-chip--filled { background: var(--paper); color: var(--on-paper); border-color: transparent; }
-.z-chip--dashed { border-style: dashed; }
-.z-chip--heat { color: var(--heat); border-color: var(--heat); }
-.z-chip--warning { color: var(--warning); border-color: var(--warning); }
-.z-chip--low { color: var(--hl-low); border-color: var(--hl-low); }
-.z-chip--launch { color: var(--fa-launch); border-color: var(--fa-launch); }
-button.z-chip { min-height: 44px; padding: var(--space-2) var(--space-3); cursor: pointer; }
+.z-chip--filled { background: var(--accent); color: var(--on-accent); border-color: transparent; font-weight: 600; }
+.z-chip--dashed { border-style: dashed; background: transparent; }
+.z-chip--heat { color: var(--heat); border-color: var(--heat); background: transparent; }
+.z-chip--warning { color: var(--warning); border-color: var(--warning); background: transparent; }
+.z-chip--low { color: var(--hl-low); border-color: var(--hl-low); background: transparent; }
+.z-chip--launch { color: var(--fa-launch); border-color: var(--fa-launch); background: transparent; }
+button.z-chip { min-height: 44px; padding: var(--space-2) var(--space-4); cursor: pointer; transition: border-color var(--dur-press) var(--ease-enter), background var(--dur-press) var(--ease-enter); }
+button.z-chip:hover { border-color: var(--accent-line); }

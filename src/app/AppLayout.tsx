@@ -4,6 +4,8 @@
 import { useEffect, useRef } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { DataBadge } from '../components/base/DataBadge';
+import { Scene } from '../components/decor/Scene';
+import { IconCodex, IconLab, IconLog, IconPath, IconSettings, IconToday } from '../components/icons';
 import { Toast } from '../components/base/Toast';
 import { isSafeMode, setSafeMode } from '../config/safeMode';
 import { DATA_PATCH, DATA_SOURCE } from '../data/packs';
@@ -38,11 +40,11 @@ const TITLES: Array<{ prefix: string; title: string }> = [
 ];
 
 const TABS = [
-  { to: '/today', label: 'Today' },
-  { to: '/lab', label: 'Lab' },
-  { to: '/codex/moves', label: 'Codex' },
-  { to: '/log', label: 'Matches' },
-  { to: '/path', label: 'Path' },
+  { to: '/today', label: 'Today', Icon: IconToday },
+  { to: '/lab', label: 'Lab', Icon: IconLab },
+  { to: '/codex/moves', label: 'Codex', Icon: IconCodex },
+  { to: '/log', label: 'Matches', Icon: IconLog },
+  { to: '/path', label: 'Path', Icon: IconPath },
 ];
 
 export function AppLayout() {
@@ -193,6 +195,7 @@ export function AppLayout() {
   if (labMode) {
     return (
       <div className="z-shell z-lab">
+        <Scene />
         {safeBanner}
         <main className="z-main" id="main">
           <Outlet />
@@ -205,10 +208,14 @@ export function AppLayout() {
 
   return (
     <div className={labMode ? 'z-shell z-lab' : 'z-shell'}>
+      <Scene />
       <header className="z-topbar">
-        <img className="z-topbar__mark" src="/brand/logo-mark.svg" alt="" aria-hidden="true" />
+        <Link to="/today" className="z-topbar__brand" aria-label="ZANSHIN home">
+          <img className="z-topbar__mark" src="/brand/logo-mark.svg" alt="" aria-hidden="true" />
+          <span className="z-topbar__word" aria-hidden="true">ZANSHIN</span>
+        </Link>
         <h1 className="z-topbar__title" tabIndex={-1} ref={titleRef}>{title}</h1>
-        <DataBadge status="sourced" detail={`${DATA_SOURCE} · ${DATA_PATCH}`} />
+        <span className="z-topbar__badge"><DataBadge status="sourced" detail={`${DATA_SOURCE} · ${DATA_PATCH}`} /></span>
       </header>
       {safeBanner}
       {!online && (
@@ -223,13 +230,15 @@ export function AppLayout() {
               {TABS.map((tab) => (
                 <li key={tab.to}>
                   <NavLink to={tab.to} className={({ isActive }) => (isActive ? 'z-rail__link z-rail__link--active' : 'z-rail__link')}>
-                    {tab.label}
+                    <tab.Icon size={20} />
+                    <span>{tab.label}</span>
                   </NavLink>
                 </li>
               ))}
               <li>
                 <NavLink to="/settings" className={({ isActive }) => (isActive ? 'z-rail__link z-rail__link--active' : 'z-rail__link')}>
-                  Settings
+                  <IconSettings size={20} />
+                  <span>Settings</span>
                 </NavLink>
               </li>
             </ul>
@@ -243,7 +252,8 @@ export function AppLayout() {
         <nav className="z-tabbar" aria-label="Primary">
           {TABS.map((tab) => (
             <NavLink key={tab.to} to={tab.to} className={({ isActive }) => (isActive ? 'z-tabbar__link z-tabbar__link--active' : 'z-tabbar__link')}>
-              {tab.label}
+              <tab.Icon size={22} />
+              <span>{tab.label}</span>
             </NavLink>
           ))}
         </nav>

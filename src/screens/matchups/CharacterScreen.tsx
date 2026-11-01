@@ -3,6 +3,7 @@
 // Lab tasks generated from problem moves, on-demand pack import, and (1.3.0)
 // a web-sourced matchup primer from the site's intel function, kept on the
 // device as a research note with the 'web' badge.
+import { answerKindLabel } from '../../domain/engine/criteriaLabels';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
@@ -161,11 +162,16 @@ export function CharacterScreen() {
   const playbook = loadPlaybook();
 
   return (
-    <main>
-      <CharacterHero name={character}>
+    <main className="z-mu-page">
+      <CharacterHero name={character} eyebrow="Yoshimitsu vs">
         <h1>{character}</h1>
+        <p className="z-mu-page__record"><strong>{wins}–{games - wins}</strong> · {games} games · {problems.length} problem {problems.length === 1 ? 'move' : 'moves'}</p>
       </CharacterHero>
-      <Card title="Record">
+      <div className="z-mu-page__grid">
+      <Card title="Record" className="z-mu-page__record-card">
+        <div className="z-mu-ring" aria-hidden="true" style={{ ['--pct' as string]: `${games > 0 ? Math.round((wins / games) * 100) : 0}` }}>
+          <span>{games > 0 ? `${Math.round((wins / games) * 100)}%` : '—'}</span>
+        </div>
         <p>{wins}–{games - wins} ({games} games).</p>
         {games >= 10 ? (
           <p>Win rate: {Math.round((wins / games) * 100)}%.</p>
@@ -173,8 +179,8 @@ export function CharacterScreen() {
           <p>Not enough games yet ({games}/10).</p>
         )}
         {rosterEntry && (
-          <p>
-            <a href={rosterEntry.wavuPage} target="_blank" rel="noopener noreferrer">Wavu Wiki page</a>{' '}
+          <p className="z-mu-page__links">
+            <a href={rosterEntry.wavuPage} target="_blank" rel="noopener noreferrer">Wavu Wiki page</a>
             <a href={rosterEntry.counterplayPage} target="_blank" rel="noopener noreferrer">Counterplay page</a>
           </p>
         )}
@@ -209,7 +215,7 @@ export function CharacterScreen() {
         {problems.map((problemMove) => (
           <div key={problemMove.id}>
             <p>
-              <InputString input={problemMove.input} /> — {problemMove.answer.kind}: {problemMove.answer.detail}
+              <InputString input={problemMove.input} /> — {answerKindLabel(problemMove.answer.kind)}: {problemMove.answer.detail}
               {problemMove.verified ? ' (verified)' : ' (unverified)'}
             </p>
             <p>{problemMove.description}</p>
@@ -246,10 +252,10 @@ export function CharacterScreen() {
           onChange={(v) => setAnswerKind(v as AnswerKind)}
           options={ANSWER_KINDS.map((k) => ({ value: k.value, label: k.label }))} />
         <TextField id="mu-answer-detail" label="Answer detail" value={answerDetail} onChange={setAnswerDetail} />
-        <label>
+        <label className="z-check">
           <input type="checkbox" checked={verified} onChange={(e) => setVerified(e.target.checked)} /> Verified against the pack
         </label>
-        <Button onClick={() => void addProblemMove()}>Add problem move</Button>
+        <div><Button onClick={() => void addProblemMove()}>Add problem move</Button></div>
       </Card>
 
       <Card title="Notes">
@@ -266,6 +272,7 @@ export function CharacterScreen() {
           ))}
         </ul>
       </Card>
+      </div>
     </main>
   );
 }

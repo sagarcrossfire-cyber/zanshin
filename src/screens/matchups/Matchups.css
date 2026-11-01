@@ -1,1 +1,53 @@
-/* Matchups screens: plain stacked cards; no extra chrome needed. */
+/* Matchups — 1.4.0 character select and the character page. Tokens only. */
+.z-matchups { display: flex; flex-direction: column; gap: var(--space-8); }
+.z-matchups__head { display: flex; flex-direction: column; gap: var(--space-2); }
+.z-matchups__lede { color: var(--text-2); max-width: 60ch; }
+.z-matchups__search { max-width: 360px; margin-top: var(--space-2); }
+.z-matchups section { display: flex; flex-direction: column; gap: var(--space-4); }
+.z-select-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--space-3); }
+@media (min-width: 1024px) { .z-select-grid { grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); } }
+.z-select-tile {
+  position: relative; display: flex; flex-direction: column; overflow: hidden;
+  padding: 0; text-decoration: none; color: var(--text-1); height: 100%;
+  background: linear-gradient(170deg, var(--scene-glow-1), var(--scene-bottom) 70%);
+}
+.z-select-tile[data-played="no"] { background: linear-gradient(170deg, var(--raised), var(--scene-bottom) 75%); }
+.z-select-tile::before { z-index: 2; }
+.z-select-tile:hover .z-portrait img { filter: drop-shadow(0 10px 18px var(--scene-bottom)) brightness(1.12); }
+.z-select-tile:hover { border-color: var(--accent); }
+.z-select-tile > * + * { margin-top: 0; }
+/* The portrait has its own 3:4 frame; the nameplate sits below it, never over the figure. */
+.z-select-tile .z-portrait { position: relative; inset: auto; aspect-ratio: 3 / 4; width: 100%; flex: none; }
+.z-select-tile__plate {
+  position: relative; z-index: 1; display: flex; flex-direction: column; gap: 2px; flex: 1;
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  border-top: 1px solid var(--glass-border); background: var(--glass-strong);
+}
+.z-select-tile__name { display: flex; align-items: center; gap: var(--space-2); }
+.z-select-tile__name h3 { font-family: var(--font-display); font-weight: 800; font-size: 18px; line-height: 22px; margin: 0; }
+.z-select-tile__name .z-art-icon--sm { width: 28px; height: 28px; font-size: 13px; }
+.z-select-tile__record { font-size: 13px; color: var(--text-1); }
+.z-select-tile__record strong { font-family: var(--font-mono); }
+.z-select-tile__sub { font-size: 11px; line-height: 15px; color: var(--text-2); }
+.z-select-tile__badge { align-self: flex-start; margin-top: 2px; font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: var(--radius-pill); color: var(--on-accent); background: var(--accent-2); }
+
+/* Character page (1.4.0): stage hero, then a two-column board on desktop. */
+.z-mu-page { display: flex; flex-direction: column; gap: var(--space-6); }
+.z-mu-page__record { font-size: 17px; color: var(--text-1); }
+.z-mu-page__record strong { font-family: var(--font-mono); font-size: 20px; }
+.z-mu-page__grid { display: grid; grid-template-columns: 1fr; gap: var(--space-4); align-items: start; }
+@media (min-width: 1024px) {
+  .z-mu-page__grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .z-mu-page__grid > [data-testid="primer-card"] { grid-row: span 2; }
+}
+.z-mu-page__links { display: flex; flex-wrap: wrap; gap: var(--space-4); }
+.z-mu-page__record-card { display: grid; grid-template-columns: auto 1fr; column-gap: var(--space-4); }
+.z-mu-page__record-card > :not(.z-mu-ring):not(.z-card__header) { grid-column: 2; }
+.z-mu-page__record-card > .z-card__header { grid-column: 1 / -1; }
+.z-mu-ring { grid-row: span 4; position: relative; width: 88px; height: 88px; display: grid; place-items: center; }
+.z-mu-ring::before {
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(var(--accent) calc(var(--pct) * 1%), var(--line) 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent 72%, black 73%); mask: radial-gradient(farthest-side, transparent 72%, black 73%);
+}
+.z-mu-ring span { position: relative; font-family: var(--font-mono); font-weight: 600; }
