@@ -4,6 +4,7 @@ Every failure that reached CI, production or Sagar, newest first. Protocol: `doc
 
 | Date | Symptom | Root cause | Fix | Guard |
 | --- | --- | --- | --- | --- |
+| 2026-11-01 | Hermes smoke card `example-smoke` blocked: worker exited "Kanban owner refused: Kanban execution unknown; retained by owner" | The worker's git worktree was created from the `D:\RUDRA` repo instead of `D:\RUDRA\zanshin` (diagnosed by Sagar) | Bridge fixed; board project directory set to `D:\RUDRA\zanshin`; old task archived; worker copies now live in `.worktrees/` (ignored by git, ESLint, Vitest) | New smoke card `smoke-2` after this PR merges |
 | 2026-11-01 | Local e2e: E3 (dark, desktop) debrief lacked the "Mastery … → …" line once; passed on retry; CI green | Not yet proven; likely the debrief renders before mastery deltas are computed when the machine is loaded | None yet (single occurrence) | Catalog entry; fix on second occurrence |
 | 2026-11-01 | Phone e2e: `page.evaluate` "execution context destroyed" after Sign in again | Test waited with `waitForLoadState` on the old document | Wait on a `load` event registered before the click | `tests/e2e/site-access.spec.ts` |
 | 2026-11-01 | Sagar saw the 1.3 app after 1.4.0 deployed; Netlify "Errors 69 %" | His Netlify SSO session expired: 401 on `/sw.js`, `/media/manifest.json`, `/`; the service worker kept serving the old shell | 1.4.1: `version.json` probe, Sign in again banner, update nudge; one-time manual unregister | Unit + e2e (real worker) tests; failure catalog entry |

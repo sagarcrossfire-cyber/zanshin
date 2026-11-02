@@ -2,6 +2,26 @@
 
 ZANSHIN is a private, local-first Tekken 8 Yoshimitsu coaching PWA. Read README.md for the full picture.
 
+## Read these first (every task)
+Hermes loads this file instead of `CLAUDE.md`, so everything a worker must know is linked here.
+1. `docs/REFERENCE.md` — the core concept (never drift from it), the codebase rules, where things live,
+   the release path, environment limits, and §7: the **root-cause protocol** and the **failure catalog**
+   (check the catalog before debugging — most failures have happened before).
+2. `docs/v2/PLAN.md` — the current 2.0 plan: milestones, acceptance criteria and the gate every change
+   must pass (arrives on `main` with 2.0 M1). Your card names the milestone; build to its criteria.
+3. `docs/ops/INVENTORY.md` — the map of what already exists. Reuse before you add.
+4. `docs/ops/RCA_LOG.md` — past failures. If you fix a failure, add a row (date · symptom · root cause ·
+   fix · guard) in the same PR.
+
+Also:
+- **Never bump the version** in `package.json` or `APP_VERSION` unless your card is a release card: a version
+  change makes CI deploy to production, and each production deploy costs 15 of Netlify's 300 monthly credits.
+- New screens or routes get an entry in `src/app/hubs.ts` and a row in `tests/unit/nav/hubs.spec.ts` (2.0 M1).
+- Run `npm run doctor` before opening a PR; it prints the fix for anything inconsistent.
+- Keep scratch files out of the repo. Worker copies live in `.worktrees/`, which git, ESLint and Vitest ignore.
+- On a failure: capture the evidence, reproduce it with the narrowest command, find the root cause, fix it and
+  add a guard (test, lint rule or doctor check). Never retry blindly or raise a timeout without a reason.
+
 ## Stack
 React 18 · TypeScript (strict) · Vite · Zustand · Dexie (IndexedDB) · Zod · Vitest · Playwright · axe. Node version: see `.nvmrc`.
 

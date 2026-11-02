@@ -8,7 +8,7 @@ import { noColorLiterals } from './eslint-rules/no-color-literals.js';
 import { noDirectStorageFetch } from './eslint-rules/no-direct-storage-fetch.js';
 
 export default tseslint.config(
-  { ignores: ['dist/**', 'dist-standalone/**', 'node_modules/**', 'coverage/**', 'playwright-report/**', 'test-results/**', 'public/**', '*.config.*'] },
+  { ignores: ['dist/**', 'dist-standalone/**', 'node_modules/**', 'coverage/**', 'playwright-report/**', 'test-results/**', 'public/**', '*.config.*', '.worktrees/**'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

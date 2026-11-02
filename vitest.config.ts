@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
@@ -12,6 +12,8 @@ export default defineConfig({
       thresholds: { branches: 85, functions: 90, lines: 90, statements: 90 },
     },
     environment: 'jsdom',
+    // Hermes worker copies (git worktrees inside the repo) are never this repo's tests.
+    exclude: [...configDefaults.exclude, '.worktrees/**'],
     globals: true,
     include: ['tests/unit/**/*.spec.ts', 'tests/unit/**/*.spec.tsx', 'tests/integration/**/*.spec.ts', 'tests/integration/**/*.spec.tsx'],
     setupFiles: ['tests/setup.ts'],
