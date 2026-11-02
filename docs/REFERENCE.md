@@ -197,7 +197,7 @@ way; otherwise fix and report after.
 | Media audit 404s | Media root resolved relative to the script | Pass the media root explicitly |
 | Spend counter (or any counter) in Blobs lags or the cap overshoots | Read-modify-write on one key; Blobs is last-write-wins, parallel calls lose increments | One key per event (`onlyIfNew`), totalled by `list({prefix})`; test with a store whose reads answer late |
 | A Hermes worker branches from old code | Worktrees are cut from the local clone `D:\RUDRA\zanshin`, which goes stale unless fetched | The bridge fetches and fast-forwards `main` every run; compare the worktree `HEAD` with `origin/main` |
-| Hermes card blocked with "exited with code 1" seconds after spawn | Open (RCA_LOG 2026-11-02); suspect the gateway running elevated | Read `%LOCALAPPDATA%\hermes\logs\gateway.log` (spawn/crash lines), then the worker log; do not re-drop the card until a worker runs |
+| Hermes card blocked with "exited with code 1" seconds after spawn | The worker profile has no AI provider it can resolve (a model chosen in the chat TUI is not enough) | Put the provider key in the profile's own `.env` (`hermes -p <profile> config set ANTHROPIC_API_KEY …`); prove it with `hermes -p <profile> chat -q`; read `outbox\logs\<profile>-managed-worker.log` for the real error |
 | E3 debrief "Mastery … → …" missing once (desktop, under load) | Open: debrief renders before mastery deltas are computed | Watch; if it recurs, make the debrief wait for the deltas (and test it) |
 
 ## 8. Decisions (and why)
@@ -205,6 +205,7 @@ way; otherwise fix and report after.
 | Date | Decision | Why |
 | --- | --- | --- |
 | 2026-11-02 | **One-hour SSO: Option B** — make the site public, lock every function to paired devices with a key | Sagar's choice (2026-11-02). Order matters: ship the device-key lock on `intel`, `diag`, `ranked`, `sync` first, verify, *then* switch the Netlify project's visibility; never public before the lock is live |
+| 2026-11-02 | Both Hermes workers run Claude Sonnet on Sagar's own Anthropic API key (Ultra plan credits, $150/month spend limit); Nous Portal stays on the free plan for its tools | Free Nous models left the workers with no resolvable provider, which crashed every worker on spawn; the key lives in each profile's `.env`, never in the repo |
 | 2026-11-02 | Hermes Agent on Sagar's PC (RUDRA) as extra builders: profiles `zanshin-dev`, `zanshin-qa`; Claude leads via cards in `D:\RUDRA\hermes\inbox`, reads `outbox\board.json` (protocol: `D:\RUDRA\hermes\HANDOFF.md`) | Keeps the build moving when Claude's capacity runs out; workers read `AGENTS.md` (not `CLAUDE.md`), open PRs, CI gates them; runs only while RUDRA is on and `hermes gateway` is running |
 | 2026-11-01 | Production deploys only on releases; PRs get free previews | Free plan: 300 credits/month, 15 per production deploy; 9 deploys in 16 h had used ~135 |
 | 2026-11-01 | 2.0 is built in milestones, each merged when green and reviewable on its PR preview; production gets releases | Sagar sees each milestone on its preview and can redirect; credits go only on releases |
