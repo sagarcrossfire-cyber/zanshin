@@ -196,6 +196,8 @@ way; otherwise fix and report after.
 | axe `label-content-name-mismatch` | `aria-label` doesn't contain the visible text | Make the label start with (or equal) the visible text |
 | Media audit 404s | Media root resolved relative to the script | Pass the media root explicitly |
 | Spend counter (or any counter) in Blobs lags or the cap overshoots | Read-modify-write on one key; Blobs is last-write-wins, parallel calls lose increments | One key per event (`onlyIfNew`), totalled by `list({prefix})`; test with a store whose reads answer late |
+| A Hermes worker branches from old code | Worktrees are cut from the local clone `D:\RUDRA\zanshin`, which goes stale unless fetched | The bridge fetches and fast-forwards `main` every run; compare the worktree `HEAD` with `origin/main` |
+| Hermes card blocked with "exited with code 1" seconds after spawn | Open (RCA_LOG 2026-11-02); suspect the gateway running elevated | Read `%LOCALAPPDATA%\hermes\logs\gateway.log` (spawn/crash lines), then the worker log; do not re-drop the card until a worker runs |
 | E3 debrief "Mastery … → …" missing once (desktop, under load) | Open: debrief renders before mastery deltas are computed | Watch; if it recurs, make the debrief wait for the deltas (and test it) |
 
 ## 8. Decisions (and why)
