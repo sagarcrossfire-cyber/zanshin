@@ -32,7 +32,6 @@ export class RouteErrorBoundary extends React.Component<ErrorBoundaryProps, Erro
 
   componentDidCatch(error: Error): void {
     recordError(`route:${this.props.routeLabel}`, error);
-    // eslint-disable-next-line no-console
     console.error(`[zanshin] route error on ${this.props.routeLabel}:`, error);
   }
 
