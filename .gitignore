@@ -13,3 +13,5 @@ public/media/
 .zanshin-media-cache/
 __pycache__/
 *.pyc
+# Hermes worker copies (git worktrees inside the repo)
+.worktrees/
