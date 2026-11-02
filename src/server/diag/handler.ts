@@ -13,6 +13,7 @@
 // Nothing outside the schema is logged or stored: no IP, no headers, no body.
 import { DIAG_BODY_MAX, diagEventSchema } from './schema';
 import { consoleZt1, zt1Line, type Zt1Logger } from './zt1';
+import { scopedStoreName } from '../storeName';
 
 /** About 500 stored events a day; the log line is written either way. */
 export const DIAG_DAILY_CAP = 500;
@@ -39,17 +40,9 @@ export function memoryDiagStore(): DiagStore & { data: Map<string, unknown> } {
   };
 }
 
-/**
- * Blobs stores are site-wide and shared by every deploy context, so a
- * preview must never write production's store: `diag` for production,
- * `diag-<context>` otherwise, and `diag-unknown` when the runtime does not
- * say (so an unlabelled deploy can never pollute production's history).
- */
+/** `diag` for production, `diag-<context>` otherwise (src/server/storeName.ts). */
 export function diagStoreName(deployContext: string | undefined): string {
-  const context = (deployContext ?? '').trim().toLowerCase();
-  if (context === 'production') return 'diag';
-  const safe = context.replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
-  return `diag-${safe === '' ? 'unknown' : safe}`;
+  return scopedStoreName('diag', deployContext);
 }
 
 export interface DiagDeps {

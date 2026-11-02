@@ -1,30 +1,26 @@
-// Match import — spec §9.3. CSV upload always available; the Wank and
-// ewgf adapters sit behind the matchImport flag and need the Tekken ID
-// (Settings) or a pasted ewgf token. Tokens are passed per import and never
-// stored. Dedupe is automatic (AC-LOG-3); imports never invent tallies.
+// Match import — spec §9.3. CSV upload here; ranked games sync from
+// Matches (2.0 M2: the ranked function reads Wavu Wank, src/services/rankedSync.ts),
+// which replaced the 1.4.1 Wank/ewgf adapters and the flag-off card that
+// pointed at a setting that never existed. Dedupe is automatic (AC-LOG-3);
+// imports never invent tallies.
 import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
 import { Card } from '../../components/base/Card';
 import { SafeModeNote } from '../../components/base/SafeModeNote';
-import { TextField } from '../../components/base/TextField';
-import { fetchEwgfBattles, fetchWankBattles, isDuplicateBattle, parseMatchCsv, toMatchSet, type ImportedBattle } from '../../data/import/matches';
+import { isDuplicateBattle, parseMatchCsv, toMatchSet, type ImportedBattle } from '../../data/import/matches';
 import { matchSetsRepo } from '../../data/repos';
 import type { MatchSet } from '../../data/schemas';
 import { recomputeAllMastery } from '../../services/lab';
-import { FLAGS } from '../../config/flags';
 import { isSafeMode } from '../../config/safeMode';
 import { useAppStore } from '../../stores/appStore';
 import './Log.css';
 
 export function ImportScreen() {
-  const profile = useAppStore((s) => s.profile);
   const pushToast = useAppStore((s) => s.pushToast);
   const safeMode = isSafeMode();
   const fileRef = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState('');
-  const [ewgfToken, setEwgfToken] = useState('');
-  const [busy, setBusy] = useState(false);
 
   const saveImported = async (battles: ImportedBattle[]): Promise<number> => {
     const existing = await matchSetsRepo.all();
@@ -51,44 +47,6 @@ export function ImportScreen() {
     await importCsvText(await file.text());
   };
 
-  const importWank = async (): Promise<void> => {
-    if (!profile?.tekkenId) {
-      setMessage('Add your Tekken ID in Settings first.');
-      return;
-    }
-    setBusy(true);
-    try {
-      const battles = await fetchWankBattles(fetch, profile.tekkenId);
-      const added = await saveImported(battles);
-      setMessage(`Imported ${added} set(s) from Wank (${battles.length - added} duplicate(s) skipped).`);
-    } catch (error) {
-      setMessage(`Wank import failed: ${error instanceof Error ? error.message : String(error)}. The page shape may have changed; CSV import still works.`);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const importEwgf = async (): Promise<void> => {
-    if (!profile?.tekkenId) {
-      setMessage('Add your Tekken ID in Settings first.');
-      return;
-    }
-    if (ewgfToken.trim() === '') {
-      setMessage('Paste your ewgf.gg token to import from ewgf. It is used once and never stored.');
-      return;
-    }
-    setBusy(true);
-    try {
-      const battles = await fetchEwgfBattles(fetch, profile.tekkenId, ewgfToken.trim());
-      const added = await saveImported(battles);
-      setMessage(`Imported ${added} set(s) from ewgf (${battles.length - added} duplicate(s) skipped).`);
-    } catch (error) {
-      setMessage(`ewgf import failed: ${error instanceof Error ? error.message : String(error)}. Check the token; CSV import still works.`);
-    } finally {
-      setBusy(false);
-    }
-  };
-
   return (
     <main>
       <h1>Import matches</h1>
@@ -99,23 +57,9 @@ export function ImportScreen() {
           onChange={(e) => { const file = e.target.files?.[0]; if (file) void onFile(file); }} />
       </Card>
 
-      {FLAGS.matchImport ? (
-        <>
-          <Card title="Wank (wavu.wiki)">
-            <p>Fetches your battle history from your Wank page. Your Tekken ID comes from Settings.</p>
-            <Button disabled={busy || safeMode} onClick={() => void importWank()}>Import from Wank</Button>
-          </Card>
-          <Card title="ewgf.gg">
-            <p>Paste your ewgf.gg token. It is sent once with this import and never stored.</p>
-            <TextField id="import-ewgf-token" label="ewgf.gg token" type="password" value={ewgfToken} onChange={setEwgfToken} />
-            <Button disabled={busy || safeMode} onClick={() => void importEwgf()}>Import from ewgf</Button>
-          </Card>
-        </>
-      ) : (
-        <Card title="Online import is off">
-          <p>Enable <code>matchImport</code> in Settings to import from Wank and ewgf. CSV import above still works.</p>
-        </Card>
-      )}
+      <Card title="Ranked matches">
+        <p>Your ranked games sync from Wavu Wank on the Matches screen: add your Tekken ID in <Link to="/settings">Settings</Link>, then use “Sync ranked matches” on <Link to="/log">Matches</Link>.</p>
+      </Card>
 
       {message !== '' && <p role="status">{message}</p>}
       <p><Link to="/log">Back to Match Log</Link></p>

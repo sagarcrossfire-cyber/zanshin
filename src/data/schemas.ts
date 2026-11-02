@@ -317,6 +317,31 @@ export const talliesSchema = z.object({
 });
 export type Tallies = z.infer<typeof talliesSchema>;
 
+/** 2.0 M2 — one synced ranked game inside a match set (src/domain/ranked/importPlan.ts). */
+export const rankedBattleRecordSchema = z.object({
+  /** `${battle_at}:${id}:${id}` (sorted Tekken IDs): the dedupe key. */
+  ref: z.string().min(1),
+  at: isoDateTimeSchema,
+  result: z.enum(['win', 'loss', 'draw']),
+  roundsWon: z.number().int().nonnegative().optional(),
+  roundsLost: z.number().int().nonnegative().optional(),
+  myRank: z.string().optional(),
+  myRankIndex: z.number().int().nonnegative().optional(),
+  opponentRank: z.string().optional(),
+  opponentRankIndex: z.number().int().nonnegative().optional(),
+  ratingBefore: z.number().int().optional(),
+  ratingChange: z.number().int().optional(),
+});
+export type RankedBattleRecord = z.infer<typeof rankedBattleRecordSchema>;
+
+export const rankedSetInfoSchema = z.object({
+  source: z.enum(['wank', 'ewgf']),
+  myCharacter: z.string().min(1),
+  opponentId: z.string().optional(),
+  battles: z.array(rankedBattleRecordSchema).min(1),
+});
+export type RankedSetInfo = z.infer<typeof rankedSetInfoSchema>;
+
 export const matchSetSchema = z.object({
   id: z.string().min(1),
   at: isoDateTimeSchema,
@@ -332,6 +357,14 @@ export const matchSetSchema = z.object({
   notes: z.string().optional(),
   tags: z.array(z.string()),
   importRef: z.string().optional(),
+  /** 2.0 M2: false for imported sets with no tallies (ranked sync, CSV);
+   * absent means the tallies were entered. Per-game KPIs read only tallied
+   * sets (src/domain/engine/tallied.ts). */
+  tallied: z.boolean().optional(),
+  /** 2.0 M2: the opponent's public name, from ranked sync. */
+  opponentName: z.string().max(80).optional(),
+  /** 2.0 M2: ranked sync detail — one entry per game, refs for dedupe. */
+  ranked: rankedSetInfoSchema.optional(),
 });
 export type MatchSet = z.infer<typeof matchSetSchema>;
 
@@ -508,6 +541,8 @@ export const settingsSchema = z.object({
   /** Send sanitized error reports to the site's diag function (2.0 M1);
    * absent means true. Never carries notes, logs, coach text or keys. */
   telemetry: z.boolean().optional(),
+  /** 2.0 M2: how the Match Log names you in synced ranked games ("Show me as"); absent means your Wank name. */
+  rankedLabel: z.string().max(40).optional(),
 });
 export type Settings = z.infer<typeof settingsSchema>;
 

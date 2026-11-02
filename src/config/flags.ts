@@ -1,5 +1,5 @@
-// Feature flags — spec Appendix A.3. All true except matchImport
-// (false until P7 turns it on; baseline turned on in P8).
+// Feature flags — spec Appendix A.3. 2.0 M2 removed matchImport: ranked
+// games sync from Matches (src/services/rankedSync.ts), CSV stays on Import.
 export const FLAGS = {
   baseline: true,
   coachAI: true,
@@ -9,7 +9,6 @@ export const FLAGS = {
   flashcards: true,
   inAppImporter: true,
   lab: true,
-  matchImport: false,
   matchLog: true,
   patchWatch: true,
   punishTrainer: true,

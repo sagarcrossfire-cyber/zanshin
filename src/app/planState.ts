@@ -11,6 +11,7 @@ import type { Profile, Settings } from '../data/schemas';
 import { generatePlan, type Plan, type PlanNode, type PlanState } from '../domain/engine/plan';
 import { dueCount, practiceDay } from '../domain/engine/srs';
 import { detectWeaknesses, type Weakness } from '../domain/engine/weakness';
+import { talliedOnly } from '../domain/engine/tallied';
 import { syncStageStatuses } from '../services/stages';
 import { format } from 'date-fns/format';
 
@@ -47,7 +48,7 @@ export async function buildRealPlanState(
 
   // Weaknesses from real match sets (empty until P7 logging exists).
   const weaknesses = detectWeaknesses(
-    matchSets.map((set) => ({ tallies: set.tallies, games: set.games, at: set.at, day: set.day })),
+    talliedOnly(matchSets).map((set) => ({ tallies: set.tallies, games: set.games, at: set.at, day: set.day })),
     currentStage?.act ?? 'shu',
     settings.kpiTargets as Partial<Record<string, number | null>> | undefined,
   );

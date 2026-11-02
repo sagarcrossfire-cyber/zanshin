@@ -1,12 +1,10 @@
-// Match-history imports — spec §9.3, behind the matchImport flag (off by
-// default). Adapters never invent tallies: imports prefill results only.
-// Wank's exact page shape is UNVERIFIED (no Tekken ID was available to test
-// with — see KNOWN_ISSUES.md); the adapter parses defensively and the CSV
-// import is the verified bulk path. ewgf.gg's endpoint is documented in
-// §9.3; its battle shape is parsed defensively for the same reason.
+// Match-history imports — spec §9.3. CSV is the file import; ranked games
+// from Wavu Wank / ewgf.gg come through the ranked function and
+// src/services/rankedSync.ts (2.0 M2), which replaced the 1.4.1 browser
+// adapters here (wrong Wank URL, unverified JSON shape, ewgf token pasted into
+// the app). Imports never invent tallies: they prefill results only and are
+// marked `tallied: false`, so per-game KPIs ignore them.
 import type { MatchSet } from '../schemas';
-
-export type FetchLike = (input: string, init?: { headers?: Record<string, string> }) => Promise<{ ok: boolean; status: number; json: () => Promise<unknown> }>;
 
 export interface ImportedBattle {
   battleId: string;
@@ -16,70 +14,6 @@ export interface ImportedBattle {
   games: number;
   wins: number;
   mode: MatchSet['mode'];
-}
-
-function asRecord(value: unknown): Record<string, unknown> | null {
-  return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : null;
-}
-
-function pickBattleList(payload: unknown): unknown[] {
-  const record = asRecord(payload);
-  if (Array.isArray(payload)) return payload;
-  if (!record) return [];
-  for (const key of ['battles', 'replays', 'matches', 'results']) {
-    const list = record[key];
-    if (Array.isArray(list)) return list;
-  }
-  return [];
-}
-
-function toImportedBattle(raw: unknown, fallbackId: string): ImportedBattle | null {
-  const row = asRecord(raw);
-  if (!row) return null;
-  const id = String(row.id ?? row.battleId ?? row.battle_id ?? fallbackId);
-  const at = String(row.at ?? row.date ?? row.timestamp ?? '');
-  const parsed = Date.parse(at);
-  if (Number.isNaN(parsed)) return null;
-  const day = new Date(parsed).toISOString().slice(0, 10);
-  const opponentCharacter = String(row.opponentCharacter ?? row.character ?? row.opponent ?? '');
-  if (opponentCharacter === '') return null;
-  const games = Number(row.games ?? 1);
-  const wins = Number(row.wins ?? ((row.result === 'win' || row.result === 'W' || row.result === '1') ? 1 : 0));
-  return {
-    battleId: id,
-    at: new Date(parsed).toISOString(),
-    day,
-    opponentCharacter,
-    games: Number.isFinite(games) && games > 0 ? Math.floor(games) : 1,
-    wins: Number.isFinite(wins) && wins >= 0 ? Math.floor(wins) : 0,
-    mode: 'ranked',
-  };
-}
-
-/**
- * Wavu Wank player page. URL/shape unverified (see module header) — the
- * caller passes Sagar's Tekken (Polaris) ID; the adapter only reads the
- * public JSON form the site documents (?_format=json).
- */
-export async function fetchWankBattles(fetcher: FetchLike, tekkenId: string): Promise<ImportedBattle[]> {
-  const url = `https://wank.wavu.wiki/${encodeURIComponent(tekkenId)}?_format=json`;
-  const response = await fetcher(url, { headers: { 'User-Agent': 'ZANSHIN-importer/1.0 (personal training app)' } });
-  if (!response.ok) throw new Error(`Wank import failed: HTTP ${response.status}`);
-  const payload = await response.json();
-  return pickBattleList(payload)
-    .map((raw, i) => toImportedBattle(raw, `wank-${i}`))
-    .filter((battle): battle is ImportedBattle => battle !== null);
-}
-
-/** ewgf.gg external battles API (§9.3). The token is pasted per import by Sagar; the adapter never stores it. */
-export async function fetchEwgfBattles(fetcher: FetchLike, tekkenId: string, token: string): Promise<ImportedBattle[]> {
-  const url = `https://api.ewgf.gg/external/battles/${encodeURIComponent(tekkenId)}`;
-  const response = await fetcher(url, { headers: { Authorization: `Bearer ${token}` } });
-  if (!response.ok) throw new Error(`ewgf.gg import failed: HTTP ${response.status}`);
-  const payload = await response.json();
-  return pickBattleList(payload)
-    .map((raw, i) => toImportedBattle(raw, `ewgf-${i}`))
-    .filter((battle): battle is ImportedBattle => battle !== null);
 }
 
 /** A battle is a duplicate when the battle id matches, or when the day,
@@ -110,6 +44,7 @@ export function toMatchSet(battle: ImportedBattle, id: string): MatchSet {
     beatBy: [],
     tags: [],
     importRef: battle.battleId,
+    tallied: false,
   };
 }
 

@@ -11,6 +11,7 @@ import type { Assessment, MatchSet, StageStatus } from '../data/schemas';
 import { evaluateStageStatus, type GateEvidence, type StageStatusResult } from '../domain/engine/gates';
 import type { MasteryState } from '../domain/engine/mastery';
 import { dueCount } from '../domain/engine/srs';
+import { talliedOnly } from '../domain/engine/tallied';
 import { QUIZ_RESULT_KEYS } from './placement';
 
 export interface StageView {
@@ -137,7 +138,7 @@ export async function gateEvidenceForStage(stageId: string): Promise<GateEvidenc
     }
   }
   if (needsMatches) {
-    const allMatches = (await matchSetsRepo.all()).sort((a, b) => (a.at < b.at ? -1 : 1));
+    const allMatches = talliedOnly(await matchSetsRepo.all()).sort((a, b) => (a.at < b.at ? -1 : 1));
     for (const criterion of criteria.filter((c) => c.metric !== 'drillSuccess' && c.metric !== 'punishQuizAccuracy')) {
       // Take the last N games (window kind 'games').
       const wanted = criterion.window.n;

@@ -34,6 +34,7 @@ import {
 import { coachMessagesRepo, conflictsRepo, errorsRepo } from '../data/repos/errors';
 import { masteryRepo, stageStatusRepo } from '../data/repos/mastery';
 import { matchSetsRepo } from '../data/repos/matchSets';
+import { talliedOnly } from '../domain/engine/tallied';
 import { problemMovesRepo } from '../data/repos/problemMoves';
 import { sessionsRepo } from '../data/repos/sessions';
 import { setsRepo } from '../data/repos/sets';
@@ -233,11 +234,12 @@ export async function buildCoachContextState(question: string, deps: CoachDeps):
       })),
     }));
 
-  // KPIs over the last 10 games, newest first.
+  // KPIs over the last 10 tallied games, newest first (imports have no tallies).
   let games = 0;
   const totals = { missedPunishes: 0, throwsBroken: 0, throwsMissed: 0, hitWhileMinus: 0 };
-  for (let i = matchSets.length - 1; i >= 0 && games < 10; i -= 1) {
-    const set = matchSets[i];
+  const talliedSets = talliedOnly(matchSets);
+  for (let i = talliedSets.length - 1; i >= 0 && games < 10; i -= 1) {
+    const set = talliedSets[i];
     if (set === undefined) break;
     games += set.games;
     totals.missedPunishes += set.tallies.missedPunishes;
@@ -422,8 +424,9 @@ export async function weeklyReviewText(nowIso: string, deps: CoachDeps, persist 
   let matches: { games: number; missedPunishesPerGame: number; target: number } | null = null;
   let games = 0;
   let missed = 0;
-  for (let i = matchSets.length - 1; i >= 0 && games < 20; i -= 1) {
-    const set = matchSets[i];
+  const talliedSets = talliedOnly(matchSets);
+  for (let i = talliedSets.length - 1; i >= 0 && games < 20; i -= 1) {
+    const set = talliedSets[i];
     if (set === undefined) break;
     games += set.games;
     missed += set.tallies.missedPunishes;

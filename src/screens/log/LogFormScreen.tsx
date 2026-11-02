@@ -98,6 +98,8 @@ export function LogFormScreen() {
   const [answerDetail, setAnswerDetail] = useState('');
   const [notes, setNotes] = useState('');
   const [tags, setTags] = useState('');
+  // 2.0 M2: the stored set when editing, so synced fields (ranked games, refs) survive a save.
+  const [original, setOriginal] = useState<MatchSet | null>(null);
   const [recentOpponents, setRecentOpponents] = useState<string[]>([]);
 
   const curriculum = useMemo(() => loadCurriculum(), []);
@@ -117,6 +119,7 @@ export function LogFormScreen() {
         if (editing && matchSetId !== undefined) {
           const existing = await matchSetsRepo.get(matchSetId);
           if (cancelled || !existing) return;
+          setOriginal(existing);
           setAt(toLocalInput(existing.at));
           setMode(existing.mode);
           setOpponentCharacter(existing.opponentCharacter);
@@ -188,6 +191,12 @@ export function LogFormScreen() {
       beatBy,
       ...(notes.trim() !== '' ? { notes: notes.trim() } : {}),
       tags: tags.split(',').map((t) => t.trim()).filter((t) => t !== ''),
+      // An imported set keeps its refs and synced games; it starts counting
+      // for per-game KPIs once any tally is filled in (2.0 M2).
+      ...(original?.importRef !== undefined ? { importRef: original.importRef } : {}),
+      ...(original?.opponentName !== undefined ? { opponentName: original.opponentName } : {}),
+      ...(original?.ranked !== undefined ? { ranked: original.ranked } : {}),
+      ...(original?.tallied === false && !Object.values(tallies).some((v) => v > 0) ? { tallied: false } : {}),
     };
     await matchSetsRepo.put(record);
     await recomputeAllMastery(nowIso);
