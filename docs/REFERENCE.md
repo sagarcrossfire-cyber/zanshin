@@ -202,6 +202,8 @@ way; otherwise fix and report after.
 
 | Date | Decision | Why |
 | --- | --- | --- |
+| 2026-11-02 | **One-hour SSO: Option B** — make the site public, lock every function to paired devices with a key | Sagar's choice (2026-11-02). Order matters: ship the device-key lock on `intel`, `diag`, `ranked`, `sync` first, verify, *then* switch the Netlify project's visibility; never public before the lock is live |
+| 2026-11-02 | Hermes Agent on Sagar's PC (RUDRA) as extra builders: profiles `zanshin-dev`, `zanshin-qa`; Claude leads via cards in `D:\RUDRA\hermes\inbox`, reads `outbox\board.json` (protocol: `D:\RUDRA\hermes\HANDOFF.md`) | Keeps the build moving when Claude's capacity runs out; workers read `AGENTS.md` (not `CLAUDE.md`), open PRs, CI gates them; runs only while RUDRA is on and `hermes gateway` is running |
 | 2026-11-01 | Production deploys only on releases; PRs get free previews | Free plan: 300 credits/month, 15 per production deploy; 9 deploys in 16 h had used ~135 |
 | 2026-11-01 | 2.0 is built in milestones, each merged when green and reviewable on its PR preview; production gets releases | Sagar sees each milestone on its preview and can redirect; credits go only on releases |
 | 2026-11-01 | Sync between PC and phone is in 2.0 scope | He uses both (answer 2026-11-01) |
