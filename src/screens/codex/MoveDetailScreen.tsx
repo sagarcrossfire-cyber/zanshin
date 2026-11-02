@@ -3,6 +3,7 @@
 // follow-ups, combos and drills that use the move, Sagar's notes and
 // verification history, and a Wavu link-out. A clip shows only when Sagar
 // imported one into his local media library (Amendment 01B).
+import { AskCoachLink } from '../../components/coach/AskCoachLink';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
@@ -121,6 +122,8 @@ export function MoveDetailScreen() {
           />
         </Card>
       )}
+
+      <AskCoachLink about={`${move.input}${move.name ? ` (${move.name})` : ''}`} />
 
       <section className="z-move-stats" aria-label="Frame data">
         <div className="z-move-stat">

@@ -88,3 +88,43 @@ describe('mastery recalculation (AC-LAB-4)', () => {
     expect(again?.updatedAt).toBeDefined();
   });
 });
+
+// RCA 2026-11-01: 1.x saved every Stage 1+ lesson as "locked" when it was
+// practised (stageOpen was `stageIndex === 0`), so no stage after Stage 0
+// could ever pass its gate.
+describe('mastery respects the stored stage status (2.0 fix)', () => {
+  it('a Stage 1 lesson practised while Stage 1 is open is not saved as locked', async () => {
+    const { stageStatusRepo } = await import('../../../src/data/repos');
+    await stageStatusRepo.put({ stageId: 'stage-0', state: 'passed', viaPlacement: false, passedAt: '2026-10-30T20:00:00.000Z' });
+    await stageStatusRepo.put({ stageId: 'stage-1', state: 'open', viaPlacement: false });
+    const days = ['2026-10-29', '2026-10-30', '2026-10-31'];
+    for (const day of days) {
+      await logSet({ sessionId: 's1', drillId: 'd1-guard', nodeId: 'n1-guard', reps: 10, successes: 10, now: new Date(`${day}T20:00:00.000Z`) });
+    }
+    const row = await masteryRepo.get('n1-guard');
+    expect(row?.state).not.toBe('locked');
+    expect(['solid', 'mastered']).toContain(row?.state);
+  });
+
+  it('a lesson in a stage that is still locked stays locked', async () => {
+    const { stageStatusRepo } = await import('../../../src/data/repos');
+    await stageStatusRepo.put({ stageId: 'stage-2', state: 'locked', viaPlacement: false });
+    await logSet({ sessionId: 's1', drillId: 'd2-sidestep', nodeId: 'n2-sidestep', reps: 10, successes: 10, now: new Date('2026-10-31T20:00:00.000Z') });
+    expect((await masteryRepo.get('n2-sidestep'))?.state).toBe('locked');
+  });
+});
+
+describe('integrity self-repair for 1.x stage locks (2.0)', () => {
+  it('runIntegrityChecks recomputes a lesson wrongly saved as locked in an open stage', async () => {
+    const { stageStatusRepo, setsRepo } = await import('../../../src/data/repos');
+    const { runIntegrityChecks } = await import('../../../src/services/diagnostics');
+    await stageStatusRepo.put({ stageId: 'stage-1', state: 'open', viaPlacement: false });
+    for (const day of ['2026-10-29', '2026-10-30', '2026-10-31']) {
+      await setsRepo.put({ id: `set-${day}`, sessionId: 's1', drillId: 'd1-guard', nodeId: 'n1-guard', at: `${day}T20:00:00.000Z`, day, reps: 10, successes: 10 });
+    }
+    await masteryRepo.put({ nodeId: 'n1-guard', K: null, E: 1, A: null, score: 1, state: 'locked', placed: false, evidenceDays: ['2026-10-29', '2026-10-30', '2026-10-31'], updatedAt: '2026-10-31T20:00:00.000Z' });
+    const result = await runIntegrityChecks();
+    expect(result.checks.find((c) => c.id === 'mastery-stage-lock')?.repaired).toBe('1 recomputed');
+    expect((await masteryRepo.get('n1-guard'))?.state).not.toBe('locked');
+  });
+});

@@ -11,8 +11,9 @@ export {
 } from '../domain/intel/models';
 
 export const INTEL_BASE_URL = '/.netlify/functions/intel';
-/** Netlify's synchronous function limit is ~10 s; the server aborts at 9 s. */
-export const INTEL_TIMEOUT_MS = 20_000;
+/** The function gives the provider 45 s (Netlify's synchronous limit is
+ * 60 s); the browser waits a little longer so the server's own words arrive. */
+export const INTEL_TIMEOUT_MS = 50_000;
 
 export interface IntelUsage {
   inputTokens: number;

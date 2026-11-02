@@ -1,0 +1,9 @@
+/* 2.0 contextual coach entry. Tokens only. */
+.z-ask-coach {
+  display: inline-flex; align-items: center; gap: var(--space-2); align-self: flex-start;
+  min-height: 44px; padding: 0 var(--space-4); border-radius: var(--radius-pill);
+  border: 1px solid var(--accent-line); background: var(--accent-soft); color: var(--text-1);
+  text-decoration: none; font-weight: 600; font-size: 14px;
+}
+.z-ask-coach svg { color: var(--accent); }
+.z-ask-coach:hover { background: var(--nav-active-fill); }

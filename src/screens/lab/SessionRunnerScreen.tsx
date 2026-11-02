@@ -2,6 +2,7 @@
 // 1-second interval only re-renders); every change persists immediately, so
 // a reload resumes the same block, set and remaining time (AC-LAB-2).
 // Lab Mode (§4.12/§4.13): Space = next, 0–9 = log successes, U = undo.
+import { AskCoachLink } from '../../components/coach/AskCoachLink';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
@@ -462,6 +463,7 @@ function Debrief({ session, sets, curriculum, combos, conflicts, deltas, problem
 
   return (
     <div className="z-runner">
+      <AskCoachLink about="today's session debrief" />
       <Card title="Session debrief">
         <p className="z-body-l">
           {sets.length} sets · {totalSuccesses}/{totalReps} successes

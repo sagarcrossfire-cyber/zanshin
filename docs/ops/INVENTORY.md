@@ -214,14 +214,15 @@ Repos (`src/data/repos/*.ts`, index documents every method): profile, settings, 
 
 ## 4. Intelligence
 
-- Entry `netlify/functions/intel.mts` → `createIntelHandler` (`src/server/intel/handler.ts`). Env: `PERPLEXITY_API_KEY`, `INTEL_DAILY_CAP_USD` (default 3; 0 = no cap). Function call timeout 9 s.
+- Entry `netlify/functions/intel.mts` → `createIntelHandler` (`src/server/intel/handler.ts`). Env: `PERPLEXITY_API_KEY`, `INTEL_DAILY_CAP_USD` (default 3; 0 = no cap). Provider timeout 45 s (2.0 M1; sync limit 60 s). One `ZT1` breadcrumb per request.
 - Upstream: Perplexity Agent API `https://api.perplexity.ai/v1/agent` (`src/server/intel/perplexity.ts`), cost read from `usage.cost.total_cost`.
 - Routes under `/.netlify/functions/intel/`: `GET health` (key configured, cap, today, models, durableStore), `GET usage` (7 days), `POST coach` {system, messages ≤20, model?, maxTokens 50–1200} (no web tool; messages flattened to one transcript), `POST research` {question, context?, model?, recency?}, `GET primer/:name` (cached 30 days, `?refresh=1`, stale primer returned on refresh failure), `POST patch-brief` {revision, patch?, changes ≤60, refresh?} (cached by revision).
 - Models (`src/domain/intel/models.ts`): anthropic/claude-sonnet-5-5, anthropic/claude-haiku-5-5 (default coach), openai/gpt-6-luna, google/gemini-3.8-flash, perplexity/sonar (default research). Unknown models refused. Primers and briefs always use Sonar with web search. Output caps: coach 600, research 450, primer 550, patch 500 tokens (`prompts.ts`).
 - Web search restricted to `TEKKEN_SOURCES`: wavu.wiki, tekkendocs.com, tekken.com, bandainamcoent.com, reddit.com, eventhubs.com, dashfight.com, youtube.com, tekkenzaibatsu.com. Prompts tell the model to write frame numbers as "reported".
 - Spend cap: every paid call reads `usage/<YYYY-MM-DD>` first → 429 with plain message when `capUsd > 0 && today.costUsd >= capUsd`; records cost after. 503 when key missing.
-- Blobs: `getStore({ name: 'intel', consistency: 'strong' })`; keys `usage/<day>`, `primer/<lowercased name>`, `patch/<revision>`. Falls back to a per-instance memory store if Blobs is unavailable (`src/server/intel/store.ts`).
-- Clients: `services/intel.ts` (`intelHealth`, `intelUsage`, `research`, `matchupPrimer`, `patchBrief`, 20 s timeout, `formatSpend`); `services/research.ts` (`lookUp`, `fetchPrimer`/`storedPrimer`, `fetchBrief`/`storedBrief`, notes CRUD in `research` table; `domain/intel/research.ts` checks prose, flags frame-like tokens, builds ≤4000-char context with the player's record/problem moves); `domain/coach/providers/zanshin.ts` (POST coach).
+- Blobs: `getStore({ name: 'intel', consistency: 'strong' })`; keys `usage/<day>/<requestId>~c<µUSD>~i<in>~o<out>` (one per paid call, `onlyIfNew`, summed by prefix; the 1.3 `usage/<day>` key is still read), `primer/<lowercased name>`, `patch/<revision>`. Falls back to a per-instance memory store if Blobs is unavailable (`src/server/intel/store.ts`).
+- Telemetry (2.0 M1): `netlify/functions/diag.mts` → `/api/diag` (POST, rate limit 60/min) → `createDiagHandler` (`src/server/diag/handler.ts`); schema shared with the client in `src/server/diag/schema.ts`; one `ZT1` log line per event (`src/server/diag/zt1.ts`); Blobs store `diag` / `diag-<context>`, keys `<YYYY-MM-DD>/<ts>-<rand>`, ≤500/day. See REFERENCE §6 "Telemetry".
+- Clients: `services/intel.ts` (`intelHealth`, `intelUsage`, `research`, `matchupPrimer`, `patchBrief`, 50 s timeout, `formatSpend`); `services/research.ts` (`lookUp`, `fetchPrimer`/`storedPrimer`, `fetchBrief`/`storedBrief`, notes CRUD in `research` table; `domain/intel/research.ts` checks prose, flags frame-like tokens, builds ≤4000-char context with the player's record/problem moves); `domain/coach/providers/zanshin.ts` (POST coach).
 - Coach today: providers `none` (default: rules only + "Copy context for any AI"), `zanshin` (site function, model picker in Settings), `openai-compatible` (key + base URL + model, browser-direct), `anthropic` (key, browser-direct with dangerous-direct-browser-access header), `mock` (offered in prod UI as "Mock (development)"). Look it up model picker: Sonar / Claude Haiku 5.5 / Claude Sonnet 5.5. Settings shows today's spend + 7 days; "Test connection" reads health (free); Diagnostics "Check intelligence function". CI deploy probes `/intel/health` (401 expected behind SSO).
 
 ---
@@ -238,7 +239,7 @@ Repos (`src/data/repos/*.ts`, index documents every method): profile, settings, 
 | `cards.ts` | Seed card generation from packs/templates, review queue + caps, grade and schedule. |
 | `coach.ts` | Rules texts, context building, provider selection, rate limit, ask with fallback, test connection, `resolveMoveId`. |
 | `diagnostics.ts` | Integrity checks with repairs, invalid-row quarantine, self-test. |
-| `errorReport.ts` | Global error/unhandledrejection → errors ring buffer (50), ≤1 toast/min, secret redaction, quota message. |
+| `errorReport.ts` | Global error/unhandledrejection → errors ring buffer (50), ≤1 toast/min, secret redaction, quota message. 2.0 M1: telemetry queue → `POST /api/diag` (sendBeacon, dedupe by fingerprint, Settings toggle, site only) and the boot self-test. |
 | `intel.ts` | HTTP client for the intel function. |
 | `lab.ts` | Session creation (plan/custom), log/undo sets, advance, verification records, mastery recompute. |
 | `labMode.ts` | Wake Lock + Web Audio beeps. |

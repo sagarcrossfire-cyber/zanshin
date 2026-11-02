@@ -11,8 +11,14 @@
 //
 // Every paid call checks the daily cap first and records what it cost after.
 // The key is read from the environment by the caller and never logged.
+//
+// 2.0 M1 — every request writes one `ZT1 {…}` breadcrumb (route, status,
+// latency, model, cost, cache hit, cap state, request id) so production
+// failures can be traced from Netlify's function logs. Never the prompt, the
+// answer or an error's text.
 import { z } from 'zod';
 import {
+  AGENT_TIMEOUT_MS,
   DEFAULT_COACH_MODEL,
   DEFAULT_RESEARCH_MODEL,
   INTEL_MODELS,
@@ -38,8 +44,33 @@ import {
   webSearchTool,
 } from './prompts';
 import { addUsage, dayKey, readUsage, recentUsage, type DailyUsage, type IntelStore } from './store';
+import { consoleZt1, zt1Line, type Zt1Logger } from '../diag/zt1';
 
 export const PRIMER_TTL_MS = 30 * 86_400_000;
+/** Provider timeout. Netlify's synchronous function limit is 60 s
+ * (docs/v2/research/coach-intel.md §3.3); 45 s leaves room to answer. */
+export const INTEL_PROVIDER_TIMEOUT_MS = AGENT_TIMEOUT_MS;
+
+/** Routes the breadcrumb may name; anything else is logged as 'unknown'. */
+const KNOWN_ROUTES = new Set(['health', 'usage', 'coach', 'research', 'primer', 'patch-brief']);
+
+export type CapState = 'ok' | 'near' | 'reached' | 'off';
+
+/** Where today's spend stands against the cap: 'near' from 80 %. */
+export function capStateOf(todayUsd: number, capUsd: number): CapState {
+  if (!(capUsd > 0)) return 'off';
+  if (todayUsd >= capUsd) return 'reached';
+  if (todayUsd * 5 >= capUsd * 4) return 'near';
+  return 'ok';
+}
+
+/** What one request did, for its breadcrumb. */
+interface CallMeta {
+  model?: string;
+  costUsd?: number;
+  cacheHit?: boolean;
+  capState?: CapState;
+}
 
 export interface IntelDeps {
   apiKey: string | undefined;
@@ -51,8 +82,21 @@ export interface IntelDeps {
   durableStore?: boolean;
   fetchFn?: typeof fetch;
   nowIso?: () => string;
-  /** Per-call timeout; Netlify's own limit is 10 s. */
+  /** Per-call provider timeout; defaults to INTEL_PROVIDER_TIMEOUT_MS. */
   timeoutMs?: number;
+  /** Id for one paid call's ledger entry and breadcrumb. */
+  requestId?: () => string;
+  /** Breadcrumb sink; console.error by default. */
+  log?: Zt1Logger;
+  /** Clock for latency. */
+  clockMs?: () => number;
+}
+
+function defaultRequestId(): string {
+  const random = typeof globalThis.crypto?.randomUUID === 'function'
+    ? globalThis.crypto.randomUUID().slice(0, 8)
+    : Math.floor(Math.random() * 0x1_0000_0000).toString(16).padStart(8, '0');
+  return `${Date.now().toString(36)}-${random}`;
 }
 
 export interface Citation {
@@ -123,11 +167,15 @@ export function transcript(messages: Array<{ role: 'user' | 'assistant'; content
 
 export function createIntelHandler(deps: IntelDeps): (request: Request) => Promise<Response> {
   const nowIso = deps.nowIso ?? (() => new Date().toISOString());
-  const callOptions: AgentCallOptions = { fetchFn: deps.fetchFn, timeoutMs: deps.timeoutMs ?? 9000 };
+  const newRequestId = deps.requestId ?? defaultRequestId;
+  const log = deps.log ?? consoleZt1;
+  const clockMs = deps.clockMs ?? (() => Date.now());
+  const callOptions: AgentCallOptions = { fetchFn: deps.fetchFn, timeoutMs: deps.timeoutMs ?? INTEL_PROVIDER_TIMEOUT_MS };
 
-  const guard = async (): Promise<Response | DailyUsage> => {
+  const guard = async (meta: CallMeta): Promise<Response | DailyUsage> => {
     if (!deps.apiKey) return problem(503, 'The Perplexity key is not configured on the server (PERPLEXITY_API_KEY).');
     const today = await readUsage(deps.store, dayKey(nowIso()));
+    meta.capState = capStateOf(today.costUsd, deps.capUsd);
     if (deps.capUsd > 0 && today.costUsd >= deps.capUsd) {
       return problem(429, `Today's spending cap of $${deps.capUsd.toFixed(2)} is reached ($${today.costUsd.toFixed(2)} spent). Raise INTEL_DAILY_CAP_USD or try tomorrow.`, {
         capUsd: deps.capUsd,
@@ -137,8 +185,14 @@ export function createIntelHandler(deps: IntelDeps): (request: Request) => Promi
     return today;
   };
 
-  const paidCall = async (body: AgentRequestBody): Promise<{ result: AgentResult; usage: IntelUsageOut } | Response> => {
-    const guarded = await guard();
+  const paidCall = async (
+    body: AgentRequestBody,
+    meta: CallMeta,
+    requestId: string,
+  ): Promise<{ result: AgentResult; usage: IntelUsageOut } | Response> => {
+    meta.model = body.model;
+    meta.cacheHit = false;
+    const guarded = await guard(meta);
     if (guarded instanceof Response) return guarded;
     let result: AgentResult;
     try {
@@ -153,11 +207,14 @@ export function createIntelHandler(deps: IntelDeps): (request: Request) => Promi
       }
       return problem(502, error instanceof Error ? error.message : 'Unknown error talking to Perplexity.');
     }
-    const today = await addUsage(deps.store, dayKey(nowIso()), {
+    const at = nowIso();
+    const today = await addUsage(deps.store, dayKey(at), requestId, {
       costUsd: result.usage.costUsd,
       inputTokens: result.usage.inputTokens,
       outputTokens: result.usage.outputTokens,
-    });
+    }, at);
+    meta.costUsd = result.usage.costUsd;
+    meta.capState = capStateOf(today.costUsd, deps.capUsd);
     return {
       result,
       usage: {
@@ -184,14 +241,14 @@ export function createIntelHandler(deps: IntelDeps): (request: Request) => Promi
     }
   };
 
-  return async (request: Request): Promise<Response> => {
-    const url = new URL(request.url);
+  const dispatch = async (request: Request, url: URL, meta: CallMeta, requestId: string): Promise<Response> => {
     const match = url.pathname.match(/\/intel\/?(.*)$/);
     const route = (match?.[1] ?? '').replace(/\/+$/, '');
     const [head, ...rest] = route.split('/');
 
     if (request.method === 'GET' && head === 'health') {
       const today = await readUsage(deps.store, dayKey(nowIso()));
+      meta.capState = capStateOf(today.costUsd, deps.capUsd);
       return json({
         capUsd: deps.capUsd,
         defaultModels: { coach: DEFAULT_COACH_MODEL, research: DEFAULT_RESEARCH_MODEL },
@@ -204,7 +261,9 @@ export function createIntelHandler(deps: IntelDeps): (request: Request) => Promi
     }
 
     if (request.method === 'GET' && head === 'usage') {
-      return json({ capUsd: deps.capUsd, days: await recentUsage(deps.store, nowIso(), 7) });
+      const days = await recentUsage(deps.store, nowIso(), 7);
+      meta.capState = capStateOf(days[0]?.costUsd ?? 0, deps.capUsd);
+      return json({ capUsd: deps.capUsd, days });
     }
 
     if (request.method === 'POST' && head === 'coach') {
@@ -219,7 +278,7 @@ export function createIntelHandler(deps: IntelDeps): (request: Request) => Promi
         instructions: parsed.data.system,
         max_output_tokens: parsed.data.maxTokens ?? COACH_MAX_OUTPUT_TOKENS,
         model,
-      });
+      }, meta, requestId);
       if (outcome instanceof Response) return outcome;
       return json({ model, text: outcome.result.text, usage: outcome.usage });
     }
@@ -241,7 +300,7 @@ export function createIntelHandler(deps: IntelDeps): (request: Request) => Promi
         max_steps: 3,
         model,
         tools: [webSearchTool(parsed.data.recency)],
-      });
+      }, meta, requestId);
       if (outcome instanceof Response) return outcome;
       return json({ citations: toCitations(outcome.result.results), model, text: outcome.result.text, usage: outcome.usage });
     }
@@ -253,6 +312,8 @@ export function createIntelHandler(deps: IntelDeps): (request: Request) => Promi
       const refresh = url.searchParams.get('refresh') === '1';
       const cached = (await deps.store.get(key)) as { generatedAt?: string } | null;
       if (!refresh && cached && typeof cached.generatedAt === 'string' && Date.parse(nowIso()) - Date.parse(cached.generatedAt) < PRIMER_TTL_MS) {
+        meta.cacheHit = true;
+        meta.model = typeof (cached as { model?: unknown }).model === 'string' ? (cached as { model: string }).model : undefined;
         return json({ ...cached, cached: true });
       }
       const outcome = await paidCall({
@@ -262,10 +323,13 @@ export function createIntelHandler(deps: IntelDeps): (request: Request) => Promi
         max_steps: 3,
         model: DEFAULT_RESEARCH_MODEL,
         tools: [webSearchTool()],
-      });
+      }, meta, requestId);
       if (outcome instanceof Response) {
         // A stale primer beats no primer when the refresh failed.
-        if (cached && typeof cached.generatedAt === 'string') return json({ ...cached, cached: true, stale: true });
+        if (cached && typeof cached.generatedAt === 'string') {
+          meta.cacheHit = true;
+          return json({ ...cached, cached: true, stale: true });
+        }
         return outcome;
       }
       const primer = {
@@ -287,7 +351,11 @@ export function createIntelHandler(deps: IntelDeps): (request: Request) => Promi
       if (!parsed.success) return problem(400, `Invalid patch request: ${parsed.error.issues[0]?.message ?? 'bad body'}.`);
       const key = `patch/${parsed.data.revision}`;
       const cached = (await deps.store.get(key)) as { generatedAt?: string } | null;
-      if (!parsed.data.refresh && cached) return json({ ...cached, cached: true });
+      if (!parsed.data.refresh && cached) {
+        meta.cacheHit = true;
+        meta.model = typeof (cached as { model?: unknown }).model === 'string' ? (cached as { model: string }).model : undefined;
+        return json({ ...cached, cached: true });
+      }
       const outcome = await paidCall({
         input: patchInput(parsed.data.revision, parsed.data.patch, parsed.data.changes),
         instructions: PATCH_INSTRUCTIONS,
@@ -295,7 +363,7 @@ export function createIntelHandler(deps: IntelDeps): (request: Request) => Promi
         max_steps: 3,
         model: DEFAULT_RESEARCH_MODEL,
         tools: [webSearchTool('year')],
-      });
+      }, meta, requestId);
       if (outcome instanceof Response) return outcome;
       const brief = {
         citations: toCitations(outcome.result.results),
@@ -310,5 +378,36 @@ export function createIntelHandler(deps: IntelDeps): (request: Request) => Promi
     }
 
     return problem(404, `No such intel route: ${request.method} ${route || '/'}.`);
+  };
+
+  return async (request: Request): Promise<Response> => {
+    const started = clockMs();
+    const url = new URL(request.url);
+    const head = (url.pathname.match(/\/intel\/?([^/]*)/)?.[1] ?? '').trim();
+    const requestId = newRequestId();
+    const meta: CallMeta = {};
+    let status = 500;
+    try {
+      const response = await dispatch(request, url, meta, requestId);
+      status = response.status;
+      return response;
+    } finally {
+      try {
+        log(zt1Line({
+          src: 'intel',
+          route: KNOWN_ROUTES.has(head) ? head : 'unknown',
+          method: request.method,
+          status,
+          latencyMs: Math.max(0, Math.round(clockMs() - started)),
+          model: meta.model ?? null,
+          costUsd: meta.costUsd ?? 0,
+          cacheHit: meta.cacheHit ?? false,
+          capState: meta.capState ?? null,
+          requestId,
+        }));
+      } catch {
+        // A breadcrumb must never fail the request.
+      }
+    }
   };
 }

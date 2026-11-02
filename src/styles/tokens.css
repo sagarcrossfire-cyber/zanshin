@@ -19,7 +19,7 @@
   --dur-press: 120ms; --dur-standard: 200ms; --dur-sheet: 320ms; --dur-enso: 600ms;
   --ease-enter: cubic-bezier(0.2, 0, 0, 1); --ease-exit: cubic-bezier(0.4, 0, 1, 1);
   /* font stacks (§4.4) */
-  --font-display: 'Shippori Mincho B1', 'Hiragino Mincho ProN', serif;
+  --font-display: 'Shippori Mincho B1', 'Zanshin Kanji', 'Hiragino Mincho ProN', serif;
   --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 
@@ -138,11 +138,48 @@
 }
 [data-theme="light"] { --pattern-opacity: 0.06; }
 
+/* Navigation (2.0, docs/v2/research/design.md §C.1): the lacquer dock and the
+ * scroll rail. Built only from the scheme tokens above, so all four schemes
+ * get their own glow (Manji cyan, Crimson vermilion, Heat violet) and Washi a
+ * seal-red wash with no glow. Fallbacks first, like the derived block. */
+:root, [data-theme], [data-scheme] {
+  --nav-surface: var(--raised);
+  --nav-border: var(--line-strong);
+  --nav-edge: var(--line-strong);
+  --nav-hover: var(--overlay);
+  --nav-active-fill: var(--overlay);
+  --nav-active-ring: var(--accent);
+  --nav-glow: transparent;
+  --nav-dot: var(--accent-2);
+  --nav-count-bg: var(--accent);
+  --nav-count-fg: var(--on-accent);
+  --nav-blur: 20px;
+}
+@supports (color: color-mix(in srgb, black 50%, transparent)) {
+  :root, [data-theme], [data-scheme] {
+    --nav-surface: color-mix(in srgb, var(--raised) 74%, transparent);
+    --nav-border: color-mix(in srgb, var(--line-strong) 55%, transparent);
+    --nav-edge: color-mix(in srgb, var(--text-1) 14%, transparent);
+    --nav-hover: color-mix(in srgb, var(--text-1) 6%, transparent);
+    --nav-active-fill: color-mix(in srgb, var(--accent) 18%, transparent);
+    --nav-active-ring: color-mix(in srgb, var(--accent) 45%, transparent);
+    --nav-glow: color-mix(in srgb, var(--accent) 32%, transparent);
+  }
+  [data-theme="light"] {
+    --nav-surface: color-mix(in srgb, var(--raised) 84%, transparent);
+    --nav-edge: color-mix(in srgb, var(--raised) 90%, transparent);
+    --nav-active-fill: color-mix(in srgb, var(--accent) 11%, transparent);
+    --nav-glow: transparent;
+  }
+}
+
 /* Reduced transparency: solid panels, no scene art. */
 @media (prefers-reduced-transparency: reduce) {
   :root, [data-theme], [data-scheme] {
     --glass: var(--surface);
     --glass-strong: var(--raised);
     --scene-art-opacity: 0;
+    --nav-surface: var(--raised);
+    --nav-blur: 0px;
   }
 }
