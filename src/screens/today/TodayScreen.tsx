@@ -9,7 +9,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
 import { CharacterHero } from '../../components/media/CharacterArt';
 import {
-  IconCards, IconCheck, IconChevronRight, IconCoach, IconCodex, IconFlame, IconLab, IconLock, IconLog, IconMatchups, IconPunish,
+  IconCards, IconCheck, IconChevronRight, IconCoach, IconCodex, IconFlame, IconLab, IconLock, IconLog, IconMatchups,
 } from '../../components/icons';
 import { loadCurriculum } from '../../data/packs';
 import { metaRepo, sessionsRepo, settingsRepo } from '../../data/repos';
@@ -293,10 +293,7 @@ export function TodayScreen() {
         <div className="z-quick">
           <Link to="/log/new" className="z-quick__tile"><IconLog size={24} /><span>Log a match set</span><IconChevronRight size={16} /></Link>
           <Link to="/lab" className="z-quick__tile"><IconLab size={24} /><span>Free practice</span><IconChevronRight size={16} /></Link>
-          <Link to="/punish" className="z-quick__tile"><IconPunish size={24} /><span>Punish trainer</span><IconChevronRight size={16} /></Link>
-          <Link to="/matchups" className="z-quick__tile"><IconMatchups size={24} /><span>Matchups</span><IconChevronRight size={16} /></Link>
-          <Link to="/codex/moves" className="z-quick__tile"><IconCodex size={24} /><span>Search the Codex</span><IconChevronRight size={16} /></Link>
-          <Link to="/coach" className="z-quick__tile"><IconCoach size={24} /><span>Ask the coach</span><IconChevronRight size={16} /></Link>
+          <Link to="/coach/ask" className="z-quick__tile"><IconCoach size={24} /><span>Ask the coach</span><IconChevronRight size={16} /></Link>
         </div>
       </section>
     </div>

@@ -1,12 +1,13 @@
 // App shell — spec §5.1/§4.5/§4.13. Top bar (screen title + data-status
 // badge), offline indicator, one toast region, bottom tab bar on phones,
 // left rail on tablets/desktops. Lab Mode scales type via the .z-lab class.
-import { useEffect, useRef, useSyncExternalStore } from 'react';
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Suspense, lazy, useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../components/base/Button';
 import { DataBadge } from '../components/base/DataBadge';
 import { Scene } from '../components/decor/Scene';
-import { IconCodex, IconLab, IconLog, IconPath, IconSettings, IconToday } from '../components/icons';
+import { IconSearch } from '../components/icons';
+import { Dock, LabStrip, Rail, SubNav, type NavBadgeCounts } from '../components/nav/Nav';
 import { Toast } from '../components/base/Toast';
 import { isSafeMode, setSafeMode } from '../config/safeMode';
 import { DATA_PATCH, DATA_SOURCE } from '../data/packs';
@@ -19,7 +20,12 @@ import {
   subscribeUpdateGate,
 } from '../services/updateGate';
 import { useAppStore } from '../stores/appStore';
+import { hubFor } from './hubs';
+import { readRailCollapsed, rememberRoute, writeRailCollapsed } from './navMemory';
+import { loadNavBadges } from '../services/navBadges';
 import './AppLayout.css';
+
+const CommandPalette = lazy(() => import('../components/nav/CommandPalette'));
 
 const TITLES: Array<{ prefix: string; title: string }> = [
   { prefix: '/onboarding', title: 'Onboarding' },
@@ -41,13 +47,6 @@ const TITLES: Array<{ prefix: string; title: string }> = [
   { prefix: '/dev/gallery', title: 'Component Gallery' },
 ];
 
-const TABS = [
-  { to: '/today', label: 'Today', Icon: IconToday },
-  { to: '/lab', label: 'Lab', Icon: IconLab },
-  { to: '/codex/moves', label: 'Codex', Icon: IconCodex },
-  { to: '/log', label: 'Matches', Icon: IconLog },
-  { to: '/path', label: 'Path', Icon: IconPath },
-];
 
 export function AppLayout() {
   const location = useLocation();
@@ -148,6 +147,54 @@ export function AppLayout() {
     titleRef.current?.focus({ preventScroll: true });
   }, [location.pathname]);
 
+  // 2.0 navigation: hub memory, badges, the rail, the palette and shortcuts.
+  const [railCollapsed, setRailCollapsed] = useState(readRailCollapsed);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [badges, setBadges] = useState<NavBadgeCounts>({ dueCards: 0 });
+  const toggleRail = useCallback(() => {
+    setRailCollapsed((current) => {
+      writeRailCollapsed(!current);
+      return !current;
+    });
+  }, []);
+  useEffect(() => {
+    rememberRoute(location.pathname, location.search);
+  }, [location.pathname, location.search]);
+  useEffect(() => {
+    if (!ready) return;
+    let cancelled = false;
+    void loadNavBadges().then((next) => {
+      if (!cancelled) setBadges(next);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [ready, location.pathname]);
+  useEffect(() => {
+    if (labMode) return undefined;
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const typing = target !== null && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setPaletteOpen((open) => !open);
+        return;
+      }
+      if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === '/') {
+        e.preventDefault();
+        setPaletteOpen(true);
+      } else if (e.key === '[' && window.matchMedia('(min-width: 1024px)').matches) {
+        toggleRail();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [labMode, toggleRail]);
+  useEffect(() => {
+    setPaletteOpen(false);
+  }, [location.pathname]);
+
   // Service-worker update toast (§14.5, R8): shown only when an update is
   // pending AND no Lab session is active; held while a session runs, and
   // re-shown when the session ends. A manual dismiss is respected until
@@ -191,33 +238,43 @@ export function AppLayout() {
   ) : null;
 
   const title = TITLES.find((t) => location.pathname.startsWith(t.prefix))?.title ?? 'ZANSHIN';
+  const hub = hubFor(location.pathname);
   const isOnboarding = location.pathname.startsWith('/onboarding');
   const setLabMode = useAppStore((s) => s.setLabMode);
+  const showNav = !isOnboarding && hub !== null;
 
-  // Lab Mode (§4.13): nothing except one Exit button and the session.
+  // Lab Mode (§4.13, 2.0 strip): nothing except the session and one Exit.
   if (labMode) {
     return (
       <div className="z-shell z-lab">
         <Scene />
+        <LabStrip onExit={() => { setLabMode(false); void releaseWakeLock(); }} />
         {safeBanner}
         <main className="z-main" id="main">
           <Outlet />
         </main>
-        <button type="button" className="z-tabbar__link" onClick={() => { setLabMode(false); void releaseWakeLock(); }}>Exit Lab Mode</button>
         <Toast toasts={toasts} onDismiss={handleDismissToast} />
       </div>
     );
   }
 
   return (
-    <div className={labMode ? 'z-shell z-lab' : 'z-shell'}>
+    <div className={`z-shell${showNav && !railCollapsed ? ' z-shell--rail-open' : ''}`}>
       <Scene />
       <header className="z-topbar">
         <Link to="/today" className="z-topbar__brand" aria-label="ZANSHIN home">
           <img className="z-topbar__mark" src="/brand/logo-mark.svg" alt="" aria-hidden="true" />
           <span className="z-topbar__word" aria-hidden="true">ZANSHIN</span>
         </Link>
-        <h1 className="z-topbar__title" tabIndex={-1} ref={titleRef}>{title}</h1>
+        <div className="z-topbar__heading">
+          {hub !== null && hub.label.toLowerCase() !== title.toLowerCase() && <span className="z-topbar__eyebrow" aria-hidden="true">{hub.label}</span>}
+          <h1 className="z-topbar__title" tabIndex={-1} ref={titleRef}>{title}</h1>
+        </div>
+        {showNav && (
+          <button type="button" className="z-topbar__search" onClick={() => setPaletteOpen(true)} aria-label="Search or jump to">
+            <IconSearch size={20} />
+          </button>
+        )}
         <span className="z-topbar__badge"><DataBadge status="sourced" detail={`${DATA_SOURCE} · ${DATA_PATCH}`} /></span>
       </header>
       {safeBanner}
@@ -239,39 +296,27 @@ export function AppLayout() {
         </p>
       )}
       <div className="z-body">
-        {!isOnboarding && (
-          <nav className="z-rail" aria-label="Primary">
-            <ul>
-              {TABS.map((tab) => (
-                <li key={tab.to}>
-                  <NavLink to={tab.to} className={({ isActive }) => (isActive ? 'z-rail__link z-rail__link--active' : 'z-rail__link')}>
-                    <tab.Icon size={20} />
-                    <span>{tab.label}</span>
-                  </NavLink>
-                </li>
-              ))}
-              <li>
-                <NavLink to="/settings" className={({ isActive }) => (isActive ? 'z-rail__link z-rail__link--active' : 'z-rail__link')}>
-                  <IconSettings size={20} />
-                  <span>Settings</span>
-                </NavLink>
-              </li>
-            </ul>
-          </nav>
+        {showNav && (
+          <Rail
+            pathname={location.pathname}
+            badges={badges}
+            collapsed={railCollapsed}
+            onToggle={toggleRail}
+            onSearch={() => setPaletteOpen(true)}
+          />
         )}
-        <main className="z-main" id="main">
-          <Outlet />
-        </main>
+        <div className="z-content">
+          {showNav && <SubNav pathname={location.pathname} />}
+          <main className="z-main" id="main">
+            <Outlet />
+          </main>
+        </div>
       </div>
-      {!isOnboarding && (
-        <nav className="z-tabbar" aria-label="Primary">
-          {TABS.map((tab) => (
-            <NavLink key={tab.to} to={tab.to} className={({ isActive }) => (isActive ? 'z-tabbar__link z-tabbar__link--active' : 'z-tabbar__link')}>
-              <tab.Icon size={22} />
-              <span>{tab.label}</span>
-            </NavLink>
-          ))}
-        </nav>
+      {showNav && <Dock pathname={location.pathname} badges={badges} />}
+      {paletteOpen && (
+        <Suspense fallback={null}>
+          <CommandPalette onClose={() => setPaletteOpen(false)} />
+        </Suspense>
       )}
       <Toast toasts={toasts} onDismiss={handleDismissToast} />
     </div>

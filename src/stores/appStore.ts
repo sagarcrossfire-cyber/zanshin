@@ -4,7 +4,7 @@ import { create } from 'zustand';
 import { ensureIdentity, seedPacks } from '../data/bootstrap';
 import { profileRepo, settingsRepo } from '../data/repos';
 import type { Profile, Settings } from '../data/schemas';
-import { recordError } from '../services/errorReport';
+import { recordError, setBootIdbOpenMs } from '../services/errorReport';
 import type { ToastItem } from '../components/base/Toast';
 
 interface AppState {
@@ -36,7 +36,10 @@ export const useAppStore = create<AppState>((set, get) => ({
     // §13.8 LCP: first paint waits on ready, so only the two tiny identity
     // writes gate it. Pack seeding (the 319-move bulkPut) runs in the
     // background right after; the recovery toast fires when it lands.
+    const started = typeof performance === 'undefined' ? Date.now() : performance.now();
     const { profile, settings } = await ensureIdentity();
+    // The first repository read opens IndexedDB: the boot self-test reports it.
+    setBootIdbOpenMs((typeof performance === 'undefined' ? Date.now() : performance.now()) - started);
     set({ profile, settings, ready: true });
     void seedPacks()
       .then(({ reseeded }) => {

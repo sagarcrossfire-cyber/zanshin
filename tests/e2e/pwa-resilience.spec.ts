@@ -57,9 +57,9 @@ test('offline: every screen renders with the network cut (importer/coach explain
     await page.getByRole('button', { name: 'Check for updates' }).click();
     await expect(page.getByText('Offline. Showing the last known state below')).toBeVisible();
     // Coach with no provider explains itself offline (Copy context card,
-    // on the Ask tab — the default tab is Weekly review).
+    // on the Ask section).
     await page.goto('/coach');
-    await page.getByRole('tab', { name: 'Ask' }).click();
+    await page.getByRole('link', { name: 'Ask', exact: true }).click();
     await expect(page.getByText('No AI provider configured')).toBeVisible();
     // Match import explains itself offline (CSV card + flag-off card, no crash).
     await page.goto('/log/import');

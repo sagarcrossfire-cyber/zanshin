@@ -28,6 +28,8 @@ a:hover { text-decoration-thickness: 2px; }
 img, svg { display: block; max-width: 100%; }
 /* Icons that sit inside a line of text stay on that line. */
 .z-inline-icon svg, .z-frame-value svg, .z-chip svg, .z-btn svg { display: inline-block; vertical-align: -0.15em; flex: none; }
+/* Text for screen readers only (2.0 nav badges). */
+.z-visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 ::selection { background: var(--accent-soft); color: var(--text-1); }
 
 /* Focus: always visible, 2px --info ring + 2px offset (§4.12). */

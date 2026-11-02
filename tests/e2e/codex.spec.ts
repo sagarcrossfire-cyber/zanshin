@@ -26,6 +26,9 @@ const CODEX_ROUTES = [
 ];
 
 test('codex axe: every Codex route has no serious/critical violations', async ({ page }) => {
+  // axe over the 319-row move list plus the 2.0 nav takes ~15 s a route on a
+  // loaded runner; same budget as the other axe passes (design.spec.ts).
+  test.setTimeout(180_000);
   await completeOnboarding(page);
   for (const route of CODEX_ROUTES) {
     await page.goto(route);

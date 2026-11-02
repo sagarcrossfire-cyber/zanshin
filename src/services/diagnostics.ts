@@ -42,7 +42,7 @@ import {
 } from '../data/packs';
 import { cardStatesRepo, cardsRepo } from '../data/repos/cards';
 import { errorsRepo, metaRepo } from '../data/repos/errors';
-import { masteryRepo } from '../data/repos/mastery';
+import { masteryRepo, stageStatusRepo } from '../data/repos/mastery';
 import { sessionsRepo } from '../data/repos/sessions';
 import { setsRepo } from '../data/repos/sets';
 import { mediaRepo } from '../data/repos/media';
@@ -278,6 +278,30 @@ export async function runIntegrityChecks(): Promise<IntegrityReport> {
     passed: true,
     detail: sample.length === 0 ? 'No mastery rows yet.' : `${sample.length} sampled, ${mismatches} recomputed.`,
     repaired: mismatches > 0 ? `${mismatches} recomputed` : undefined,
+  });
+
+  // 6b. 2.0 self-repair (RCA 2026-11-01): 1.x saved Stage 1+ lessons as
+  // "locked" whenever they were practised. Recompute any locked lesson whose
+  // stage is the first one or is stored as open or passed.
+  const curriculumNodes = new Map(loadCurriculum().nodes.map((node) => [node.id, node]));
+  const stageIndexById = new Map(loadCurriculum().stages.map((stage) => [stage.id, stage.index]));
+  const stageStates = new Map((await stageStatusRepo.all()).map((row) => [row.stageId, row.state]));
+  let unlocked = 0;
+  for (const row of masteryRows.filter((r) => r.state === 'locked')) {
+    const stageId = curriculumNodes.get(row.nodeId)?.stageId;
+    if (stageId === undefined) continue;
+    const open = stageIndexById.get(stageId) === 0 || stageStates.get(stageId) === 'open' || stageStates.get(stageId) === 'passed';
+    if (!open) continue;
+    await recomputeNodeMastery(row.nodeId, new Date().toISOString());
+    if ((await masteryRepo.get(row.nodeId))?.state !== 'locked') unlocked += 1;
+  }
+  if (unlocked > 0) repaired.push(`${unlocked} lesson(s) in open stages were wrongly marked locked; recomputed.`);
+  checks.push({
+    id: 'mastery-stage-lock',
+    label: 'No lesson in an open stage is marked locked',
+    passed: true,
+    detail: unlocked === 0 ? 'Consistent.' : `${unlocked} recomputed.`,
+    repaired: unlocked > 0 ? `${unlocked} recomputed` : undefined,
   });
 
   // 7. Imported media rows and their bytes agree (Amendment 01B). Only blob
