@@ -74,6 +74,17 @@ for (const script of ['scripts/check-no-colors.mjs', 'scripts/check-boundaries.m
   }
 }
 
+// 7. Class guard for the Windows drive-letter bug (RCA_LOG 2026-11-02 and 2026-11-03): no script may
+// turn import.meta.url into a path with .pathname; it breaks on Windows (Hermes workers). Use
+// fileURLToPath. The 2026-11-02 fix covered two scripts and missed check-bundle.mjs; this covers all.
+for (const name of readdirSync(join(root, 'scripts'))) {
+  if (!name.endsWith('.mjs')) continue;
+  const text = readFileSync(join(root, 'scripts', name), 'utf8');
+  if (/import\.meta\.url\)\s*\.pathname/.test(text)) {
+    fail(`scripts/${name} turns import.meta.url into a path with .pathname (breaks on Windows)`, "use fileURLToPath(new URL('…', import.meta.url)) from node:url");
+  }
+}
+
 if (problems.length > 0) {
   console.error(`doctor: ${problems.length} problem(s) for version ${version}`);
   for (const { what, fix } of problems) console.error(`  ✗ ${what}\n      fix: ${fix}`);
