@@ -5,7 +5,7 @@
 import { HUBS } from './hubs';
 import { loadCombos, loadCurriculum, loadMovesYoshimitsu, loadRoster, loadStances } from '../data/packs';
 
-export type PaletteGroup = 'Actions' | 'Go to' | 'Moves' | 'Stances' | 'Combos' | 'Characters' | 'Lessons';
+export type PaletteGroup = 'Actions' | 'Go to' | 'Moves' | 'Stances' | 'Combos' | 'Characters' | 'Lessons' | 'Ask';
 
 export interface PaletteEntry {
   id: string;
@@ -23,6 +23,18 @@ export interface PaletteEntry {
 export function normalize(text: string): string {
   return text.toLowerCase().replace(/[−–]/g, '-').replace(/[\s_]+/g, '');
 }
+
+/** QA M2: a second, looser normal form that also drops the "+" and ","
+ * notation separators, so "b1+2"/"b+1+2" and "ff3"/"f,F+3" are recognised as
+ * the same move input regardless of which separator style the query used. */
+function denotate(text: string): string {
+  return normalize(text).replace(/[+,]/g, '');
+}
+
+/** Extra keywords that fix specific QA M2 mis-rankings, keyed by section id. */
+const SECTION_KEYWORDS: Record<string, string[]> = {
+  matches: ['log', 'match log', 'matches', 'history'],
+};
 
 const ACTIONS: Array<Omit<PaletteEntry, 'group' | 'keywords'> & { keywords?: string[] }> = [
   { id: 'a-session', label: "Start today's session", hint: 'Train › Lab', to: '/lab', keywords: ['practice', 'drill', 'start'] },
@@ -44,9 +56,17 @@ export function buildPaletteIndex(): PaletteEntry[] {
   for (const hub of HUBS) {
     for (const section of hub.sections) {
       if (section.hidden === true) continue;
-      entries.push({ id: `g-${hub.id}-${section.id}`, group: 'Go to', label: section.label, hint: hub.label, to: section.to, keywords: [hub.label] });
+      entries.push({
+        id: `g-${hub.id}-${section.id}`, group: 'Go to', label: section.label, hint: hub.label, to: section.to,
+        keywords: [hub.label, ...(SECTION_KEYWORDS[section.id] ?? [])],
+      });
+      // QA M2: a Codex view ("Moves", "Stances", "Combos", "Heat") is labelled
+      // by its own name, not "Codex › Heat" — the breadcrumb lives in the hint.
       for (const child of section.children ?? []) {
-        entries.push({ id: `g-${hub.id}-${section.id}-${child.id}`, group: 'Go to', label: `${section.label} › ${child.label}`, hint: hub.label, to: child.to, keywords: [child.label] });
+        entries.push({
+          id: `g-${hub.id}-${section.id}-${child.id}`, group: 'Go to', label: child.label,
+          hint: `${hub.label} › ${section.label}`, to: child.to, keywords: [child.label],
+        });
       }
     }
   }
@@ -76,26 +96,37 @@ export function buildPaletteIndex(): PaletteEntry[] {
 const GROUP_ORDER: PaletteGroup[] = ['Actions', 'Go to', 'Moves', 'Stances', 'Characters', 'Combos', 'Lessons'];
 const PER_GROUP = 6;
 
-function score(entry: PaletteEntry, q: string): number {
-  const label = normalize(entry.label);
+/** The seven QA M2 tiers, applied to one normal form of the query/entry. */
+function tierScore(label: string, keywords: string[], hint: string, q: string): number {
+  if (q === '') return 0;
   if (label === q) return 100;
+  if (keywords.some((w) => w === q)) return 95;
   if (label.startsWith(q)) return 80;
-  const words = entry.keywords.map(normalize);
-  if (words.some((w) => w === q)) return 75;
-  if (words.some((w) => w.startsWith(q))) return 60;
+  if (keywords.some((w) => w.startsWith(q))) return 60;
   if (label.includes(q)) return 50;
-  if (words.some((w) => w.includes(q))) return 35;
-  if (normalize(entry.hint).includes(q)) return 10;
+  if (keywords.some((w) => w.includes(q))) return 35;
+  if (hint.includes(q)) return 10;
   return 0;
 }
 
+function score(entry: PaletteEntry, q: string, qDenotated: string): number {
+  const keywords = entry.keywords.filter((w) => w !== '');
+  const raw = tierScore(normalize(entry.label), keywords.map(normalize), normalize(entry.hint), q);
+  // QA M2 notation: "b1+2"/"b+1+2" and "ff3"/"f,F+3" must find each other, but
+  // an exact raw-label match (e.g. typing the label verbatim) still wins —
+  // scaled below the raw tiers so it can never beat an exact raw match.
+  const denotated = qDenotated === '' ? 0 : tierScore(denotate(entry.label), keywords.map(denotate), '', qDenotated) * 0.9;
+  return Math.max(raw, denotated);
+}
+
 /** Best matches grouped in a fixed order, at most PER_GROUP per group. An
- * empty query returns the actions and the hub destinations. */
+ * empty query returns every action and every "Go to" destination. */
 export function searchPalette(index: PaletteEntry[], query: string): PaletteEntry[] {
   const q = normalize(query);
-  if (q === '') return index.filter((e) => e.group === 'Actions' || e.group === 'Go to').slice(0, 24);
+  if (q === '') return index.filter((e) => e.group === 'Actions' || e.group === 'Go to');
+  const qDenotated = denotate(query);
   const scored = index
-    .map((entry) => ({ entry, s: score(entry, q) }))
+    .map((entry) => ({ entry, s: score(entry, q, qDenotated) }))
     .filter((x) => x.s > 0)
     .sort((a, b) => b.s - a.s || a.entry.label.length - b.entry.label.length);
   // Groups appear in order of their best match ("kaz" puts Characters before a

@@ -19,7 +19,8 @@ export default function CommandPalette({ onClose }: { onClose: () => void }) {
   const results = useMemo(() => searchPalette(index, query), [index, query]);
   const trimmed = query.trim();
   const fallbacks: PaletteEntry[] = trimmed === '' ? [] : [
-    { id: 'f-ask', group: 'Actions', label: `Ask the coach about “${trimmed}”`, hint: 'Coach › Ask', to: `/coach/ask?about=${encodeURIComponent(trimmed)}`, keywords: [] },
+    { id: 'f-ask', group: 'Ask', label: `Ask the coach about “${trimmed}”`, hint: 'Coach › Ask', to: `/coach/ask?about=${encodeURIComponent(trimmed)}`, keywords: [] },
+    { id: 'f-lookup', group: 'Ask', label: `Look it up: “${trimmed}”`, hint: 'Coach › Look it up', to: `/coach/research?q=${encodeURIComponent(trimmed)}`, keywords: [] },
   ];
   const items = [...results, ...fallbacks];
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -71,7 +72,7 @@ export default function CommandPalette({ onClose }: { onClose: () => void }) {
         <ul className="z-palette__list" id="z-pal-list" role="listbox" aria-label="Results">
           {items.length === 0 && <li className="z-palette__empty" role="presentation">No matches.</li>}
           {items.map((item, i) => {
-            const heading = item.group !== lastGroup && !item.id.startsWith('f-') ? item.group : '';
+            const heading = item.group !== lastGroup ? item.group : '';
             lastGroup = item.group;
             return (
               <li key={item.id} role="presentation">

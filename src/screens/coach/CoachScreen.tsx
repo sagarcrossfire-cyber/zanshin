@@ -6,7 +6,7 @@
  * line; research is prose and never becomes frame data. */
 import { PageHeader } from '../../components/layout/PageHeader';
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
 import { Card } from '../../components/base/Card';
 import { SafeModeNote } from '../../components/base/SafeModeNote';
@@ -82,6 +82,7 @@ export function CoachScreen() {
   const safeMode = isSafeMode();
   const params = useParams();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const tab: CoachTab = TAB_BY_SECTION[params['section'] ?? 'ask'] ?? 'ask';
   const [reviews, setReviews] = useState<CoachMessage[]>([]);
   const [reviewLoading, setReviewLoading] = useState(false);
@@ -125,6 +126,13 @@ export function CoachScreen() {
     void loadNotes();
     void sessionsRepo.all().then((rows) => setSessions(rows.filter((s) => s.status === 'done')));
   }, [loadReviews, loadMessages, loadNotes]);
+
+  // The palette's "Look it up" fallback arrives as /coach/research?q=<query>;
+  // prefill the field on mount and whenever the query string changes.
+  useEffect(() => {
+    const q = new URLSearchParams(location.search).get('q');
+    if (q !== null && q.trim() !== '') setLookupQuestion(q.trim().slice(0, 160));
+  }, [location.search]);
 
   if (!profile || !settings) {
     return (
