@@ -201,6 +201,26 @@ describe('ZANSHIN coach provider', () => {
       .rejects.toBeInstanceOf(CoachUnavailable);
   });
 
+  it('sends the paired device key (SSO Option B) when one is stored, and nothing when not', async () => {
+    clearDeviceKey();
+    const { calls: noKeyCalls, fetchImpl: noKeyFetch } = fetchMock(() => jsonResponse({ text: 'Do it.' }));
+    await new ZanshinProvider({ fetchImpl: noKeyFetch }).send({ maxTokens: 600, messages: [{ content: 'Q', role: 'user' }], signal: new AbortController().signal, system: 'SYS' });
+    expect((noKeyCalls[0]?.init?.headers as Record<string, string>)[DEVICE_KEY_HEADER]).toBeUndefined();
+
+    expect(setDeviceKey('pc-device-key-0123456789abcdef')).toBe(true);
+    const { calls, fetchImpl } = fetchMock(() => jsonResponse({ text: 'Do it.' }));
+    await new ZanshinProvider({ fetchImpl }).send({ maxTokens: 600, messages: [{ content: 'Q', role: 'user' }], signal: new AbortController().signal, system: 'SYS' });
+    expect((calls[0]?.init?.headers as Record<string, string>)[DEVICE_KEY_HEADER]).toBe('pc-device-key-0123456789abcdef');
+    clearDeviceKey();
+  });
+
+  it('a 401 device-key response still surfaces a usable CoachUnavailable', async () => {
+    const { fetchImpl } = fetchMock(() => jsonResponse({ code: 'device-key', error: 'This device has no valid device key.', ok: false }, 401));
+    const provider = new ZanshinProvider({ fetchImpl });
+    await expect(provider.send({ maxTokens: 600, messages: [{ content: 'Q', role: 'user' }], signal: new AbortController().signal, system: 'SYS' }))
+      .rejects.toThrow(/no valid device key/);
+  });
+
   it('providerFromSettings picks it without any key, and Test connection uses the free health route', async () => {
     const settings = { ...defaultSettings(), aiModel: 'perplexity/sonar', aiProvider: 'zanshin' as const };
     const provider = providerFromSettings(settings);
