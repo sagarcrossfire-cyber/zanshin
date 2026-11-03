@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "source": "Tekken 8 rank ladder in the encoding Wavu Wank and ewgf.gg use (rank 0 Beginner ... 37 God of Destruction Infinity); names checked 2026-11-02 against msullivan613/tekken-leaderboard src/data/ranks.ts (spec §7.5). Bands and shares: docs/v2/research/coach-intel.md §1.5 (Esports Tales, Sep 2024 — Season 3 reset ranks, so the shares are rough).",
+  "altEncodings": { "rangeFrom": 100, "rangeTo": 107, "rangeMinus": 71, "values": { "765": 37 } },
+  "ladder": [
+    { "index": 0, "name": "Beginner" },
+    { "index": 1, "name": "1st Dan" },
+    { "index": 2, "name": "2nd Dan" },
+    { "index": 3, "name": "Fighter" },
+    { "index": 4, "name": "Strategist" },
+    { "index": 5, "name": "Combatant" },
+    { "index": 6, "name": "Brawler" },
+    { "index": 7, "name": "Ranger" },
+    { "index": 8, "name": "Cavalry" },
+    { "index": 9, "name": "Warrior" },
+    { "index": 10, "name": "Assailant" },
+    { "index": 11, "name": "Dominator" },
+    { "index": 12, "name": "Vanquisher" },
+    { "index": 13, "name": "Destroyer" },
+    { "index": 14, "name": "Eliminator" },
+    { "index": 15, "name": "Garyu" },
+    { "index": 16, "name": "Shinryu" },
+    { "index": 17, "name": "Tenryu" },
+    { "index": 18, "name": "Mighty Ruler" },
+    { "index": 19, "name": "Flame Ruler" },
+    { "index": 20, "name": "Battle Ruler" },
+    { "index": 21, "name": "Fujin" },
+    { "index": 22, "name": "Raijin" },
+    { "index": 23, "name": "Kishin" },
+    { "index": 24, "name": "Bushin" },
+    { "index": 25, "name": "Tekken King" },
+    { "index": 26, "name": "Tekken Emperor" },
+    { "index": 27, "name": "Tekken God" },
+    { "index": 28, "name": "Tekken God Supreme" },
+    { "index": 29, "name": "God of Destruction" },
+    { "index": 30, "name": "God of Destruction I" },
+    { "index": 31, "name": "God of Destruction II" },
+    { "index": 32, "name": "God of Destruction III" },
+    { "index": 33, "name": "God of Destruction IV" },
+    { "index": 34, "name": "God of Destruction V" },
+    { "index": 35, "name": "God of Destruction VI" },
+    { "index": 36, "name": "God of Destruction VII" },
+    { "index": 37, "name": "God of Destruction ∞", "aliases": ["God of Destruction Infinity"] }
+  ],
+  "bands": [
+    {
+      "id": "foundations", "from": 0, "to": 14, "label": "Beginner → Eliminator", "share": "the bottom half",
+      "stages": [0, 3], "focus": "Defense, the punish ladder, movement and the core kit (Shu)."
+    },
+    {
+      "id": "dragons", "from": 15, "to": 17, "label": "Garyu → Tenryu", "share": "top 50% → 38%",
+      "stages": [4, 5], "focus": "Heat, then panic moves and keep-out."
+    },
+    {
+      "id": "rulers", "from": 18, "to": 20, "label": "Mighty Ruler → Battle Ruler", "share": "top 33% → 24%",
+      "stages": [5, 6], "focus": "Stance pressure: DGF, KIN and NSS."
+    },
+    {
+      "id": "storm", "from": 21, "to": 24, "label": "Fujin → Bushin", "share": "top 20% → 8%",
+      "stages": [7, 7], "focus": "Okizeme, stances II and matchup work for the characters you meet most."
+    },
+    {
+      "id": "tekken", "from": 25, "to": 28, "label": "Tekken King → Tekken God Supreme", "share": "top 5% → 0.75%",
+      "stages": [8, 8], "focus": "Matchups, anti-turtle and anti-aggression plans."
+    },
+    {
+      "id": "destruction", "from": 29, "to": 37, "label": "God of Destruction", "share": "about the top 0.4%",
+      "stages": [9, 9], "focus": "Patches, tournaments and your own style."
+    }
+  ]
+}
