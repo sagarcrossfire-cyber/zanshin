@@ -85,13 +85,13 @@ export function MatchupsScreen() {
       {played.length > 0 && (
         <section aria-labelledby="mu-played">
           <h2 id="mu-played" className="z-section-title">Played</h2>
-          <ul className="z-select-grid">{played.map((row) => <Tile key={row.name} row={row} />)}</ul>
+          <ul className="z-select-grid z-stagger">{played.map((row) => <Tile key={row.name} row={row} />)}</ul>
         </section>
       )}
       {rest.length > 0 && (
         <section aria-labelledby="mu-rest">
           <h2 id="mu-rest" className="z-section-title">{played.length > 0 ? 'Everyone else' : 'The roster'}</h2>
-          <ul className="z-select-grid">{rest.map((row) => <Tile key={row.name} row={row} />)}</ul>
+          <ul className="z-select-grid z-stagger">{rest.map((row) => <Tile key={row.name} row={row} />)}</ul>
         </section>
       )}
       {visible.length === 0 && <p>No character matches “{query}”.</p>}
