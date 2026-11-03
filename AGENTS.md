@@ -47,5 +47,6 @@ React 18 · TypeScript (strict) · Vite · Zustand · Dexie (IndexedDB) · Zod �
 5. Finish the card with `kanban_complete`, passing `metadata.published_pr` = the PR URL, plus
    `changed_files`, `verification` (commands you ran) and `residual_risk`.
 6. If you are stuck or the card is ambiguous, use `kanban_block` with a specific question.
+7. If a shared script, config or test that is NOT in your card's file list is broken (it fails on bare `origin/main` too), do not fix it in your PR — parallel workers will fix it differently and the PRs will conflict. `kanban_block` with the exact error and the command that reproduces it; the lead fixes it on `main` once.
 
 Required CI checks on the PR: **Types, lint, unit tests, build** and **Browser tests (phone and desktop)**.
