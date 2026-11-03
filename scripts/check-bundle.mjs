@@ -2,10 +2,15 @@
 // <=80 kB (Progress with charts <=140 kB). CSS is reported, not budgeted
 // as a route chunk. Uses gzip of dist assets. Fails verify when over budget.
 import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 
-const DIST = new URL('../dist', import.meta.url).pathname;
+// Use fileURLToPath, not `.pathname` — on Windows `.pathname` keeps the POSIX-style leading
+// slash before the drive letter (e.g. `/D:/...`), and path.join then turns it into a
+// drive-relative path (`\D:\...`) that readdirSync resolves against the wrong drive root,
+// doubling the path and throwing ENOENT. See docs/ops/RCA_LOG.md 2026-11-02.
+const DIST = fileURLToPath(new URL('../dist', import.meta.url));
 const gz = (p) => gzipSync(readFileSync(p)).length;
 let failures = [];
 let shell = 0;
@@ -20,7 +25,7 @@ function walk(dir) {
 walk(join(DIST, 'assets'));
 for (const p of chunks) {
   const size = gz(p);
-  const name = p.split('/assets/')[1];
+  const name = basename(p);
   console.log(`  ${name}: ${(size / 1024).toFixed(1)} kB gz`);
   if (!p.endsWith('.js')) continue; // CSS/fonts are reported, not route-budgeted
   if (/index-.*\.js$/.test(name)) shell = size;
@@ -30,7 +35,7 @@ for (const p of chunks) {
 console.log(`shell: ${(shell / 1024).toFixed(1)} kB gz (budget 200 kB)`);
 if (shell > 200 * 1024) failures.push(`shell ${(shell / 1024).toFixed(1)} kB gz > 200 kB`);
 // §13.8: the Yoshimitsu move pack itself must stay under 150 kB gzipped.
-const packGz = gz(new URL('../src/data/packs/moves.yoshimitsu.json', import.meta.url).pathname);
+const packGz = gz(fileURLToPath(new URL('../src/data/packs/moves.yoshimitsu.json', import.meta.url)));
 console.log(`moves pack: ${(packGz / 1024).toFixed(1)} kB gz (budget 150 kB)`);
 if (packGz > 150 * 1024) failures.push(`moves pack ${(packGz / 1024).toFixed(1)} kB gz > 150 kB`);
 if (failures.length > 0) {

@@ -51,7 +51,7 @@ Current version: **1.4.1** (main `f4d858f`). Next: **2.0** (see `docs/v2/PLAN.md
 | Sagar's PC clone | `D:\RUDRA\zanshin` (device bash: `$HOME/mnt/RUDRA/zanshin`) |
 | Netlify site | `glistening-conkies-c028b3` · id `a72c64e3-9ba6-4ebe-9b66-57509c1fc41a` · https://glistening-conkies-c028b3.netlify.app |
 | Access | Team SSO login required for every request (incl. `sw.js`, functions). The sandbox and PC cannot open the site. |
-| Functions | `netlify/functions/intel.mts` → `/.netlify/functions/intel/*` (health, usage, research, …), spend in Netlify Blobs · `netlify/functions/diag.mts` → `/api/diag` (telemetry, §6) · `netlify/functions/ranked.mts` → `/api/ranked` (M2 ranked sync, §6) |
+| Functions | `netlify/functions/intel.mts` → `/.netlify/functions/intel/*` (health, usage, research, …), spend in Netlify Blobs · `netlify/functions/diag.mts` → `/api/diag` (telemetry, §6) · `netlify/functions/ranked.mts` → `/api/ranked` (Wank/ewgf ranked games, device-key locked, §8) · `netlify/functions/sync.mts` → `/api/sync/*` (encrypted per-device op log in Blobs, `X-Zanshin-Sync` auth key verified against the stored verifier — a separate key from the device-key lock, §8) |
 | CI | `.github/workflows/ci.yml`: `gate` (release gate) · `quick` (types, lint, unit, build, bundle, doctor) → `e2e` (phone+desktop, then Netlify-headers run) · `media` → `deploy` (production, only when the gate says so) · `preview` (every same-repo PR, alias `pr-<n>`); monthly cron `17 9 1 * *`. `e2e`'s `tablet` Playwright project runs only layout/regression specs (`playwright.config.ts` `testMatch`) — 820px is where the phone dock switches to the rail, and a third full pass of every behaviour spec buys nothing but job time. |
 | Netlify plan | Team "Sagar Patel's team" (`6ae4a3d7e593b12138d36fad`), **Free credit plan: 300 credits/month hard cap, site pauses at 0**. Production deploy = 15 credits; previews 0; bandwidth 20/GB; requests 2/10k; compute 10/GB-h. Usage is only visible on the Netlify Usage page (Sagar). |
 | 2.0 plan (for Sagar) | Claude Doc "ZANSHIN 2.0 — Plan": https://claude.ai/artifact/Mdq1Rc4FM8MWZUQj8fWTvk |
@@ -185,6 +185,39 @@ See `docs/ops/INVENTORY.md` for the full map (routes, modules, tables, tests). E
   (`tests/unit/server/ranked.spec.ts`) run against the actual page shape instead of a hand-written approximation.
 - **Logging.** One `ZT1` line per request via `src/server/diag/zt1.ts` (route, status, latencyMs, battles,
   cacheHit, source); the Tekken ID is never logged, only `idHash` (first 10 hex chars of its SHA-256).
+
+### Device sync, server side (2.0 M3)
+
+- **What it does.** `netlify/functions/sync.mts` → `/api/sync/*` (`rateLimit` ≈120/min, `consistency: 'strong'`)
+  is the encrypted per-device operation log from `docs/v2/research/infra.md` §2. Logic is in
+  `src/server/sync/{handler,schema}.ts`; the function file only wires Blobs (store name from
+  `src/server/storeName.ts`: `sync` in production, `sync-<context>` elsewhere). The server only ever stores
+  ciphertext — every `log`/`snap` body is an opaque `v1.<iv>.<ct>` string from the client; nothing here decrypts,
+  reads or interprets it.
+- **Routes:** `POST init` {verifier} (no auth — first device pairing, `onlyIfNew` so a second pairing attempt gets
+  200/409 instead of clobbering) · `GET state` (auth-exempt only while unpaired) · `PUT log/<deviceId>/<hlc>`
+  (`onlyIfNew`, ≤1 MB) · `GET log?after=&limit=` (paged, lexical key order, stays under a 5 MB response budget,
+  returns `next`) · `PUT snap/<hlc>` (`onlyIfNew`, ≤5 MB, then prunes to the newest 3) · `POST ack` {deviceId,
+  through} (writes `v1/ack/<deviceId>`, then compacts).
+- **Auth is per-pairing, not the device-key lock.** Header `X-Zanshin-Sync: <authKey>` (base64url, HKDF-derived
+  on-device from the pairing secret). The server SHA-256s it and compares, constant-time, against the stored
+  `v1/verifier` blob — a value the client already hashed before `init`. This is deliberately separate from
+  `src/server/deviceKey.ts`'s `X-Zanshin-Device` lock: the device-key lock is one shared secret per Sagar
+  (env var, gates every function); the sync verifier is per-pairing (Blobs, set once by whichever device pairs
+  first) and is how a second device proves it holds the pairing secret.
+- **hlc wire format.** `<13-digit wall-clock ms>-<1-8 hex counter>`, zero-padded so two hlcs from one device sort
+  lexically in time order (`src/server/sync/schema.ts` `HLC_RE`). `src/domain/sync/hlc.ts` (a later M3 client
+  card) is expected to emit exactly this shape; until it lands, this schema is the source of truth for the wire
+  format, and the server validates every `<hlc>` path segment against it regardless of which side writes it.
+- **Known devices and compaction safety.** A device is "known" once it has written a log entry or an ack; one
+  with log entries but no ack yet counts as acked-through `""`, which blocks all compaction (its floor is below
+  any real key) until it acks. Compaction in `ack` deletes `v1/log/*` entries only when the full key is ≤ every
+  known device's `ackedThrough` **and** the entry's hlc is ≤ the newest snapshot's hlc; with no snapshot yet,
+  compaction never runs. `ack`/`log`/`snap` comparisons are plain string (`<=`) comparisons on the key formats
+  above — they work because every hlc segment is fixed-width.
+- **Env vars.** None new — sync has no secret of its own; the verifier lives in Blobs, set at pairing.
+- **Logging.** One `ZT1` line per request (route, status, latencyMs, bytes, and — on `log`/`ack` routes — the
+  first 4 characters of `deviceId`). Never the verifier, the auth header, a body, or a full key.
 
 ## 7. Root-cause analysis and self-heal protocol
 
