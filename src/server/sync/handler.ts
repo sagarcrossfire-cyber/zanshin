@@ -1,15 +1,16 @@
 // 2.0 M3 — the sync function's request handler (netlify/functions/sync.mts
 // wires it to Netlify Blobs), as a pure function of its dependencies so
 // tests drive it with Request objects and a memory store. See
-// src/server/sync/schema.ts for the wire contract and key layout.
+// src/server/sync/schema.ts for the wire contract, key layout, and why
+// every cursor here is a per-writer map (not a single global key).
 //
 // Routes (all under /api/sync/*, every response Cache-Control: no-store):
-//   POST init          {verifier: 64-hex}              → 201 created / 200 same / 409 differ
-//   GET  state                                          → 200 {hasVerifier, latestSnap?, devices}
+//   POST init                   {verifier: 64-hex}      → 201 created / 200 same / 409 differ
+//   GET  state                                           → 200 {hasVerifier, latestSnap?, devices}
 //   PUT  log/<deviceId>/<hlc>   body ≤1MB opaque         → 201 / 409 exists
-//   GET  log?after=&limit=                               → 200 {entries, next?}
-//   PUT  snap/<hlc>     body ≤5MB opaque                 → 201 / 409 exists (then retains newest 3)
-//   POST ack            {deviceId, through}              → 200 (then compacts the log)
+//   GET  log?device=&after=&limit=                       → 200 {entries:[{hlc,body}], next?}
+//   PUT  snap/<hlc>  body JSON {cursor, data} ≤5MB total → 201 / 409 exists (then retains newest 3)
+//   POST ack         {deviceId, through: CursorMap}      → 200 (merges + compacts)
 //
 // Auth: every route but `init` (and `state` while unpaired) requires header
 // X-Zanshin-Sync: <authKey>, whose SHA-256 is compared in constant time with
@@ -19,11 +20,12 @@
 import { sha256Hex } from '../deviceKey';
 import { consoleZt1, zt1Line, type Zt1Logger } from '../diag/zt1';
 import {
-  ackBodySchema, ackKey, AUTH_KEY_RE, deviceIdOfLogKey, DEVICE_ID_RE, hlcOfLogKey, hlcOfSnapKey, HLC_RE,
-  initBodySchema, LOG_BODY_MAX, LOG_PAGE_BUDGET, LOG_PAGE_LIMIT_DEFAULT, logKey, logQuerySchema,
-  SMALL_BODY_MAX, SNAP_BODY_MAX, SNAP_RETENTION, snapKey, SYNC_AUTH_HEADER, type SyncDevice,
-  type SyncErrorCode, type SyncLogEntry, type SyncStateOk, V1_ACK_PREFIX, V1_LOG_PREFIX,
-  V1_SNAP_PREFIX, V1_VERIFIER_KEY,
+  ackBodySchema, ackKey, AUTH_KEY_RE, type CursorMap, deviceIdOfLogKey, DEVICE_ID_RE, hlcOfLogKey,
+  hlcOfSnapKey, HLC_RE, initBodySchema, LOG_BODY_MAX, LOG_PAGE_BUDGET, LOG_PAGE_LIMIT_DEFAULT,
+  logKey, logPrefixFor, logQuerySchema, mergeCursorMax, parseCursorMap, SMALL_BODY_MAX, snapBodySchema,
+  SNAP_BODY_MAX, SNAP_RETENTION, snapKey, snapMetaKey, SYNC_AUTH_HEADER, type SyncDevice,
+  type SyncErrorCode, type SyncLogEntry, type SyncSnapInfo, type SyncStateOk, V1_ACK_PREFIX,
+  V1_LOG_PREFIX, V1_SNAP_PREFIX, V1_VERIFIER_KEY,
 } from './schema';
 
 export interface SyncStore {
@@ -99,6 +101,15 @@ function json(body: unknown, status: number, extra: Record<string, string> = {})
   });
 }
 
+/** Parses JSON from a stored or submitted string, returning null on anything malformed (never throws). */
+function tryParseJson(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
 export function createSyncHandler(deps: SyncDeps): (request: Request) => Promise<Response> {
   const log = deps.log ?? consoleZt1;
   const nowMs = deps.nowMs ?? (() => Date.now());
@@ -153,6 +164,14 @@ export function createSyncHandler(deps: SyncDeps): (request: Request) => Promise
       return { ok: true };
     }
 
+    /** `v1/ack/<deviceId>`, parsed into a CursorMap; `{}` if missing, unreadable or malformed. */
+    async function ackMapFor(deviceId: string): Promise<CursorMap> {
+      const raw = await store.get(ackKey(deviceId)).catch(() => null);
+      if (raw === null) return {};
+      const cursor = parseCursorMap(tryParseJson(raw));
+      return cursor ?? {};
+    }
+
     /** Devices this store knows about: anyone who has written a log entry or an ack. */
     async function knownDevices(): Promise<SyncDevice[]> {
       let logKeys: string[];
@@ -167,50 +186,45 @@ export function createSyncHandler(deps: SyncDeps): (request: Request) => Promise
         const id = deviceIdOfLogKey(key);
         if (id) writerIds.add(id);
       }
-      const ackedThrough = new Map<string, string>();
+      const ackedIds = new Set<string>();
       for (const key of ackKeys) {
         const id = key.slice(V1_ACK_PREFIX.length);
-        if (!DEVICE_ID_RE.test(id)) continue;
-        const through = await store.get(key).catch(() => null);
-        if (through !== null) ackedThrough.set(id, through);
+        if (DEVICE_ID_RE.test(id)) ackedIds.add(id);
       }
-      const ids = new Set<string>([...writerIds, ...ackedThrough.keys()]);
-      return [...ids].sort().map((deviceId) => {
-        const through = ackedThrough.get(deviceId);
-        return through === undefined ? { deviceId } : { deviceId, ackedThrough: through };
-      });
+      const ids = [...new Set<string>([...writerIds, ...ackedIds])].sort();
+      const devices: SyncDevice[] = [];
+      for (const deviceId of ids) devices.push({ deviceId, acked: await ackMapFor(deviceId) });
+      return devices;
     }
 
-    async function latestSnap(): Promise<string | undefined> {
+    /** The newest snapshot's hlc and the per-writer cursor it covers, or undefined with none yet. */
+    async function latestSnapInfo(): Promise<SyncSnapInfo | undefined> {
       let keys: string[];
       try {
         keys = await store.list(V1_SNAP_PREFIX);
       } catch {
         return undefined;
       }
-      if (keys.length === 0) return undefined;
-      return keys.slice().sort().at(-1);
+      const hlcs = keys.map(hlcOfSnapKey).filter((h): h is string => h !== null).sort();
+      if (hlcs.length === 0) return undefined;
+      const hlc = hlcs[hlcs.length - 1] as string;
+      const metaRaw = await store.get(snapMetaKey(hlc)).catch(() => null);
+      const cursor = metaRaw === null ? null : parseCursorMap(tryParseJson(metaRaw));
+      return { hlc, cursor: cursor ?? {} };
     }
 
     /**
-     * Deletes log entries every known device has acked past AND that are no
-     * newer than the latest snapshot. Never deletes beyond what every known
-     * device has acked (a device with no ack yet blocks all compaction), and
-     * never deletes anything without a snapshot to fall back on.
+     * Deletes writer W's log entries that every OTHER known device has acked
+     * past AND that the newest snapshot's cursor for W already covers. A
+     * known device with no ack entry for W (or none at all) blocks
+     * compaction of W's log; with no snapshot yet, compaction never runs. W
+     * never needs to ack its own log.
      */
     async function compact(): Promise<void> {
-      const snap = await latestSnap();
+      const snap = await latestSnapInfo();
       if (snap === undefined) return;
-      const snapHlc = hlcOfSnapKey(snap);
-      if (snapHlc === null) return;
       const devices = await knownDevices();
       if (devices.length === 0) return;
-      let cutoff: string | undefined;
-      for (const device of devices) {
-        const through = device.ackedThrough ?? '';
-        if (cutoff === undefined || through < cutoff) cutoff = through;
-      }
-      if (!cutoff) return; // some known device has never acked: nothing is safe to delete
       let logKeys: string[];
       try {
         logKeys = await store.list(V1_LOG_PREFIX);
@@ -218,14 +232,25 @@ export function createSyncHandler(deps: SyncDeps): (request: Request) => Promise
         return;
       }
       for (const key of logKeys) {
-        const hlc = hlcOfLogKey(key);
-        if (hlc === null) continue;
-        if (key <= cutoff && hlc <= snapHlc) {
-          try {
-            await store.delete(key);
-          } catch {
-            // Best effort: the next ack's compaction will retry.
+        const writerId = deviceIdOfLogKey(key);
+        const h = hlcOfLogKey(key);
+        if (writerId === null || h === null) continue;
+        let everyOtherDeviceAcked = true;
+        for (const device of devices) {
+          if (device.deviceId === writerId) continue; // W never needs to ack its own log
+          const through = device.acked[writerId];
+          if (through === undefined || through < h) {
+            everyOtherDeviceAcked = false;
+            break;
           }
+        }
+        if (!everyOtherDeviceAcked) continue;
+        const snapCovers = snap.cursor[writerId];
+        if (snapCovers === undefined || snapCovers < h) continue;
+        try {
+          await store.delete(key);
+        } catch {
+          // Best effort: the next ack's compaction will retry.
         }
       }
     }
@@ -234,12 +259,7 @@ export function createSyncHandler(deps: SyncDeps): (request: Request) => Promise
     if (route === 'init' && request.method === 'POST') {
       const body = await readBody(SMALL_BODY_MAX);
       if (!body.ok) return fail('too-large', 413);
-      let raw: unknown;
-      try {
-        raw = JSON.parse(body.text);
-      } catch {
-        return fail('bad-request', 400);
-      }
+      const raw = tryParseJson(body.text);
       const parsed = initBodySchema.safeParse(raw);
       if (!parsed.success) return fail('bad-request', 400);
       const verifier = parsed.data.verifier;
@@ -269,7 +289,7 @@ export function createSyncHandler(deps: SyncDeps): (request: Request) => Promise
       }
       const auth = await checkAuth();
       if (!auth.ok) return fail(auth.code, auth.status);
-      const [devices, snap] = await Promise.all([knownDevices(), latestSnap()]);
+      const [devices, snap] = await Promise.all([knownDevices(), latestSnapInfo()]);
       const body: SyncStateOk = { hasVerifier: true, devices, ...(snap !== undefined ? { latestSnap: snap } : {}) };
       crumb.bytes = JSON.stringify(body).length;
       return finish(json(body, 200));
@@ -295,55 +315,59 @@ export function createSyncHandler(deps: SyncDeps): (request: Request) => Promise
       }
     }
 
-    // --- GET log?after=&limit= ---
+    // --- GET log?device=&after=&limit= : one writer's own log, ascending, per-writer cursor ---
     if (route === 'log' && request.method === 'GET' && segments.length === 1) {
       const auth = await checkAuth();
       if (!auth.ok) return fail(auth.code, auth.status);
       const query = logQuerySchema.safeParse(Object.fromEntries(url.searchParams));
       if (!query.success) return fail('bad-request', 400);
+      const { device, after } = query.data;
       const limit = query.data.limit ?? LOG_PAGE_LIMIT_DEFAULT;
-      let keys: string[];
+      crumb.deviceId = device.slice(0, 4);
+      let rawKeys: string[];
       try {
-        keys = await store.list(V1_LOG_PREFIX);
+        rawKeys = await store.list(logPrefixFor(device));
       } catch {
         return fail('sync-store', 503);
       }
-      keys = keys.filter((key) => hlcOfLogKey(key) !== null && deviceIdOfLogKey(key) !== null).sort();
-      const after = query.data.after;
+      const items = rawKeys
+        .map((key) => ({ key, hlc: hlcOfLogKey(key) }))
+        .filter((item): item is { key: string; hlc: string } => item.hlc !== null)
+        .sort((a, b) => (a.hlc < b.hlc ? -1 : a.hlc > b.hlc ? 1 : 0));
       let startIdx = 0;
       if (after !== undefined) {
-        const idx = keys.findIndex((key) => key > after);
-        startIdx = idx === -1 ? keys.length : idx;
+        const idx = items.findIndex((item) => item.hlc > after);
+        startIdx = idx === -1 ? items.length : idx;
       }
       const entries: SyncLogEntry[] = [];
       let bytes = 0;
       let next: string | undefined;
-      for (let i = startIdx; i < keys.length; i += 1) {
+      for (let i = startIdx; i < items.length; i += 1) {
         if (entries.length >= limit) {
-          next = keys[i - 1];
+          next = items[i - 1]?.hlc;
           break;
         }
-        const key = keys[i] as string;
+        const item = items[i] as { key: string; hlc: string };
         let bodyVal: string | null;
         try {
-          bodyVal = await store.get(key);
+          bodyVal = await store.get(item.key);
         } catch {
           bodyVal = null;
         }
         if (bodyVal === null) continue; // deleted between list and read; skip, not an error
-        const entryBytes = key.length + bodyVal.length;
+        const entryBytes = item.hlc.length + bodyVal.length;
         if (entries.length > 0 && bytes + entryBytes > LOG_PAGE_BUDGET) {
-          next = keys[i - 1];
+          next = items[i - 1]?.hlc;
           break;
         }
-        entries.push({ key, body: bodyVal });
+        entries.push({ hlc: item.hlc, body: bodyVal });
         bytes += entryBytes;
       }
       crumb.bytes = bytes;
       return finish(json(next !== undefined ? { entries, next } : { entries }, 200));
     }
 
-    // --- PUT snap/<hlc> ---
+    // --- PUT snap/<hlc>: body is JSON {cursor, data}; data is opaque ciphertext, cursor is plaintext ---
     if (route === 'snap' && request.method === 'PUT' && segments.length === 2) {
       const hlc = segments[1] as string;
       if (!HLC_RE.test(hlc)) return fail('bad-request', 400);
@@ -351,17 +375,30 @@ export function createSyncHandler(deps: SyncDeps): (request: Request) => Promise
       if (!auth.ok) return fail(auth.code, auth.status);
       const body = await readBody(SNAP_BODY_MAX);
       if (!body.ok) return fail('too-large', 413);
-      if (body.text.length === 0) return fail('bad-request', 400);
+      const raw = tryParseJson(body.text);
+      const parsed = snapBodySchema.safeParse(raw);
+      if (!parsed.success) return fail('bad-request', 400);
+      const cursor = parseCursorMap(parsed.data.cursor);
+      if (cursor === null) return fail('bad-request', 400);
       try {
-        const result = await store.set(snapKey(hlc), body.text, { onlyIfNew: true });
+        const result = await store.set(snapKey(hlc), parsed.data.data, { onlyIfNew: true });
         if (!result.modified) return fail('conflict', 409);
-        const keys = (await store.list(V1_SNAP_PREFIX)).slice().sort();
+        await store.set(snapMetaKey(hlc), JSON.stringify(cursor));
+        const keys = (await store.list(V1_SNAP_PREFIX))
+          .map((key) => ({ key, hlc: hlcOfSnapKey(key) }))
+          .filter((item): item is { key: string; hlc: string } => item.hlc !== null)
+          .sort((a, b) => (a.hlc < b.hlc ? -1 : a.hlc > b.hlc ? 1 : 0));
         const stale = keys.slice(0, Math.max(0, keys.length - SNAP_RETENTION));
-        for (const key of stale) {
+        for (const item of stale) {
           try {
-            await store.delete(key);
+            await store.delete(item.key);
           } catch {
             // Best effort: the next snapshot write retries retention.
+          }
+          try {
+            await store.delete(snapMetaKey(item.hlc));
+          } catch {
+            // Best effort: an orphaned snapmeta only wastes a little space.
           }
         }
         return finish(json({ ok: true }, 201));
@@ -370,23 +407,22 @@ export function createSyncHandler(deps: SyncDeps): (request: Request) => Promise
       }
     }
 
-    // --- POST ack ---
+    // --- POST ack: merges {deviceId, through} into the stored per-writer cursor, then compacts ---
     if (route === 'ack' && request.method === 'POST' && segments.length === 1) {
       const auth = await checkAuth();
       if (!auth.ok) return fail(auth.code, auth.status);
       const body = await readBody(SMALL_BODY_MAX);
       if (!body.ok) return fail('too-large', 413);
-      let raw: unknown;
-      try {
-        raw = JSON.parse(body.text);
-      } catch {
-        return fail('bad-request', 400);
-      }
+      const raw = tryParseJson(body.text);
       const parsed = ackBodySchema.safeParse(raw);
       if (!parsed.success) return fail('bad-request', 400);
+      const incoming = parseCursorMap(parsed.data.through);
+      if (incoming === null) return fail('bad-request', 400);
       crumb.deviceId = parsed.data.deviceId.slice(0, 4);
       try {
-        await store.set(ackKey(parsed.data.deviceId), parsed.data.through);
+        const existing = await ackMapFor(parsed.data.deviceId);
+        const merged = mergeCursorMax(existing, incoming);
+        await store.set(ackKey(parsed.data.deviceId), JSON.stringify(merged));
         await compact();
       } catch {
         return fail('sync-store', 503);

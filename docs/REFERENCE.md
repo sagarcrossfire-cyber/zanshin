@@ -195,10 +195,13 @@ See `docs/ops/INVENTORY.md` for the full map (routes, modules, tables, tests). E
   ciphertext — every `log`/`snap` body is an opaque `v1.<iv>.<ct>` string from the client; nothing here decrypts,
   reads or interprets it.
 - **Routes:** `POST init` {verifier} (no auth — first device pairing, `onlyIfNew` so a second pairing attempt gets
-  200/409 instead of clobbering) · `GET state` (auth-exempt only while unpaired) · `PUT log/<deviceId>/<hlc>`
-  (`onlyIfNew`, ≤1 MB) · `GET log?after=&limit=` (paged, lexical key order, stays under a 5 MB response budget,
-  returns `next`) · `PUT snap/<hlc>` (`onlyIfNew`, ≤5 MB, then prunes to the newest 3) · `POST ack` {deviceId,
-  through} (writes `v1/ack/<deviceId>`, then compacts).
+  200/409 instead of clobbering) · `GET state` (auth-exempt only while unpaired) → `{hasVerifier, devices:
+  [{deviceId, acked}], latestSnap?: {hlc, cursor}}` · `PUT log/<deviceId>/<hlc>` (`onlyIfNew`, ≤1 MB opaque
+  ciphertext) · `GET log?device=<writerId>&after=<hlc>&limit=` → that writer's own entries, ascending, paged under
+  a 5 MB response budget, `next` is an hlc to resume with `after` · `PUT snap/<hlc>` body JSON `{cursor, data}`
+  ≤5 MB total (`onlyIfNew`, then prunes to the newest 3, deleting each stale snapshot's `snapmeta` too) · `POST
+  ack` {deviceId, through: CursorMap} (merges into `v1/ack/<deviceId>`, keeping the max hlc per writer, then
+  compacts).
 - **Auth is per-pairing, not the device-key lock.** Header `X-Zanshin-Sync: <authKey>` (base64url, HKDF-derived
   on-device from the pairing secret). The server SHA-256s it and compares, constant-time, against the stored
   `v1/verifier` blob — a value the client already hashed before `init`. This is deliberately separate from
@@ -209,15 +212,24 @@ See `docs/ops/INVENTORY.md` for the full map (routes, modules, tables, tests). E
   lexically in time order (`src/server/sync/schema.ts` `HLC_RE`). `src/domain/sync/hlc.ts` (a later M3 client
   card) is expected to emit exactly this shape; until it lands, this schema is the source of truth for the wire
   format, and the server validates every `<hlc>` path segment against it regardless of which side writes it.
-- **Known devices and compaction safety.** A device is "known" once it has written a log entry or an ack; one
-  with log entries but no ack yet counts as acked-through `""`, which blocks all compaction (its floor is below
-  any real key) until it acks. Compaction in `ack` deletes `v1/log/*` entries only when the full key is ≤ every
-  known device's `ackedThrough` **and** the entry's hlc is ≤ the newest snapshot's hlc; with no snapshot yet,
-  compaction never runs. `ack`/`log`/`snap` comparisons are plain string (`<=`) comparisons on the key formats
-  above — they work because every hlc segment is fixed-width.
+- **Every cursor is per-writer, never a single global key (protocol correction, PR #52 review).** Log keys are
+  `v1/log/<deviceId>/<hlc>`, so they sort by *device first*. An earlier version of this protocol used one global
+  cursor (a full log key) for `GET log`, `ack`'s `through` and a snapshot's bootstrap point; once that cursor
+  landed inside one device's key range, a *different* device's new entries sorted before it and were silently
+  skipped — `v1/log/<deviceId>/<hlc>` keys sort as strings, not as a merged timeline. So: `GET log` takes a
+  `device` query param and returns only that writer's own log, paged by its own hlc; `ack`'s `through` and a
+  snapshot's `cursor` are both `CursorMap`s (`{writerId: hlc, ...}`), one independent entry per writer
+  (`src/server/sync/schema.ts` `CursorMap`, `parseCursorMap`, `mergeCursorMax`). A client reads every known
+  writer's log with one `GET log?device=` call per writer, not one call across all of them.
+- **Known devices and compaction safety.** A device is "known" once it has written a log entry or an ack.
+  Compaction in `ack` deletes writer W's log entries only when **every OTHER known device's** `acked[W]` ≥ the
+  entry's hlc **and** the newest snapshot's `cursor[W]` ≥ the entry's hlc; W never needs to ack its own log. A
+  known device missing an `acked[W]` entry (or none at all) blocks compaction of W's log; with no snapshot yet,
+  compaction never runs.
 - **Env vars.** None new — sync has no secret of its own; the verifier lives in Blobs, set at pairing.
-- **Logging.** One `ZT1` line per request (route, status, latencyMs, bytes, and — on `log`/`ack` routes — the
-  first 4 characters of `deviceId`). Never the verifier, the auth header, a body, or a full key.
+- **Logging.** One `ZT1` line per request (route, status, latencyMs, bytes, and — on `log`/`ack`/`log?device=`
+  routes — the first 4 characters of the relevant `deviceId`). Never the verifier, the auth header, a body, or a
+  full key.
 
 ## 7. Root-cause analysis and self-heal protocol
 
