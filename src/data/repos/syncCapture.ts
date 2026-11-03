@@ -11,7 +11,9 @@
 import { db } from '../db';
 import { receive, tick } from '../../domain/sync/hlc';
 import { mergeChange, type LocalRecordMeta, type SyncChange } from '../../domain/sync/merge';
-import { DEVICE_LOCAL_SETTINGS_FIELD_PATTERN, stripDeviceLocalSettings, type SyncedTable } from '../../domain/sync/tables';
+import {
+  DEVICE_LOCAL_SETTINGS_FIELD_PATTERN, stripDeviceLocalSettings, SYNCED_TABLES, type SyncedTable,
+} from '../../domain/sync/tables';
 import {
   errorRecordSchema, settingsSchema,
   type SyncClockRow, type SyncDeviceRow, type SyncRecordMetaRow,
@@ -56,6 +58,24 @@ function randomSyncErrorId(): string {
     // Fall through to Math.random below.
   }
   return `err-sync-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+/**
+ * Fires after any `syncOutbox` row is written (by `withSyncCapture` or `captureExisting`), so the
+ * sync engine (src/services/sync.ts, a later card) can debounce a push without this module
+ * knowing anything about fetch, timers or the engine's mutex.
+ */
+const outboxWriteListeners = new Set<() => void>();
+
+export function onSyncOutboxWrite(listener: () => void): () => void {
+  outboxWriteListeners.add(listener);
+  return () => {
+    outboxWriteListeners.delete(listener);
+  };
+}
+
+function notifySyncOutboxWrite(): void {
+  for (const listener of outboxWriteListeners) listener();
 }
 
 /** One record write to capture into the outbox alongside its table write. */
@@ -105,6 +125,7 @@ export async function withSyncCapture(
     }
     await db.syncMeta.put({ key: 'clock', hlc: hlc as string });
   });
+  notifySyncOutboxWrite();
 }
 
 /**
@@ -183,4 +204,46 @@ export async function applyRemoteChanges(changes: SyncChange[]): Promise<void> {
     }
     await db.syncMeta.put({ key: 'clock', hlc: localHlc as string });
   });
+}
+
+/**
+ * Catches up pre-pairing data: capture is off until `pairing` exists (see the module header), so
+ * every row written before this device paired has no `syncMeta` row and no `syncOutbox` row — it
+ * would otherwise be silently lost to every other device. One transaction PER TABLE (not one
+ * grand transaction across all synced tables): ticks the local HLC, writes a `syncMeta`
+ * `${table}:${id}` row and appends a `syncOutbox` put for every row that has no meta row yet.
+ * Rows that already have a meta row (synced before, or applied from a remote change) are left
+ * alone. A no-op, quietly, on an unpaired device.
+ *
+ * Call this right after storing the pairing in `pairNew` (before the snapshot, so the snapshot is
+ * complete) and at the end of `pairJoin` (after bootstrap), so a joining device's own pre-join
+ * records reach the other side instead of being silently lost.
+ */
+export async function captureExisting(): Promise<void> {
+  if (!(await isPaired())) return;
+  for (const table of SYNCED_TABLES) {
+    await db.transaction('rw', [table, 'syncMeta', 'syncOutbox'], async () => {
+      const deviceId = await getDeviceId();
+      const clockRow = await getClockRow();
+      let hlc = clockRow?.hlc;
+      let wrote = false;
+      const rows: Array<{ id: string; value: unknown }> = [];
+      await db.table(table).each((value: unknown, cursor: { primaryKey: unknown }) => {
+        rows.push({ id: String(cursor.primaryKey), value });
+      });
+      for (const row of rows) {
+        const metaKey = `${table}:${row.id}`;
+        if ((await getRecordMetaRow(metaKey)) !== undefined) continue;
+        hlc = tick(hlc, Date.now(), deviceId);
+        wrote = true;
+        await db.syncMeta.put({ key: metaKey, hlc });
+        const value = table === 'settings'
+          ? stripDeviceLocalSettings(row.value as Record<string, unknown>)
+          : row.value;
+        await db.syncOutbox.add({ table, id: row.id, hlc, op: 'put', value });
+      }
+      if (wrote) await db.syncMeta.put({ key: 'clock', hlc: hlc as string });
+    });
+  }
+  notifySyncOutboxWrite();
 }

@@ -131,5 +131,7 @@ export { researchRepo } from './research';
 // 2.0 M3 — change capture (card m3-sync-storage): withSyncCapture wires every synced-table
 // write method above; applyRemoteChanges is the repository-level entry point the (future)
 // sync engine calls to merge a batch of incoming changes without re-capturing them.
-export { withSyncCapture, applyRemoteChanges, type CaptureEntry } from './syncCapture';
+export {
+  withSyncCapture, applyRemoteChanges, captureExisting, onSyncOutboxWrite, type CaptureEntry,
+} from './syncCapture';
 export { db, resetDbForTests, SCHEMA_VERSION } from '../db';

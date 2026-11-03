@@ -10,6 +10,7 @@
 //   PUT  log/<deviceId>/<hlc>   body ≤1MB opaque         → 201 / 409 exists
 //   GET  log?device=&after=&limit=                       → 200 {entries:[{hlc,body}], next?}
 //   PUT  snap/<hlc>  body JSON {cursor, data} ≤5MB total → 201 / 409 exists (then retains newest 3)
+//   GET  snap/<hlc>                                       → 200 {hlc, cursor, data} / 404 not-found
 //   POST ack         {deviceId, through: CursorMap}      → 200 (merges + compacts)
 //
 // Auth: every route but `init` (and `state` while unpaired) requires header
@@ -84,6 +85,7 @@ const MESSAGES: Record<SyncErrorCode, string> = {
   conflict: 'That entry already exists with different content.',
   'too-large': 'The request body is larger than this route allows.',
   'sync-store': 'Sync storage is unavailable right now.',
+  'not-found': 'That snapshot is no longer available.',
 };
 
 /** Constant-time comparison of two equal-length lowercase hex strings. */
@@ -405,6 +407,26 @@ export function createSyncHandler(deps: SyncDeps): (request: Request) => Promise
       } catch {
         return fail('sync-store', 503);
       }
+    }
+
+    // --- GET snap/<hlc>: returns a snapshot's ciphertext + the cursor it covers (retention may have removed it) ---
+    if (route === 'snap' && request.method === 'GET' && segments.length === 2) {
+      const hlc = segments[1] as string;
+      if (!HLC_RE.test(hlc)) return fail('bad-request', 400);
+      const auth = await checkAuth();
+      if (!auth.ok) return fail(auth.code, auth.status);
+      let data: string | null;
+      let metaRaw: string | null;
+      try {
+        [data, metaRaw] = await Promise.all([store.get(snapKey(hlc)), store.get(snapMetaKey(hlc))]);
+      } catch {
+        return fail('sync-store', 503);
+      }
+      if (data === null) return fail('not-found', 404);
+      const cursor = metaRaw === null ? null : parseCursorMap(tryParseJson(metaRaw));
+      const body = { hlc, cursor: cursor ?? {}, data };
+      crumb.bytes = JSON.stringify(body).length;
+      return finish(json(body, 200));
     }
 
     // --- POST ack: merges {deviceId, through} into the stored per-writer cursor, then compacts ---
