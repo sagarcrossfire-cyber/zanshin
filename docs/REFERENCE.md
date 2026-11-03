@@ -175,6 +175,9 @@ See `docs/ops/INVENTORY.md` for the full map (routes, modules, tables, tests). E
   (one hash per paired device). **Not set yet** — Sagar sets it once PC and phone are paired; until then the
   function fails closed (503 `device-key-unset`) rather than opening up. A wrong or missing key is 401
   `device-key`. The raw key never reaches logs, Blobs or error text.
+- **Client storage.** The paired device's key lives in `localStorage` only (`zanshin.deviceKey`,
+  `src/services/deviceKey.ts`), one key per browser/device — never in IndexedDB, so it can never be swept into a
+  backup export, a future device-sync payload or an error report.
 - **Env vars.** `ZANSHIN_DEVICE_KEY_SHA256` (required before the site goes public; unset today) · `EWGF_API_KEY`
   (optional; without it the ewgf.gg fallback is simply off and a Wank failure is the final answer).
 - **Fixtures.** `tests/fixtures/ranked/player.html` and `replays-window.json` are REAL captures (one GitHub Actions

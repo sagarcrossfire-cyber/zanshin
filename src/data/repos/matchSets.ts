@@ -29,6 +29,15 @@ export const matchSetsRepo = {
     await db.matchSets.put(parsed);
     return parsed;
   },
+  /** Validates and upserts several match sets in one transaction (2.0 M2: ranked sync writes
+   * new and extended sets together, so a sync never leaves a half-written set). */
+  async putMany(matchSets: MatchSet[]): Promise<MatchSet[]> {
+    const parsed = matchSets.map((matchSet) => matchSetSchema.parse(matchSet));
+    await db.transaction('rw', db.matchSets, async () => {
+      for (const set of parsed) await db.matchSets.put(set);
+    });
+    return parsed;
+  },
   /** Removes the match set with this id. Its replay reviews are kept. */
   async remove(id: string): Promise<void> {
     await db.matchSets.delete(id);

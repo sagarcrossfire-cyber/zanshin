@@ -27,6 +27,8 @@ import {
   validateBackup,
 } from '../../services/backup';
 import { restoreSnapshot, resetWithSnapshot, snapshotPreview, takeSnapshot } from '../../services/snapshots';
+import { clearDeviceKey, getDeviceKey, setDeviceKey } from '../../services/deviceKey';
+import { normalizeTekkenId } from '../../services/rankedSync';
 import { BACKUP_EXPORT_KEY } from '../../services/backupPrompt';
 import { metaRepo, snapshotsRepo } from '../../data/repos';
 import './Settings.css';
@@ -60,6 +62,12 @@ export function SettingsScreen() {
   const [restorePreview, setRestorePreview] = useState<Record<string, number> | null>(null);
   const [resetText, setResetText] = useState('');
   const fileRef = useRef<HTMLInputElement | null>(null);
+  // Ranked sync (2.0 M2): Tekken ID shown as typed (dashes allowed), stored undashed;
+  // "Show me as" mirrors settings.rankedLabel. Device key lives only in localStorage.
+  const [ranked, setRanked] = useState<{ tekkenIdRaw: string; rankedLabel: string } | null>(null);
+  const [deviceKeySuffix, setDeviceKeySuffix] = useState<string | null>(null);
+  const [deviceKeyInput, setDeviceKeyInput] = useState('');
+  const [deviceKeyError, setDeviceKeyError] = useState<string | null>(null);
 
   useEffect(() => {
     if (profile && !draft) setDraft(profile);
@@ -103,6 +111,14 @@ export function SettingsScreen() {
     }
   }, [settings, kpi]);
   useEffect(() => {
+    if (profile && settings && !ranked) {
+      setRanked({ tekkenIdRaw: profile.tekkenId ?? '', rankedLabel: settings.rankedLabel ?? '' });
+    }
+  }, [profile, settings, ranked]);
+  useEffect(() => {
+    setDeviceKeySuffix(getDeviceKey()?.slice(-4) ?? null);
+  }, []);
+  useEffect(() => {
     let cancelled = false;
     void snapshotsRepo.all().then((all) => {
       if (!cancelled) setSnapshots(all);
@@ -126,12 +142,40 @@ export function SettingsScreen() {
     };
   }, [showSpend]);
 
-  if (!profile || !settings || !draft || !coach || !lab || !kpi) return <main><p>Loading…</p></main>;
+  if (!profile || !settings || !draft || !coach || !lab || !kpi || !ranked) return <main><p>Loading…</p></main>;
 
   const telemetryOn = telemetry ?? settings.telemetry !== false;
   const set = (p: Partial<Profile>) => setDraft({ ...draft, ...p });
   const setCoachField = (p: Partial<typeof coach>) => setCoach({ ...coach, ...p });
   const setLabField = (p: Partial<typeof lab>) => setLab({ ...lab, ...p });
+  const tekkenIdError = ranked.tekkenIdRaw.trim() !== '' && normalizeTekkenId(ranked.tekkenIdRaw) === null
+    ? "That isn't a Tekken ID: 12 letters and numbers, dashes optional."
+    : undefined;
+  const setTekkenIdRaw = (v: string) => {
+    setRanked({ ...ranked, tekkenIdRaw: v });
+    if (v.trim() === '') {
+      set({ tekkenId: undefined });
+      return;
+    }
+    const normalized = normalizeTekkenId(v);
+    if (normalized !== null) set({ tekkenId: normalized });
+  };
+  const saveDeviceKey = () => {
+    if (setDeviceKey(deviceKeyInput)) {
+      setDeviceKeySuffix(deviceKeyInput.trim().slice(-4));
+      setDeviceKeyInput('');
+      setDeviceKeyError(null);
+      pushToast('Device key saved.');
+    } else {
+      setDeviceKeyError('Device key must be 16–256 characters.');
+    }
+  };
+  const clearSavedDeviceKey = () => {
+    clearDeviceKey();
+    setDeviceKeySuffix(null);
+    setDeviceKeyInput('');
+    setDeviceKeyError(null);
+  };
 
   const kpiTargets = (): Record<string, number | null> => {
     const next: Record<string, number | null> = {};
@@ -150,7 +194,10 @@ export function SettingsScreen() {
 
   const save = () => {
     void saveProfile(draft).then(() => {
-      void saveSettings({ theme, scheme, glyphMode: draft.glyphMode, ...coach, ...lab, kpiTargets: kpiTargets(), telemetry: telemetryOn }).then(() => {
+      void saveSettings({
+        theme, scheme, glyphMode: draft.glyphMode, ...coach, ...lab, kpiTargets: kpiTargets(), telemetry: telemetryOn,
+        rankedLabel: ranked.rankedLabel.trim() === '' ? undefined : ranked.rankedLabel.trim().slice(0, 40),
+      }).then(() => {
         applyScheme(scheme);
         applyTheme(theme);
         pushToast('Settings saved.');
@@ -259,8 +306,6 @@ export function SettingsScreen() {
             const glyphMode = CONTROLLER_GLYPH[v as (typeof CONTROLLERS)[number]];
             set(glyphMode === undefined ? { controller: v } : { controller: v, glyphMode });
           }} />
-        <TextField id="set-tekken-id" label="Tekken ID (optional)" value={draft.tekkenId ?? ''}
-          onChange={(v) => set({ tekkenId: v === '' ? undefined : v })} />
         <Select id="set-current-rank" label="Current rank (optional)" value={draft.currentRank ?? ''}
           options={[{ value: '', label: 'No rank yet' }, ...RANKS.map((r) => ({ value: r, label: r }))]}
           onChange={(v) => set({ currentRank: v === '' ? undefined : v })} />
@@ -269,6 +314,30 @@ export function SettingsScreen() {
           onChange={(v) => set({ targetRank: v })} />
         <TextField id="set-target-date" label="Target date (optional)" type="date" value={draft.targetDate ?? ''}
           onChange={(v) => set({ targetDate: v === '' ? undefined : v })} />
+      </Card>
+      <Card title="Ranked sync">
+        <TextField id="set-ranked-tekken-id" label="Tekken ID (optional)" value={ranked.tekkenIdRaw}
+          error={tekkenIdError}
+          onChange={setTekkenIdRaw} />
+        {deviceKeySuffix === null ? (
+          <>
+            <TextField id="set-device-key" label="Device key" type="password" value={deviceKeyInput}
+              error={deviceKeyError ?? undefined}
+              onChange={(v) => { setDeviceKeyInput(v); setDeviceKeyError(null); }} />
+            <Button variant="secondary" onClick={saveDeviceKey} disabled={deviceKeyInput.trim() === ''}>Save device key</Button>
+          </>
+        ) : (
+          <>
+            <p className="z-label">Device key saved (ends …{deviceKeySuffix}).</p>
+            <Button variant="secondary" onClick={clearSavedDeviceKey}>Clear device key</Button>
+          </>
+        )}
+        <TextField id="set-ranked-label" label="Show me as (optional)" value={ranked.rankedLabel} maxLength={40}
+          onChange={(v) => setRanked({ ...ranked, rankedLabel: v.slice(0, 40) })} />
+        <p className="z-label">
+          Ranked games sync from Wavu Wank. The device key comes from pairing; until it is set up, sync says it
+          isn&apos;t switched on yet.
+        </p>
       </Card>
       <Card title="Time">
         <Select id="set-session" label="Session length" value={String(draft.sessionMinutes)}
@@ -535,7 +604,7 @@ export function SettingsScreen() {
         </p>
         <p className="z-body-l">Licenses: IBM Plex Sans / IBM Plex Mono and Shippori Mincho B1 are licensed under the SIL Open Font License 1.1.</p>
       </Card>
-      <Button onClick={save} disabled={draft.displayName.trim() === '' || safeMode}>Save settings</Button>
+      <Button onClick={save} disabled={draft.displayName.trim() === '' || Boolean(tekkenIdError) || safeMode}>Save settings</Button>
     </div>
   );
 }
