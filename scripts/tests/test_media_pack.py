@@ -32,6 +32,12 @@ def _main():
         "File:T8-p2-devil jin-1,1,2.mp4": (b"dj-112" * 1000, "video/mp4", 640, 360),
         "File:T8-p2-devil jin-1,2,4.mp4": (b"dj-124" * 1000, "video/mp4", 640, 360),
     }
+    def official_render():
+        img = Image.new("RGBA", (1220, 1193), (0, 0, 0, 0))
+        img.paste(Image.new("RGBA", (300, 900), (200, 30, 30, 255)), (800, 293))
+        b = io.BytesIO(); img.save(b, "PNG"); return b.getvalue()
+    OFFICIAL = {"/images/character/alisa/img_01.png": official_render()}
+
     CARGO = {
         "Yoshimitsu movelist": [
             {"id": "Yoshimitsu-1,1", "video": "File:t8-p2-yoshimitsu-1,1.mp4", "block": "-9"},
@@ -76,6 +82,9 @@ def _main():
                     assert "Move.video IS NOT NULL" in q["where"]
                 rows = rows[offset:offset + limit]
                 return self._send({"cargoquery": [{"title": r} for r in rows]})
+            if u.path in OFFICIAL:
+                STATS["official"] = STATS.get("official", 0) + 1
+                return self._send(raw=OFFICIAL[u.path], ctype="image/png")
             if u.path.startswith("/w/images/"):
                 STATS["downloads"] += 1
                 title = urllib.parse.unquote(u.path[len("/w/images/"):])
@@ -226,7 +235,20 @@ def _main():
     assert len(rows) == 5, rows
     assert [mz.is_punishable(b) for b in ["-17", "-3", "-10", "-9~-8", "+5g", None, "−12", "-14c"]] == [True, False, True, False, False, False, True, True]
     assert mz.file_title("t8-p2-x.mp4") == "File:t8-p2-x.mp4" and mz.file_title("File:a.png") == "File:a.png"
+    # Run 5b (2.0 M6): Alisa has no Wavu portrait; --official-base fills it from the official
+    # site's transparent render, trimmed to the figure, shrunk to WebP, credited to the site.
+    shutil.rmtree(WORK / "out", ignore_errors=True)
+    rc = run("--official-base", "http://127.0.0.1:%d" % PORT); assert rc == 0
+    m, _ = check_pack(list((WORK / "out").glob("*.zip"))[0])
+    alisa = [it for it in m["items"] if it["subjectKey"] == "character:Alisa" and it["kind"] == "character-portrait"]
+    assert len(alisa) == 1, m["misses"]
+    a = alisa[0]
+    assert a["source"] == "official" and "official TEKKEN 8 site" in a["credit"], a
+    assert a["mime"] == "image/webp" and a["width"] < 400 and a["height"] >= 900, a  # trimmed to the figure
+    assert "File:Alisa portrait.png" not in {x["title"] for x in m["misses"]}
+    # With any non-default --api the official site stays off unless asked for (runs 1-5 above).
     print("ALL TESTS PASSED")
+
 
 
 

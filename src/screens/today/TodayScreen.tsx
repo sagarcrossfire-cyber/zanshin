@@ -183,7 +183,7 @@ export function TodayScreen() {
   const dateLabel = format(new Date(`${date}T12:00:00`), 'EEEE, MMMM d');
 
   return (
-    <div className="z-today">
+    <div className="z-today z-stagger">
       <CharacterHero name="Yoshimitsu" eyebrow={dateLabel}>
         <h2 className="z-today__headline">{greeting(new Date().getHours())}</h2>
         <p className="z-today__lede" data-testid="today-primary">{primaryAction.text}</p>

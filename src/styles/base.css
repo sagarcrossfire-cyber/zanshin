@@ -95,6 +95,28 @@ img, svg { display: block; max-width: 100%; }
  * (zero specificity, so any screen rule wins). */
 :where(main:not([class]), .z-screen) > * + * { margin-top: var(--space-5); }
 
+/* 2.0 M6 motion: a list or grid marked .z-stagger brings its items in one
+ * after another — a short rise into place, 40 ms apart, capped at the 12th
+ * item so long lists never wait. Transform only, never opacity: an opacity
+ * fade once made axe sample a half-faded button (RCA 2026-10-31). The global
+ * reduced-motion rule below collapses it to nothing. */
+@keyframes z-rise { from { transform: translateY(14px); } to { transform: none; } }
+:is(.z-stagger, [data-motion="stagger"]) > * { animation: z-rise var(--dur-sheet) var(--ease-enter) backwards; }
+:is(.z-stagger, [data-motion="stagger"]) > :nth-child(2) { animation-delay: 40ms; }
+:is(.z-stagger, [data-motion="stagger"]) > :nth-child(3) { animation-delay: 80ms; }
+:is(.z-stagger, [data-motion="stagger"]) > :nth-child(4) { animation-delay: 120ms; }
+:is(.z-stagger, [data-motion="stagger"]) > :nth-child(5) { animation-delay: 160ms; }
+:is(.z-stagger, [data-motion="stagger"]) > :nth-child(6) { animation-delay: 200ms; }
+:is(.z-stagger, [data-motion="stagger"]) > :nth-child(7) { animation-delay: 240ms; }
+:is(.z-stagger, [data-motion="stagger"]) > :nth-child(8) { animation-delay: 280ms; }
+:is(.z-stagger, [data-motion="stagger"]) > :nth-child(9) { animation-delay: 320ms; }
+:is(.z-stagger, [data-motion="stagger"]) > :nth-child(10) { animation-delay: 360ms; }
+:is(.z-stagger, [data-motion="stagger"]) > :nth-child(11) { animation-delay: 400ms; }
+:is(.z-stagger, [data-motion="stagger"]) > :nth-child(12) { animation-delay: 440ms; }
+:is(.z-stagger, [data-motion="stagger"]) > :nth-child(n + 13) { animation-delay: 440ms; }
+/* The global rule below shortens durations but keeps delays; turn the entrance off outright. */
+@media (prefers-reduced-motion: reduce) { :is(.z-stagger, [data-motion="stagger"]) > * { animation: none; } }
+
 /* Reduced motion (§4.8, §4.12): remove non-essential animation. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

@@ -48,6 +48,8 @@ VERSION = "1.2"
 DEFAULT_API = "https://wavu.wiki/w/api.php"
 USER_AGENT = "ZANSHIN-media-pack/" + VERSION + " (personal training app; one user)"
 CREDIT = "© Bandai Namco Entertainment Inc., via Wavu Wiki"
+OFFICIAL_BASE = "https://tk8.tekken-official.jp"
+OFFICIAL_CREDIT = "© Bandai Namco Entertainment Inc., via the official TEKKEN 8 site"
 RETRY_CODES = {429, 500, 502, 503, 504}
 PUNISHABLE_AT = -10
 
@@ -293,6 +295,46 @@ def find_character_art(fetcher, kind, name):
     return best, infos[best]
 
 
+# --- 2.0 M6: official Tekken 8 renders for characters Wavu has no portrait for ---
+# The official site keeps every character's transparent full-body render at
+# /images/character/<slug>/img_01.png (checked by eye on a CI contact sheet,
+# 2026-11-03). The figure sits off-centre in a wide canvas, so it is trimmed to
+# its own outline (plus a small margin) before the usual WebP shrink.
+
+def official_slug(name):
+    return re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
+
+
+def official_portrait_info(base, name):
+    slug_ = official_slug(name)
+    return {
+        "url": "%s/images/character/%s/img_01.png" % (base.rstrip("/"), slug_),
+        "title": "official:%s/img_01.png" % slug_,
+        "descriptionurl": "%s/en/character/%s.html" % (base.rstrip("/"), slug_),
+        "mime": "image/png", "width": None, "height": None, "sha1": "",
+        "source": "official",
+    }
+
+
+def trim_to_figure(data, margin=0.03):
+    """Crop transparent space around the figure; returns PNG bytes (unchanged without Pillow or alpha)."""
+    try:
+        from PIL import Image
+    except ImportError:
+        return data
+    image = Image.open(io.BytesIO(data))
+    image.load()
+    rgba = image.convert("RGBA")
+    box = rgba.getchannel("A").getbbox()
+    if box is None:
+        return data
+    pad = round(max(box[2] - box[0], box[3] - box[1]) * margin)
+    box = (max(0, box[0] - pad), max(0, box[1] - pad), min(rgba.width, box[2] + pad), rgba.height)
+    out = io.BytesIO()
+    rgba.crop(box).save(out, "PNG")
+    return out.getvalue()
+
+
 def slug(text):
     return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-") or "item"
 
@@ -435,6 +477,9 @@ def parse_args(argv):
                         help="opponent clips to pack: punishable on block (-10 or worse, default) or all")
     parser.add_argument("--no-icons", action="store_true", help="skip character icons")
     parser.add_argument("--no-portraits", action="store_true", help="skip character portraits")
+    parser.add_argument("--official-base", default=None,
+                        help="official TEKKEN 8 site for portraits Wavu lacks (default: on with the real Wavu API, "
+                             "off with any other --api; pass 'none' to turn off)")
     parser.add_argument("--no-clips", action="store_true", help="skip the main character's clips")
     parser.add_argument("--keep-png", action="store_true",
                         help="pack original portrait PNGs even if Pillow is installed")
@@ -517,6 +562,18 @@ def main(argv=None):
             wanted[i] = (pack_id, kind, subject, found_title, folder)
             infos[found_title] = found_info
 
+    official_base = args.official_base
+    if official_base is None:
+        official_base = OFFICIAL_BASE if args.api == DEFAULT_API else "none"
+    if official_base != "none":
+        for i, (pack_id, kind, subject, title, folder) in enumerate(wanted):
+            if kind != "character-portrait" or infos.get(title) is not None:
+                continue
+            info = official_portrait_info(official_base, subject.split(":", 1)[1])
+            infos[info["title"]] = info
+            wanted[i] = (pack_id, kind, subject, info["title"], folder)
+            log("  official render for %s: %s" % (subject.split(":", 1)[1], info["url"]))
+
     packs = {"core": {"items": [], "payloads": {}, "misses": []},
              "opponents": {"items": [], "payloads": {}, "misses": []}}
     arc_names = {}
@@ -529,7 +586,10 @@ def main(argv=None):
             pack["misses"].append({"kind": kind, "subjectKey": subject, "title": title})
             continue
         try:
-            data, fresh = cached_download(fetcher, info, cache_dir)
+            if info.get("source") == "official":
+                data, fresh = trim_to_figure(fetcher.fetch(info["url"], tries=2)), True
+            else:
+                data, fresh = cached_download(fetcher, info, cache_dir)
         except Exception as err:  # keep going; the miss is recorded
             log("  failed: %s (%s)" % (title, err))
             pack["misses"].append({"kind": kind, "subjectKey": subject, "title": title, "error": str(err)})
@@ -563,10 +623,10 @@ def main(argv=None):
             "sha256": hashlib.sha256(data).hexdigest(),
             "width": width,
             "height": height,
-            "source": "wavu",
+            "source": info.get("source", "wavu"),
             "sourcePage": info.get("descriptionurl"),
-            "sourceSha1": info.get("sha1"),
-            "credit": CREDIT,
+            "sourceSha1": info.get("sha1") or None,
+            "credit": OFFICIAL_CREDIT if info.get("source") == "official" else CREDIT,
         })
         if (downloaded + reused) % 25 == 0:
             log("  %d files ready" % (downloaded + reused))

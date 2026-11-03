@@ -192,7 +192,7 @@ export function LogListScreen() {
   };
 
   return (
-    <main>
+    <main data-motion="stagger">
       <PageHeader level={1} eyebrow="Ranked and casual" title="Match Log" lede="Every set you log feeds your weaknesses, the plan and the coach." />
 
       {protocolCard?.kind === 'stop-loss' && (
