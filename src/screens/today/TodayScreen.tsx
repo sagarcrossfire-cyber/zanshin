@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
 import { CharacterHero } from '../../components/media/CharacterArt';
+import { MoveOfTheDay } from '../../components/media/MoveOfTheDay';
 import {
   IconCards, IconCheck, IconChevronRight, IconCoach, IconCodex, IconFlame, IconLab, IconLock, IconLog, IconMatchups,
 } from '../../components/icons';
@@ -115,6 +116,12 @@ export function TodayScreen() {
       return block;
     });
   }, [plan, swaps]);
+
+  // 2.0 M6: the moves today's drills train, in plan order, for "Move of the day".
+  const planMoveIds = useMemo(
+    () => displayBlocks.flatMap((block) => (block.drillId ? drillsById.get(block.drillId)?.codexRefs ?? [] : [])),
+    [displayBlocks, drillsById],
+  );
 
   const unfinished = sessions.find((s) => s.status === 'active' || s.status === 'paused');
 
@@ -233,6 +240,8 @@ export function TodayScreen() {
           )}
         </Link>
       </section>
+
+      <MoveOfTheDay planMoveIds={planMoveIds} date={date} />
 
       <section className="z-today__plan" aria-labelledby="today-plan-title">
         <div className="z-today__plan-head">

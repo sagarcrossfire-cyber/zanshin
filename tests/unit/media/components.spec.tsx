@@ -205,10 +205,10 @@ describe('MoveClip', () => {
     expect(HTMLMediaElement.prototype.play).toHaveBeenCalled();
     expect(await screen.findByRole('button', { name: 'Pause' })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Forward one frame' }));
+    fireEvent.click(screen.getByRole('button', { name: '+1f, forward one frame' }));
     expect(video.currentTime).toBeCloseTo(1 / 60);
     expect(screen.getByRole('button', { name: 'Play' })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Back one frame' }));
+    fireEvent.click(screen.getByRole('button', { name: '−1f, back one frame' }));
     expect(video.currentTime).toBe(0);
 
     fireEvent.click(screen.getByRole('button', { name: 'Loop' }));
