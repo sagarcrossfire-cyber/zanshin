@@ -1,4 +1,6 @@
 // §6.3/§14 — Error ring buffer plus assessment, verification, conflict, coach-message and meta repositories.
+// errors and meta are DEVICE_LOCAL (never captured); assessments, verifications and coachMessages
+// are UNION synced tables, conflicts is a LWW synced table (2.0 M3) — see src/domain/sync/tables.ts.
 import { db } from '../db';
 import {
   assessmentSchema, coachMessageSchema, dataConflictSchema, errorRecordSchema,
@@ -6,6 +8,7 @@ import {
   type Assessment, type CoachMessage, type DataConflict, type ErrorRecord,
   type MetaRecord, type VerificationRecord,
 } from '../schemas';
+import { withSyncCapture } from './syncCapture';
 
 export const errorsRepo = {
   /** Returns the error record with this id, or undefined. */
@@ -42,10 +45,18 @@ export const assessmentsRepo = {
   async all(): Promise<Assessment[]> { return db.assessments.orderBy('at').toArray(); },
   async put(assessment: Assessment): Promise<Assessment> {
     const parsed = assessmentSchema.parse(assessment);
-    await db.assessments.put(parsed);
+    await withSyncCapture(
+      { table: 'assessments', id: parsed.id, op: 'put', value: parsed },
+      () => db.assessments.put(parsed),
+    );
     return parsed;
   },
-  async remove(id: string): Promise<void> { await db.assessments.delete(id); },
+  async remove(id: string): Promise<void> {
+    await withSyncCapture(
+      { table: 'assessments', id, op: 'delete' },
+      () => db.assessments.delete(id),
+    );
+  },
 };
 
 export const verificationsRepo = {
@@ -57,10 +68,18 @@ export const verificationsRepo = {
   },
   async put(record: VerificationRecord): Promise<VerificationRecord> {
     const parsed = verificationRecordSchema.parse(record);
-    await db.verifications.put(parsed);
+    await withSyncCapture(
+      { table: 'verifications', id: parsed.id, op: 'put', value: parsed },
+      () => db.verifications.put(parsed),
+    );
     return parsed;
   },
-  async remove(id: string): Promise<void> { await db.verifications.delete(id); },
+  async remove(id: string): Promise<void> {
+    await withSyncCapture(
+      { table: 'verifications', id, op: 'delete' },
+      () => db.verifications.delete(id),
+    );
+  },
 };
 
 export const conflictsRepo = {
@@ -75,10 +94,18 @@ export const conflictsRepo = {
   },
   async put(conflict: DataConflict): Promise<DataConflict> {
     const parsed = dataConflictSchema.parse(conflict);
-    await db.conflicts.put(parsed);
+    await withSyncCapture(
+      { table: 'conflicts', id: parsed.id, op: 'put', value: parsed },
+      () => db.conflicts.put(parsed),
+    );
     return parsed;
   },
-  async remove(id: string): Promise<void> { await db.conflicts.delete(id); },
+  async remove(id: string): Promise<void> {
+    await withSyncCapture(
+      { table: 'conflicts', id, op: 'delete' },
+      () => db.conflicts.delete(id),
+    );
+  },
 };
 
 export const coachMessagesRepo = {
@@ -90,10 +117,18 @@ export const coachMessagesRepo = {
   },
   async put(message: CoachMessage): Promise<CoachMessage> {
     const parsed = coachMessageSchema.parse(message);
-    await db.coachMessages.put(parsed);
+    await withSyncCapture(
+      { table: 'coachMessages', id: parsed.id, op: 'put', value: parsed },
+      () => db.coachMessages.put(parsed),
+    );
     return parsed;
   },
-  async remove(id: string): Promise<void> { await db.coachMessages.delete(id); },
+  async remove(id: string): Promise<void> {
+    await withSyncCapture(
+      { table: 'coachMessages', id, op: 'delete' },
+      () => db.coachMessages.delete(id),
+    );
+  },
 };
 
 export const metaRepo = {

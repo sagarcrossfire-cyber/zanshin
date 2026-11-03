@@ -1,8 +1,10 @@
 // Release 1.3.0 — research notes repository: web-sourced answers, matchup
 // primers and patch briefs Sagar kept from the intel function. Like every
-// repository, the only code that touches the `research` table.
+// repository, the only code that touches the `research` table. `research`
+// is a UNION synced table (2.0 M3): put/remove go through withSyncCapture.
 import { db } from '../db';
 import { researchNoteSchema, type ResearchKind, type ResearchNote } from '../schemas';
+import { withSyncCapture } from './syncCapture';
 
 export const researchRepo = {
   /** Every note, newest first. */
@@ -29,11 +31,17 @@ export const researchRepo = {
   },
   async put(note: ResearchNote): Promise<ResearchNote> {
     const parsed = researchNoteSchema.parse(note);
-    await db.research.put(parsed);
+    await withSyncCapture(
+      { table: 'research', id: parsed.id, op: 'put', value: parsed },
+      () => db.research.put(parsed),
+    );
     return parsed;
   },
   async remove(id: string): Promise<void> {
-    await db.research.delete(id);
+    await withSyncCapture(
+      { table: 'research', id, op: 'delete' },
+      () => db.research.delete(id),
+    );
   },
   async count(): Promise<number> {
     return db.research.count();

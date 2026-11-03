@@ -1,6 +1,7 @@
 // §6.3/§6.4 — Drill-set repository (sets table: sessionId, drillId, nodeId, day).
 import { db } from '../db';
 import { drillSetSchema, type DrillSet } from '../schemas';
+import { withSyncCapture } from './syncCapture';
 
 export const setsRepo = {
   /** Returns the drill set with this id, or undefined. */
@@ -34,11 +35,17 @@ export const setsRepo = {
   /** Validates and upserts a drill set. */
   async put(set: DrillSet): Promise<DrillSet> {
     const parsed = drillSetSchema.parse(set);
-    await db.sets.put(parsed);
+    await withSyncCapture(
+      { table: 'sets', id: parsed.id, op: 'put', value: parsed },
+      () => db.sets.put(parsed),
+    );
     return parsed;
   },
   /** Removes the drill set with this id. */
   async remove(id: string): Promise<void> {
-    await db.sets.delete(id);
+    await withSyncCapture(
+      { table: 'sets', id, op: 'delete' },
+      () => db.sets.delete(id),
+    );
   },
 };
