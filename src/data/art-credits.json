@@ -1,0 +1,69 @@
+{
+ "halls": [
+  {
+   "hub": "today",
+   "id": "UWheXkRpWKI",
+   "photographer": "Masaaki Komori",
+   "handle": "@gaspanik",
+   "page": "https://unsplash.com/photos/UWheXkRpWKI",
+   "position": "50% 60%",
+   "formats": [
+    "avif",
+    "webp"
+   ],
+   "license": "Unsplash License"
+  },
+  {
+   "hub": "train",
+   "id": "D5A-TwxRpUg",
+   "photographer": "Takafumi Yamashita",
+   "handle": "@yamashita0129",
+   "page": "https://unsplash.com/photos/a-large-empty-room-D5A-TwxRpUg",
+   "position": "50% 55%",
+   "formats": [
+    "avif",
+    "webp"
+   ],
+   "license": "Unsplash License"
+  },
+  {
+   "hub": "coach",
+   "id": "Wknl_fbr-YM",
+   "photographer": "Jeff Pratley",
+   "handle": "@pratjeffley",
+   "page": "https://unsplash.com/photos/a-full-moon-over-a-body-of-water-at-night-Wknl_fbr-YM",
+   "position": "50% 22%",
+   "formats": [
+    "avif",
+    "webp"
+   ],
+   "license": "Unsplash License"
+  },
+  {
+   "hub": "study",
+   "id": "zHfhQlQswec",
+   "photographer": "FÍA YANG",
+   "handle": "@fiayang",
+   "page": "https://unsplash.com/photos/black-ink-wash-abstract-zHfhQlQswec",
+   "position": "50% 45%",
+   "formats": [
+    "avif",
+    "webp"
+   ],
+   "license": "Unsplash License"
+  },
+  {
+   "hub": "you",
+   "id": "EsyRI8Wag40",
+   "photographer": "Adam Wilson",
+   "handle": "@fourcolourblack",
+   "page": "https://unsplash.com/photos/a-corridor-of-red-torii-gates-in-japan-EsyRI8Wag40",
+   "position": "50% 50%",
+   "formats": [
+    "avif",
+    "webp"
+   ],
+   "license": "Unsplash License"
+  }
+ ]
+}
