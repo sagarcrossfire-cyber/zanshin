@@ -6,6 +6,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { buildPaletteIndex, searchPalette, type PaletteEntry } from '../../app/paletteIndex';
+import { Button } from '../base/Button';
 import { useFocusTrap } from '../base/Sheet';
 import { IconSearch } from '../icons';
 import './CommandPalette.css';
@@ -62,6 +63,10 @@ export default function CommandPalette({ onClose }: { onClose: () => void }) {
             autoComplete="off"
             spellCheck={false}
           />
+          {/* B2 fix: a phone has no Back and the palette has no backdrop to
+           * tap on small screens, so Cancel is the only way to close it
+           * without a keyboard. Shown at every size. */}
+          <Button variant="secondary" className="z-palette__cancel" onClick={onClose}>Cancel</Button>
         </div>
         <ul className="z-palette__list" id="z-pal-list" role="listbox" aria-label="Results">
           {items.length === 0 && <li className="z-palette__empty" role="presentation">No matches.</li>}

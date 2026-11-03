@@ -147,6 +147,20 @@ export function AppLayout() {
     titleRef.current?.focus({ preventScroll: true });
   }, [location.pathname]);
 
+  // m3: after Lab Mode turns off, move focus to the screen title. The top
+  // bar (with the title) only exists in the non-Lab render, so wait a frame
+  // for it to mount before focusing.
+  const wasLabMode = useRef(labMode);
+  useEffect(() => {
+    if (wasLabMode.current && !labMode) {
+      const raf = requestAnimationFrame(() => titleRef.current?.focus({ preventScroll: true }));
+      wasLabMode.current = labMode;
+      return () => cancelAnimationFrame(raf);
+    }
+    wasLabMode.current = labMode;
+    return undefined;
+  }, [labMode]);
+
   // 2.0 navigation: hub memory, badges, the rail, the palette and shortcuts.
   const [railCollapsed, setRailCollapsed] = useState(readRailCollapsed);
   const [paletteOpen, setPaletteOpen] = useState(false);
