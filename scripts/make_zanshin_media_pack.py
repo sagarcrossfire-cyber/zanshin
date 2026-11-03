@@ -239,8 +239,10 @@ def score_art(kind, name, title, info):
     lower = base.lower()
     if _norm(name) not in _norm(base):
         return None  # must name the character
-    if any(bad in lower for bad in ("logo", "stage", "rage", "heat", "icon_", "flag", "costume")):
+    if any(bad in lower for bad in ("logo", "stage", "rage", "heat", "icon_", "flag", "costume", "custom")):
         return None
+    if re.search(r"(^|[^a-z0-9])(t[1-7]|t5dr|ttt2?|tag)([^a-z0-9]|$)", lower) or re.search(r"-t5dr|t7|ttt", lower):
+        return None  # older games' art is worse than a placeholder
     score = 0
     if kind == "character-portrait":
         if h < 500 or h <= w:
@@ -271,9 +273,16 @@ def find_character_art(fetcher, kind, name):
         sc = score_art(kind, name, title, infos.get(title))
         if sc is not None:
             ranked.append((sc, title))
+    ranked = [pair for pair in ranked if pair[0] > 0]  # never take the best of a bad list
     ranked.sort(key=lambda pair: (-pair[0], pair[1]))
     if not ranked:
-        log("  art search: no usable %s for %s among %d files" % (kind, name, len(titles)))
+        sample = []
+        for title in titles:
+            info = infos.get(title) or {}
+            if _norm(name.split(" ")[0]) in _norm(title):
+                sample.append("%s %sx%s" % (title, info.get("width"), info.get("height")))
+        log("  art search: no usable %s for %s among %d files; candidates: %s" % (
+            kind, name, len(titles), "; ".join(sample[:12]) or "none naming the character"))
         return None, None
     best = ranked[0][1]
     log("  art search: %s for %s -> %s (score %d; next: %s)" % (
