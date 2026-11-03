@@ -38,7 +38,14 @@ jobs:
           else
             python scripts/discover_character_art.py --out art-discovery.json
           fi
+      - name: Official renders contact sheet
+        run: |
+          python -m pip install --quiet pillow
+          python scripts/official_art_sheet.py
       - uses: actions/upload-artifact@v7
         with:
           name: art-discovery
-          path: art-discovery.json
+          path: |
+            art-discovery.json
+            official-art.json
+            official-art-sheet.png
