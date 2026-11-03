@@ -203,6 +203,26 @@ test('Devices card buttons measure at least 44 px, unpaired and paired', async (
   await checkButtons();
 });
 
+test('a paired device opened while sync hangs still shows the paired view', async ({ page }) => {
+  const handle = newSyncHandle();
+  await routeSyncTo(page, handle);
+  await completeOnboarding(page);
+  await setUpSync(page);
+  await expect(page.getByRole('button', { name: 'Unpair this device' })).toBeVisible();
+
+  // Every /api/sync/* call now hangs (never fulfils): refreshSyncStatus() must read the pairing
+  // row straight from IndexedDB and show the paired view without waiting on the network.
+  await page.unroute('**/api/sync/**');
+  await page.route('**/api/sync/**', () => {
+    // Never resolves — simulates a stuck/offline first sync attempt after reload.
+  });
+  await page.reload();
+
+  await expect(page.getByRole('button', { name: 'Set up sync on this device' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Unpair this device' })).toBeVisible();
+  await expect(page.getByText(/Device key comes from sync pairing \(ends …/)).toBeVisible();
+});
+
 for (const theme of ['dark', 'light'] as const) {
   test(`axe: /settings Devices card has no serious/critical violations, unpaired and paired (${theme})`, async ({ page }) => {
     await page.emulateMedia({ colorScheme: theme });

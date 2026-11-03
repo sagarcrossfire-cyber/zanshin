@@ -10,7 +10,7 @@ import { Card } from '../../components/base/Card';
 import { Sheet } from '../../components/base/Sheet';
 import { TextField } from '../../components/base/TextField';
 import {
-  getSyncStatus, pairJoin, pairNew, subscribeSyncStatus, syncNow, unpair,
+  getSyncStatus, pairJoin, pairNew, refreshSyncStatus, subscribeSyncStatus, syncNow, unpair,
   type PairJoinResult, type PairNewResult, type SyncStateValue,
 } from '../../services/sync';
 import './DevicesCard.css';
@@ -60,6 +60,22 @@ export function DevicesCard() {
   useEffect(() => {
     const id = window.setInterval(() => setNowMs(Date.now()), 30_000);
     return () => window.clearInterval(id);
+  }, []);
+
+  // AppLayout's startSyncTriggers also calls refreshSyncStatus() once, but this card can mount
+  // before that effect runs (or independently, e.g. a future standalone /settings deep link), and
+  // in-memory status otherwise starts 'unpaired' until the first syncNow resolves — showing the
+  // wrong (unpaired) view on an already-paired device opened in the background or mid a slow
+  // first sync. Block on this card's own read so the view never flashes wrong.
+  const [checked, setChecked] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    void refreshSyncStatus().finally(() => {
+      if (!cancelled) setChecked(true);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const [settingUp, setSettingUp] = useState(false);
@@ -146,6 +162,14 @@ export function DevicesCard() {
         </p>
         <Button variant="secondary" onClick={() => void copyCode()}>{copied ? 'Copied' : 'Copy'}</Button>{' '}
         <Button onClick={() => { setPairingCode(null); setCopied(false); }}>Done</Button>
+      </Card>
+    );
+  }
+
+  if (!checked) {
+    return (
+      <Card title="Devices">
+        <p className="z-label" role="status">Checking sync…</p>
       </Card>
     );
   }

@@ -85,6 +85,32 @@ export function resetSyncStatusForTests(): void {
   statusListeners.clear();
 }
 
+/**
+ * Reads the pairing row and outbox count straight from the syncState repo — never fetches,
+ * never throws. In-memory `status` starts `'unpaired'` until the first `syncNow` resolves, so a
+ * paired device opened in the background (startSyncTriggers skips its start trigger while
+ * `document.hidden`) or mid a slow first sync would otherwise show the unpaired view. Sets
+ * `{state: 'unpaired'}` when there is no pairing row; when paired and the CURRENT state is still
+ * `'unpaired'`, sets `{state: 'idle', pending}` so the UI reflects "paired" at once. Any other
+ * current state (syncing/offline/signed-out/auth/corrupt/idle-with-a-real-lastSyncAt) is left
+ * alone — this never overwrites a status a real sync attempt already set.
+ */
+export async function refreshSyncStatus(): Promise<SyncStatus> {
+  try {
+    const pairing = await getPairing();
+    if (pairing === undefined) {
+      setStatus({ state: 'unpaired', pending: 0, lastSyncAt: undefined });
+      return status;
+    }
+    if (status.state === 'unpaired') {
+      setStatus({ state: 'idle', pending: await currentPending() });
+    }
+  } catch {
+    // Best-effort: leave status as-is on a read failure (e.g. IndexedDB not yet open).
+  }
+  return status;
+}
+
 // ---------- device id + wire helpers ----------
 
 function randomDeviceId(): string {
@@ -614,6 +640,7 @@ export async function snapshotNowForTests(deps: SyncDeps = {}): Promise<void> {
  * start-up effects). No-op outside a browser (no `window`/`document`). */
 export function startSyncTriggers(deps: SyncDeps = {}): () => void {
   if (typeof window === 'undefined' || typeof document === 'undefined') return () => {};
+  void refreshSyncStatus();
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   const trigger = (): void => {
