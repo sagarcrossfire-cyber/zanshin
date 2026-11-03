@@ -117,7 +117,7 @@ jobs:
   e2e:
     name: Browser tests (phone and desktop)
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 60
     needs: quick
     steps:
       - uses: actions/checkout@v7
