@@ -57,33 +57,34 @@ export function ProgressScreen() {
   return (
     <div className="z-progress">
       <PageHeader eyebrow="The long game" title="Progress" lede="Mastery, minutes and match numbers over time. Consistency counts, not streaks." />
-      <p className="z-rank-line z-label">
-        <span className="z-rank-line__item">
-          <MediaImage kind="rank-badge" subjectKey={rankSubject(profile.targetRank)} width={48} />
-          Target: {profile.targetRank}
-        </span>
-      </p>
       <Suspense fallback={<Skeleton label="Loading charts…" />}>
         <ProgressCharts data={data} weeklyMinutes={profile.weeklyMinutes} />
       </Suspense>
 
       <Card title="Ranked">
+        <p className="z-rank-line z-label">
+          <span className="z-rank-line__item">
+            {(data.ranked.currentRank ?? profile.currentRank) && (
+              <MediaImage
+                kind="rank-badge"
+                subjectKey={rankSubject((data.ranked.currentRank ?? profile.currentRank) as string)}
+                width={48}
+              />
+            )}
+            <span className="z-display-m">{data.ranked.currentRank ?? profile.currentRank ?? 'not set'}</span>
+          </span>
+          <span aria-hidden="true">·</span>
+          <span className="z-rank-line__item">
+            <MediaImage kind="rank-badge" subjectKey={rankSubject(profile.targetRank)} width={48} />
+            Target: {profile.targetRank}
+          </span>
+        </p>
         {data.ranked.hiddenReason !== null ? (
           <p className="z-body-l">
             {data.ranked.hiddenReason} <Link to="/log">Go to Matches</Link>
           </p>
         ) : (
-          <>
-            <p className="z-rank-line z-label">
-              <span className="z-rank-line__item">
-                {data.ranked.currentRank && (
-                  <MediaImage kind="rank-badge" subjectKey={rankSubject(data.ranked.currentRank)} width={48} />
-                )}
-                <span className="z-display-m">{data.ranked.currentRank ?? 'not set'}</span>
-              </span>
-            </p>
-            {data.ranked.bandLine && <p className="z-body-l">{data.ranked.bandLine}</p>}
-          </>
+          data.ranked.bandLine && <p className="z-body-l">{data.ranked.bandLine}</p>
         )}
       </Card>
 

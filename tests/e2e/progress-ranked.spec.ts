@@ -68,6 +68,7 @@ test('synced ranked games show the Ranked card with the current rank and band li
   await page.goto('/progress');
   const card = page.locator('.z-card', { has: page.getByRole('heading', { name: 'Ranked' }) });
   await expect(card.getByText('Eliminator', { exact: true })).toBeVisible();
+  await expect(card.getByText('Target: Tekken King')).toBeVisible();
   await expect(card.getByText(/Path Stage 0.3/)).toBeVisible();
   await expect(card.getByText(/You're on Stage/)).toBeVisible();
 });
@@ -76,6 +77,7 @@ test('no synced ranked games shows the empty state with a link to Matches', asyn
   await completeOnboarding(page);
   await page.goto('/progress');
   const card = page.locator('.z-card', { has: page.getByRole('heading', { name: 'Ranked' }) });
+  await expect(card.getByText('Target: Tekken King')).toBeVisible();
   await expect(card.getByText('Sync ranked games from Matches to see your climb.')).toBeVisible();
   await card.getByRole('link', { name: 'Go to Matches' }).click();
   await expect(page).toHaveURL(/\/log$/);
