@@ -25,7 +25,7 @@ import {
   advanceSession, logSet, recordVerification, sessionSets, undoSet,
 } from '../../services/lab';
 import { syncStageStatuses } from '../../services/stages';
-import { playBeep, releaseWakeLock, requestWakeLock } from '../../services/labMode';
+import { playBeep, requestWakeLock } from '../../services/labMode';
 import { setSessionActive } from '../../services/updateGate';
 import { useAppStore } from '../../stores/appStore';
 import './Lab.css';
@@ -161,16 +161,6 @@ export function SessionRunnerScreen() {
     }
   }, [setLabMode]);
 
-  const exitLabMode = useCallback(() => {
-    setLabMode(false);
-    void releaseWakeLock();
-    try {
-      if (document.fullscreenElement) void document.exitFullscreen().catch(() => undefined);
-    } catch {
-      // Nothing to exit.
-    }
-  }, [setLabMode]);
-
   const handleNext = useCallback(async () => {
     if (!session) return;
     const nowIso = new Date().toISOString();
@@ -302,6 +292,20 @@ export function SessionRunnerScreen() {
   if (session.status === 'done') {
     return <Debrief session={session} sets={sets} curriculum={curriculum} combos={combos} conflicts={conflicts} deltas={deltas} problemMoves={problemMoves} />;
   }
+  if (currentBlock && currentBlock.kind === 'review' && !currentBlock.drillId) {
+    return (
+      <div className="z-runner">
+        <Card title="Flashcard review">
+          <p className="z-body-l">{currentBlock.reason}. Review them now, then come back for the next block.</p>
+          <div className="z-runner__review-actions">
+            <Link to="/cards/review"><Button>Review cards</Button></Link>
+            <Button variant="secondary" onClick={() => void handleNext()} disabled={safeMode}>Next</Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   if (!currentBlock || !resolved) {
     return (
       <Card title="Block not found">
@@ -380,9 +384,7 @@ export function SessionRunnerScreen() {
         <Button variant="secondary" onClick={handlePauseResume} disabled={safeMode}>{paused ? 'Resume' : 'Pause'}</Button>
         <Button variant="secondary" onClick={() => void handleNext()} disabled={safeMode}>Skip</Button>
         <Button onClick={() => void handleNext()} disabled={safeMode}>Next</Button>
-        {labMode
-          ? <Button variant="secondary" onClick={exitLabMode}>Exit Lab Mode</Button>
-          : <Button variant="secondary" onClick={enterLabMode}>Lab Mode</Button>}
+        {!labMode && <Button variant="secondary" onClick={enterLabMode}>Lab Mode</Button>}
       </div>
 
       <Card title="Session notes">
