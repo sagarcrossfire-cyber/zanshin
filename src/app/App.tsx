@@ -3,7 +3,7 @@
 // no placeholders remain. First run routes to /onboarding
 // (AC-ONB-1); after completion /today is the default route.
 import React, { Suspense, lazy, useEffect } from 'react';
-import { BrowserRouter, MemoryRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, MemoryRouter, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { AppLayout } from './AppLayout';
 import { RouteErrorBoundary } from './ErrorBoundary';
 import { applyScheme, applyTheme, initTheme } from './theme';
@@ -68,6 +68,18 @@ function Bounded({ label, children }: { label: string; children: React.ReactNode
   return <RouteErrorBoundary routeLabel={label}>{children}</RouteErrorBoundary>;
 }
 
+// Coach sections are routes (m5): an unknown /coach/<section> redirects to
+// Ask instead of silently rendering it with no navigation feedback.
+const COACH_SECTIONS = new Set(['ask', 'review', 'debriefs', 'research']);
+
+function CoachRoute() {
+  const { section } = useParams();
+  if (section !== undefined && !COACH_SECTIONS.has(section)) {
+    return <Navigate to="/coach/ask" replace />;
+  }
+  return <Bounded label="/coach"><CoachScreen /></Bounded>;
+}
+
 export function AppRoutes() {
   return (
     <Suspense fallback={<main><p>Loading…</p></main>}>
@@ -99,7 +111,7 @@ export function AppRoutes() {
           <Route path="/log/:matchSetId" element={<RequireOnboarding allowFromStep={4}><Bounded label="/log/:matchSetId"><LogDetailScreen /></Bounded></RequireOnboarding>} />
           <Route path="/progress" element={<RequireOnboarding><Bounded label="/progress"><ProgressScreen /></Bounded></RequireOnboarding>} />
           <Route path="/coach" element={<Navigate to="/coach/ask" replace />} />
-          <Route path="/coach/:section" element={<RequireOnboarding><Bounded label="/coach"><CoachScreen /></Bounded></RequireOnboarding>} />
+          <Route path="/coach/:section" element={<RequireOnboarding><CoachRoute /></RequireOnboarding>} />
           <Route path="/cards" element={<RequireOnboarding><Bounded label="/cards"><CardsScreen /></Bounded></RequireOnboarding>} />
           <Route path="/cards/review" element={<RequireOnboarding><Bounded label="/cards/review"><CardReviewScreen /></Bounded></RequireOnboarding>} />
           <Route path="/patch" element={<RequireOnboarding><Bounded label="/patch"><PatchWatchScreen /></Bounded></RequireOnboarding>} />

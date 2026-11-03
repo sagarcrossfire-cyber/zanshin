@@ -143,7 +143,14 @@ export function AppLayout() {
 
   // Focus the screen title on route change (§4.12): keyboard and screen
   // reader users land on the new screen's heading, not the old content.
+  // n4: never on the very first mount — that would steal the very first
+  // Tab from the skip-content link before a keyboard user ever sees it.
+  const titleFocusMounted = useRef(false);
   useEffect(() => {
+    if (!titleFocusMounted.current) {
+      titleFocusMounted.current = true;
+      return;
+    }
     titleRef.current?.focus({ preventScroll: true });
   }, [location.pathname]);
 
@@ -165,6 +172,7 @@ export function AppLayout() {
   const [railCollapsed, setRailCollapsed] = useState(readRailCollapsed);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [badges, setBadges] = useState<NavBadgeCounts>({ dueCards: 0 });
+  const navBadgeSettings = useAppStore((s) => s.settings);
   const toggleRail = useCallback(() => {
     setRailCollapsed((current) => {
       writeRailCollapsed(!current);
@@ -177,13 +185,13 @@ export function AppLayout() {
   useEffect(() => {
     if (!ready) return;
     let cancelled = false;
-    void loadNavBadges().then((next) => {
+    void loadNavBadges(navBadgeSettings).then((next) => {
       if (!cancelled) setBadges(next);
     });
     return () => {
       cancelled = true;
     };
-  }, [ready, location.pathname]);
+  }, [ready, location.pathname, navBadgeSettings]);
   useEffect(() => {
     if (labMode) return undefined;
     const onKey = (e: KeyboardEvent) => {
@@ -261,6 +269,7 @@ export function AppLayout() {
   if (labMode) {
     return (
       <div className="z-shell z-lab">
+        <a href="#main" className="z-skip-link">Skip to content</a>
         <Scene />
         <LabStrip onExit={() => { setLabMode(false); void leaveLabModeDevice(); }} />
         {safeBanner}
@@ -274,6 +283,7 @@ export function AppLayout() {
 
   return (
     <div className={`z-shell${showNav && !railCollapsed ? ' z-shell--rail-open' : ''}`}>
+      <a href="#main" className="z-skip-link">Skip to content</a>
       <Scene />
       <header className="z-topbar">
         <Link to="/today" className="z-topbar__brand" aria-label="ZANSHIN home">

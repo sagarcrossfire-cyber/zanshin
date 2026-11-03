@@ -45,17 +45,17 @@ export function Dock({ pathname, badges }: { pathname: string; badges: NavBadgeC
             to={isActive ? hub.root : hubTarget(hub.id, hub.root)}
             className={`z-dock__item${isActive ? ' z-dock__item--active' : ''}${hub.id === 'coach' ? ' z-dock__item--coach' : ''}`}
             aria-current={isActive ? 'page' : undefined}
+            aria-label={extra !== '' ? `${hub.label}, ${extra}` : hub.label}
             onClick={() => scrollTopIfSame(isActive)}
           >
             <span className="z-dock__icon">
               {hub.id === 'coach' && <BrushEnso size={36} className="z-dock__enso" />}
               <Icon size={24} />
               {hub.id === 'train' && badges.dueCards > 0 && (
-                <span className="z-nav-count" aria-hidden="true">{badges.dueCards > 99 ? '99+' : badges.dueCards}</span>
+                <span className="z-nav-count" aria-hidden="true" data-count={badges.dueCards > 99 ? '99+' : String(badges.dueCards)} />
               )}
             </span>
             <span className="z-dock__label">{hub.label}</span>
-            {extra !== '' && <span className="z-visually-hidden">, {extra}</span>}
           </Link>
         );
       })}
@@ -96,16 +96,16 @@ export function Rail({
                 to={isActive ? hub.root : hubTarget(hub.id, hub.root)}
                 className={`z-rail__hub${isActive ? ' z-rail__hub--active' : ''}${exact ? ' z-rail__hub--exact' : ''}`}
                 aria-current={isActive ? 'page' : undefined}
+                aria-label={extra !== '' ? `${hub.label}, ${extra}` : hub.label}
                 title={collapsed ? hub.label : undefined}
                 onClick={() => scrollTopIfSame(isActive)}
               >
                 <span className="z-rail__icon"><Icon size={20} /></span>
                 <span className="z-rail__label z-rail__hub-label">{hub.label}</span>
-                <span className="z-rail__kanji z-rail__label" aria-hidden="true">{hub.kanji}</span>
+                <span className="z-rail__kanji z-rail__label" aria-hidden="true" data-kanji={hub.kanji} />
                 {hub.id === 'train' && badges.dueCards > 0 && (
-                  <span className="z-nav-count z-rail__count" aria-hidden="true">{badges.dueCards > 99 ? '99+' : badges.dueCards}</span>
+                  <span className="z-nav-count z-rail__count" aria-hidden="true" data-count={badges.dueCards > 99 ? '99+' : String(badges.dueCards)} />
                 )}
-                {extra !== '' && <span className="z-visually-hidden">, {extra}</span>}
               </Link>
               {isActive && sections.length > 0 && (
                 <ul className="z-rail__sections" aria-label={`${hub.label} sections`}>
