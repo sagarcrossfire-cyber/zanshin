@@ -4,6 +4,7 @@ dist/
 dist-standalone/
 node_modules/
 playwright-report/
+playwright.local.config.ts
 test-results/
 *.log
 checkpoints/

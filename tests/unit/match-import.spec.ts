@@ -1,10 +1,9 @@
-// §9.3/§5.12 — Match import adapters: CSV parsing, dedupe, zero tallies,
-// and shape-tolerant Wank/ewgf fetching (URL/shape unverified; adapters
-// parse defensively and surface errors instead of inventing data).
-import { describe, expect, it, vi } from 'vitest';
+// §9.3/§5.12 — Match import: CSV parsing, dedupe, zero tallies, and the
+// 2.0 M2 `tallied: false` marker (CSV never invents tallies, so per-game
+// KPIs must ignore an imported set until Sagar fills them in).
+import { describe, expect, it } from 'vitest';
 import {
-  fetchEwgfBattles, fetchWankBattles, isDuplicateBattle, parseMatchCsv, toMatchSet,
-  type ImportedBattle,
+  isDuplicateBattle, parseMatchCsv, toMatchSet, type ImportedBattle,
 } from '../../src/data/import/matches';
 import type { MatchSet } from '../../src/data/schemas';
 
@@ -44,10 +43,11 @@ describe('parseMatchCsv', () => {
 });
 
 describe('toMatchSet / isDuplicateBattle', () => {
-  it('imports never invent tallies', () => {
+  it('imports never invent tallies, and the set is marked tallied: false', () => {
     const set = toMatchSet(battle(), 'match-b1');
     expect(Object.values(set.tallies).every((v) => v === 0)).toBe(true);
     expect(set.beatBy).toEqual([]);
+    expect(set.tallied).toBe(false);
   });
 
   it('dedupes on importRef', () => {
@@ -63,41 +63,5 @@ describe('toMatchSet / isDuplicateBattle', () => {
     const existing: MatchSet[] = [{ ...toMatchSet(battle(), 'match-x'), importRef: undefined }];
     expect(isDuplicateBattle(existing, battle({ battleId: 'other' }))).toBe(true);
     expect(isDuplicateBattle(existing, battle({ battleId: 'other', wins: 4 }))).toBe(false);
-  });
-});
-
-describe('fetch adapters (stubbed fetch)', () => {
-  function stubFetch(json: unknown, status = 200) {
-    return vi.fn(async () => ({ ok: status >= 200 && status < 300, status, json: async () => json }));
-  }
-
-  it('fetchWankBattles reads the battles key and tolerates the matches key', async () => {
-    const fetcher = stubFetch({ battles: [{ id: 'w1', date: '2026-10-30T20:00:00Z', character: 'Kazuya', games: 5, wins: 3 }] });
-    const battles = await fetchWankBattles(fetcher, 'tekken-123');
-    expect(battles).toHaveLength(1);
-    expect(battles[0]?.opponentCharacter).toBe('Kazuya');
-    expect(fetcher).toHaveBeenCalledWith(expect.stringContaining('tekken-123'), expect.anything());
-
-    const alt = stubFetch({ matches: [{ battleId: 'w2', at: '2026-10-30T21:00:00Z', opponentCharacter: 'Jin', games: 2, wins: 1 }] });
-    expect((await fetchWankBattles(alt, 'tekken-123'))).toHaveLength(1);
-  });
-
-  it('fetchWankBattles throws a readable error on HTTP failure', async () => {
-    const fetcher = stubFetch({}, 404);
-    await expect(fetchWankBattles(fetcher, 'tekken-123')).rejects.toThrow(/404/);
-  });
-
-  it('fetchEwgfBattles sends the Bearer token and never stores it', async () => {
-    const fetcher = stubFetch([{ id: 'e1', date: '2026-10-30T20:00:00Z', character: 'Paul', games: 3, wins: 1, mode: 'ranked' }]);
-    const battles = await fetchEwgfBattles(fetcher, 'tekken-123', 'tok-abc');
-    expect(battles).toHaveLength(1);
-    const [, init] = fetcher.mock.calls[0] as unknown as [string, { headers: Record<string, string> }];
-    expect(init.headers.Authorization).toBe('Bearer tok-abc');
-    expect(battles[0]?.opponentCharacter).toBe('Paul');
-  });
-
-  it('fetchEwgfBattles surfaces 401 as an auth error', async () => {
-    const fetcher = stubFetch({}, 401);
-    await expect(fetchEwgfBattles(fetcher, 'tekken-123', 'bad')).rejects.toThrow(/401|unauthori/i);
   });
 });

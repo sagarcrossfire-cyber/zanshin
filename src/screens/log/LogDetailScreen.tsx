@@ -129,6 +129,22 @@ export function LogDetailScreen() {
         </p>
       </Card>
 
+      {set.ranked && (
+        <Card title="Synced games">
+          <ul className="z-log__games">
+            {set.ranked.battles.map((battle) => (
+              <li key={battle.ref}>
+                {new Date(battle.at).toLocaleString()} — {battle.result}
+                {battle.roundsWon !== undefined && battle.roundsLost !== undefined
+                  ? ` (${battle.roundsWon}–${battle.roundsLost} rounds)` : ''}
+                {battle.myRank !== undefined ? ` · me: ${battle.myRank}` : ''}
+                {battle.opponentRank !== undefined ? ` · opponent: ${battle.opponentRank}` : ''}
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+
       <Card title="Replay reviews">
         {reviews.length === 0 && <p>No reviews yet.</p>}
         {reviews.map((review) => (
