@@ -16,6 +16,7 @@ import {
   YAxis,
 } from 'recharts';
 import { Card } from '../../components/base/Card';
+import { RANKS } from '../../config/ranks';
 import type { ChartData, ProgressData } from '../../services/progress';
 
 function ChartBlock({ title, data, children }: { title: string; data: ChartData; children: React.ReactNode }) {
@@ -128,6 +129,53 @@ export default function ProgressCharts({ data, weeklyMinutes }: { data: Progress
           </BarChart>
         </ResponsiveContainer>
       </ChartBlock>
+
+      {data.ranked.hiddenReason === null && (
+        <>
+          <ChartBlock title="Rank climb" data={data.ranked.rankChart}>
+            <ResponsiveContainer width="100%" height={180}>
+              <LineChart data={data.ranked.rankChart.points}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="label" />
+                <YAxis
+                  domain={['dataMin', 'dataMax']}
+                  allowDecimals={false}
+                  tickFormatter={(v: number) => RANKS[v] ?? String(v)}
+                  width={110}
+                />
+                <Tooltip formatter={(v) => [RANKS[Number(v)] ?? String(v), 'Rank']} />
+                <Line
+                  type="stepAfter"
+                  dataKey="value"
+                  name="Rank"
+                  stroke="var(--text-1)"
+                  strokeWidth={2.5}
+                  dot={{ fill: 'var(--text-1)', r: 3 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </ChartBlock>
+
+          <ChartBlock title="Rating trend" data={data.ranked.ratingChart}>
+            <ResponsiveContainer width="100%" height={180}>
+              <LineChart data={data.ranked.ratingChart.points}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="label" />
+                <YAxis domain={['dataMin - 20', 'dataMax + 20']} />
+                <Tooltip />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  name="Rating"
+                  stroke="var(--accent)"
+                  strokeWidth={2.5}
+                  dot={{ fill: 'var(--accent)', r: 3 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </ChartBlock>
+        </>
+      )}
     </>
   );
 }
