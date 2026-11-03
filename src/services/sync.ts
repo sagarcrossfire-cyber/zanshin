@@ -6,31 +6,26 @@
 // where they differ, in particular the per-writer-cursor protocol and the
 // additive `GET snap/<hlc>` route added alongside this card).
 //
-// Key handling: `deriveKeys` (src/domain/sync/crypto.ts) only accepts raw
-// secret bytes, but this card stores the pairing secret as a non-extractable
-// imported HKDF CryptoKey (never raw bytes) in `syncMeta`. src/domain/sync is
-// out of this card's file list, so `deriveKeysFromBaseKey` below is a small,
-// deliberate duplicate of deriveKeys' HKDF parameters (same salt/info/hash),
-// starting from an already-imported base key instead of raw bytes — it
-// derives byte-identical keys to `deriveKeys(secretBytes)` for the same
-// secret. Keep its salt/info strings in lockstep with crypto.ts if that ever
-// changes.
+// Only repositories touch IndexedDB (§6.2): every `syncMeta`/`syncOutbox`/table read or write
+// this engine needs lives in src/data/repos/syncState.ts (or syncCapture.ts for capture/merge);
+// this file calls those instead of `db` directly.
 import {
-  authVerifier, decodePairingCode, decryptBatch, encodePairingCode, encryptBatch,
-  generatePairingSecret, type SyncKeys,
+  authVerifier, decodePairingCode, decryptBatch, deriveKeysFromBaseKey, encodePairingCode,
+  encryptBatch, generatePairingSecret, type SyncKeys,
 } from '../domain/sync/crypto';
 import { tick } from '../domain/sync/hlc';
 import type { SyncChange } from '../domain/sync/merge';
-import { SYNCED_TABLES, stripDeviceLocalSettings } from '../domain/sync/tables';
-import { applyRemoteChanges, captureExisting, db, errorsRepo, onSyncOutboxWrite } from '../data/repos';
-import type {
-  SyncClockRow, SyncCursorsRow, SyncOutboxRow, SyncRecordMetaRow,
-} from '../data/schemas';
+import {
+  applyRemoteChanges, buildFullSnapshotChanges, captureExisting, clearPairingState,
+  deleteOutboxRows, getClockHlc, getCursors, getPairing, getSnapStats, nextOutboxBatch,
+  onSyncOutboxWrite, outboxCount, outboxRowsToChanges, recordSyncError, setCursors, setPairing,
+  setSnapStats, type CursorMap,
+} from '../data/repos';
 import { recomputeAllMastery } from './lab';
 import { clearDeviceKey, setDeviceKey } from './deviceKey';
 import { checkSiteNow } from './siteAccess';
 import { APP_VERSION } from './backup';
-import { SYNC_AUTH_HEADER, type CursorMap } from '../server/sync/schema';
+import { SYNC_AUTH_HEADER } from '../server/sync/schema';
 
 export const SYNC_API_URL = '/api/sync';
 const PUSH_BATCH_MAX_CHANGES = 500;
@@ -42,7 +37,6 @@ export const RETRY_BACKOFF_MIN_MS = 30_000;
 export const RETRY_BACKOFF_MAX_MS = 10 * 60_000;
 const SNAP_RETRY_MAX = 3;
 const SYNC_TIMEOUT_MS = 30_000;
-const HKDF_SALT = 'zanshin-sync-v1'; // must match src/domain/sync/crypto.ts HKDF_SALT
 
 // ---------- status (subscribable, no React) ----------
 
@@ -77,9 +71,9 @@ export function subscribeSyncStatus(listener: () => void): () => void {
   };
 }
 
-async function outboxCount(): Promise<number> {
+async function currentPending(): Promise<number> {
   try {
-    return await db.syncOutbox.count();
+    return await outboxCount();
   } catch {
     return status.pending;
   }
@@ -91,34 +85,10 @@ export function resetSyncStatusForTests(): void {
   statusListeners.clear();
 }
 
-// ---------- pairing storage ----------
-
-interface PairingRecord {
-  key: 'pairing';
-  deviceId: string;
-  secret: CryptoKey;
-  pairedAt: string;
-}
-
-interface SnapStatsRow {
-  key: 'snapStats';
-  batchesSincePush: number;
-  lastSnapshotAt?: string;
-}
-
-async function getPairing(): Promise<PairingRecord | undefined> {
-  const row = await db.syncMeta.get('pairing');
-  return row as PairingRecord | undefined;
-}
+// ---------- device id + wire helpers ----------
 
 function randomDeviceId(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(16));
-  let binary = '';
-  for (const b of bytes) binary += String.fromCharCode(b);
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-function toBase64Url(bytes: Uint8Array): string {
   let binary = '';
   for (const b of bytes) binary += String.fromCharCode(b);
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -128,52 +98,11 @@ async function importBaseKey(secretBytes: Uint8Array): Promise<CryptoKey> {
   return crypto.subtle.importKey('raw', secretBytes as BufferSource, 'HKDF', false, ['deriveKey', 'deriveBits']);
 }
 
-async function deriveKeysFromBaseKey(baseKey: CryptoKey): Promise<SyncKeys> {
-  const salt = new TextEncoder().encode(HKDF_SALT);
-  const encKey = await crypto.subtle.deriveKey(
-    { name: 'HKDF', hash: 'SHA-256', salt, info: new TextEncoder().encode('enc') },
-    baseKey,
-    { name: 'AES-GCM', length: 256 },
-    false,
-    ['encrypt', 'decrypt'],
-  );
-  const authBits = await crypto.subtle.deriveBits(
-    { name: 'HKDF', hash: 'SHA-256', salt, info: new TextEncoder().encode('auth') },
-    baseKey,
-    256,
-  );
-  const deviceBits = await crypto.subtle.deriveBits(
-    { name: 'HKDF', hash: 'SHA-256', salt, info: new TextEncoder().encode('device') },
-    baseKey,
-    256,
-  );
-  return {
-    encKey,
-    authKey: toBase64Url(new Uint8Array(authBits)),
-    deviceKey: toBase64Url(new Uint8Array(deviceBits)),
-  };
-}
-
 function authHeaders(keys: SyncKeys, contentType?: string): Record<string, string> {
   const headers: Record<string, string> = { [SYNC_AUTH_HEADER]: keys.authKey };
   if (contentType !== undefined) headers['content-type'] = contentType;
   return headers;
 }
-
-async function recordCorruptError(nowMs: number, where: string): Promise<void> {
-  try {
-    await errorsRepo.put({
-      id: `err-sync-${typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : Math.random().toString(36).slice(2)}`,
-      at: new Date(nowMs).toISOString(),
-      where,
-      message: 'a sync batch failed to decrypt (tampered data or wrong key)',
-    });
-  } catch {
-    // Recording the error is best-effort; the caller's 'corrupt' status is what matters.
-  }
-}
-
-// ---------- wire helpers (shared failure classification) ----------
 
 export interface SyncDeps {
   fetchImpl?: typeof fetch;
@@ -292,34 +221,9 @@ async function postAck(
 
 // ---------- push ----------
 
-function toSyncChanges(rows: SyncOutboxRow[]): SyncChange[] {
-  return rows.map((row) => ({
-    table: row.table, id: row.id, hlc: row.hlc, op: row.op,
-    ...(row.op === 'put' ? { value: row.value } : {}),
-  }));
-}
-
-async function nextOutboxBatch(): Promise<SyncOutboxRow[]> {
-  const rows = await db.syncOutbox.orderBy('seq').limit(PUSH_BATCH_MAX_CHANGES).toArray();
-  if (rows.length === 0) return rows;
-  let trimmed = rows;
-  while (trimmed.length > 1 && JSON.stringify(toSyncChanges(trimmed)).length > PUSH_BATCH_MAX_BYTES) {
-    trimmed = trimmed.slice(0, -1);
-  }
-  return trimmed;
-}
-
-/** Casts a sync.ts-local singleton row (snapStats) past the data-layer's SyncMetaRow union,
- * which (deliberately) does not know about this engine-card-only row shape. */
-function putSyncMetaRow(row: { key: string } & Record<string, unknown>): Promise<string> {
-  return db.syncMeta.put(row as never);
-}
-
 async function bumpPushedBatches(): Promise<void> {
-  const stats = await db.syncMeta.get('snapStats') as SnapStatsRow | undefined;
-  await putSyncMetaRow({
-    key: 'snapStats', batchesSincePush: (stats?.batchesSincePush ?? 0) + 1, lastSnapshotAt: stats?.lastSnapshotAt,
-  });
+  const stats = await getSnapStats();
+  await setSnapStats({ batchesSincePush: (stats?.batchesSincePush ?? 0) + 1, lastSnapshotAt: stats?.lastSnapshotAt });
 }
 
 async function pushOutbox(
@@ -328,9 +232,9 @@ async function pushOutbox(
   fetchImpl: typeof fetch,
 ): Promise<{ kind: 'ok' } | Failure> {
   for (;;) {
-    const rows = await nextOutboxBatch();
+    const rows = await nextOutboxBatch(PUSH_BATCH_MAX_CHANGES, PUSH_BATCH_MAX_BYTES);
     if (rows.length === 0) return { kind: 'ok' };
-    const changes = toSyncChanges(rows);
+    const changes = outboxRowsToChanges(rows);
     const ciphertext = await encryptBatch(keys.encKey, JSON.stringify(changes));
     const lastHlc = rows[rows.length - 1]?.hlc as string;
     let response: Response;
@@ -343,7 +247,7 @@ async function pushOutbox(
     }
     if (response.status === 201 || response.status === 409) {
       const seqs = rows.map((row) => row.seq).filter((seq): seq is number => seq !== undefined);
-      await db.syncOutbox.bulkDelete(seqs);
+      await deleteOutboxRows(seqs);
       await bumpPushedBatches();
       continue;
     }
@@ -361,8 +265,7 @@ async function pullAll(
 ): Promise<{ kind: 'ok' } | Failure | { kind: 'corrupt' }> {
   const stateOutcome = await getState(keys, fetchImpl);
   if (stateOutcome.kind !== 'ok') return stateOutcome;
-  const cursorsRow = await db.syncMeta.get('cursors') as SyncCursorsRow | undefined;
-  const cursors: CursorMap = { ...(cursorsRow?.map ?? {}) };
+  const cursors: CursorMap = await getCursors();
   let setsChanged = false;
 
   for (const device of stateOutcome.state.devices) {
@@ -379,7 +282,7 @@ async function pullAll(
         try {
           json = await decryptBatch(keys.encKey, entry.body);
         } catch {
-          await recordCorruptError(nowMs(), 'sync:pull');
+          await recordSyncError('sync:pull', 'a sync batch failed to decrypt (tampered data or wrong key)', new Date(nowMs()).toISOString());
           return { kind: 'corrupt' };
         }
         changes.push(...(JSON.parse(json) as SyncChange[]));
@@ -389,7 +292,7 @@ async function pullAll(
       after = page.entries[page.entries.length - 1]?.hlc;
       if (after !== undefined) {
         cursors[device.deviceId] = after;
-        await db.syncMeta.put({ key: 'cursors', map: cursors });
+        await setCursors(cursors);
       }
       if (page.next === undefined) break;
       after = page.next;
@@ -405,49 +308,30 @@ async function pullAll(
 
 // ---------- snapshot ----------
 
-async function buildFullSnapshotChanges(): Promise<SyncChange[]> {
-  const metaRows = await db.syncMeta.toArray();
-  const changes: SyncChange[] = [];
-  for (const row of metaRows) {
-    const key = (row as { key: string }).key;
-    const sep = key.indexOf(':');
-    if (sep < 0) continue; // singleton rows: clock/device/cursors/pairing/snapStats
-    const table = key.slice(0, sep);
-    if (!(SYNCED_TABLES as readonly string[]).includes(table)) continue;
-    const id = key.slice(sep + 1);
-    const meta = row as SyncRecordMetaRow;
-    if (meta.deleted === true) {
-      changes.push({ table, id, hlc: meta.hlc, op: 'delete' });
-      continue;
-    }
-    const value = table === 'settings'
-      ? stripDeviceLocalSettings((await db.settings.get(id)) as Record<string, unknown> ?? {})
-      : await db.table(table).get(id);
-    if (value === undefined) continue; // meta row exists but the record vanished; skip defensively
-    changes.push({ table, id, hlc: meta.hlc, op: 'put', value });
-  }
-  return changes;
-}
-
 async function writeFullSnapshot(
   deviceId: string,
   keys: SyncKeys,
   fetchImpl: typeof fetch,
   nowMs: () => number,
 ): Promise<void> {
+  // Read the clock and the pull cursor BEFORE building the snapshot body: if a write landed mid-
+  // build, a cursor taken afterwards could claim a record the snapshot body does not actually
+  // contain. The snapshot's cursor is this device's own progress (clockBefore) PLUS everything it
+  // has already pulled from every other writer (cursorsBefore) — not just itself — so a joining
+  // device bootstraps fully even if it only ever talks to this one snapshot.
+  const clockBefore = await getClockHlc();
+  const cursorsBefore = await getCursors();
   const changes = await buildFullSnapshotChanges();
   const ciphertext = await encryptBatch(keys.encKey, JSON.stringify(changes));
-  const clockRow = await db.syncMeta.get('clock') as SyncClockRow | undefined;
-  const clockHlc = clockRow?.hlc;
-  const snapHlc = tick(clockHlc, nowMs(), deviceId);
-  const cursor: CursorMap = clockHlc !== undefined ? { [deviceId]: clockHlc } : {};
+  const snapHlc = tick(clockBefore, nowMs(), deviceId);
+  const cursor: CursorMap = { ...cursorsBefore, ...(clockBefore !== undefined ? { [deviceId]: clockBefore } : {}) };
   try {
     const response = await fetchImpl(`${SYNC_API_URL}/snap/${snapHlc}`, {
       method: 'PUT', headers: authHeaders(keys, 'application/json'),
       body: JSON.stringify({ cursor, data: ciphertext }), signal: AbortSignal.timeout(SYNC_TIMEOUT_MS),
     });
     if (response.status === 201 || response.status === 409) {
-      await putSyncMetaRow({ key: 'snapStats', batchesSincePush: 0, lastSnapshotAt: new Date(nowMs()).toISOString() });
+      await setSnapStats({ batchesSincePush: 0, lastSnapshotAt: new Date(nowMs()).toISOString() });
     }
   } catch {
     // Best-effort: snapshot cadence just retries on the next successful sync pass.
@@ -460,7 +344,7 @@ async function maybeSnapshot(
   fetchImpl: typeof fetch,
   nowMs: () => number,
 ): Promise<void> {
-  const stats = await db.syncMeta.get('snapStats') as SnapStatsRow | undefined;
+  const stats = await getSnapStats();
   const dueByCount = (stats?.batchesSincePush ?? 0) >= SNAPSHOT_EVERY_BATCHES;
   const dueByAge = stats?.lastSnapshotAt === undefined
     || nowMs() - Date.parse(stats.lastSnapshotAt) >= SNAPSHOT_MAX_AGE_MS;
@@ -501,26 +385,27 @@ function scheduleRetry(deps: SyncDeps): void {
   }, delay);
 }
 
-// ---------- syncNow (one at a time) ----------
+// ---------- the shared mutex: syncNow, pairNew and pairJoin all run through this ----------
 
-let syncInFlight: Promise<SyncStatus> | null = null;
-let rerunRequested = false;
+let mutexTail: Promise<unknown> = Promise.resolve();
 
-/** Push then pull. One sync at a time (a concurrent call is queued to run once more after this
- * one finishes). Never throws: every failure resolves into `status`. */
-export async function syncNow(deps: SyncDeps = {}): Promise<SyncStatus> {
-  if (syncInFlight !== null) {
-    rerunRequested = true;
-    return syncInFlight;
-  }
-  syncInFlight = doSyncNow(deps).finally(() => {
-    syncInFlight = null;
-    if (rerunRequested) {
-      rerunRequested = false;
-      void syncNow(deps);
-    }
-  });
-  return syncInFlight;
+/** Serializes every sync-engine entry point (push/pull, pairing) onto one chain, so pairing never
+ * races a push/pull in flight and vice versa. Each call runs after the previous settles,
+ * regardless of whether it resolved or rejected. */
+function withSyncMutex<T>(fn: () => Promise<T>): Promise<T> {
+  const run = mutexTail.then(fn, fn);
+  mutexTail = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
+}
+
+// ---------- syncNow ----------
+
+/** Push then pull, under the shared mutex. Never throws: every failure resolves into `status`. */
+export function syncNow(deps: SyncDeps = {}): Promise<SyncStatus> {
+  return withSyncMutex(() => doSyncNow(deps));
 }
 
 async function doSyncNow(deps: SyncDeps): Promise<SyncStatus> {
@@ -529,7 +414,7 @@ async function doSyncNow(deps: SyncDeps): Promise<SyncStatus> {
   try {
     const pairing = await getPairing();
     if (pairing === undefined) {
-      setStatus({ state: 'unpaired', pending: await outboxCount() });
+      setStatus({ state: 'unpaired', pending: await currentPending() });
       return status;
     }
     setStatus({ state: 'syncing' });
@@ -537,23 +422,23 @@ async function doSyncNow(deps: SyncDeps): Promise<SyncStatus> {
 
     const pushResult = await pushOutbox(pairing.deviceId, keys, fetchImpl);
     if (pushResult.kind !== 'ok') {
-      setStatus({ state: failureToState(pushResult), pending: await outboxCount() });
+      setStatus({ state: failureToState(pushResult), pending: await currentPending() });
       if (pushResult.kind === 'offline') scheduleRetry(deps);
       return status;
     }
 
     const pullResult = await pullAll(pairing.deviceId, keys, fetchImpl, nowMs);
     if (pullResult.kind !== 'ok') {
-      setStatus({ state: failureToState(pullResult), pending: await outboxCount() });
+      setStatus({ state: failureToState(pullResult), pending: await currentPending() });
       if (pullResult.kind === 'offline') scheduleRetry(deps);
       return status;
     }
 
     resetBackoff();
-    setStatus({ state: 'idle', lastSyncAt: new Date(nowMs()).toISOString(), pending: await outboxCount() });
+    setStatus({ state: 'idle', lastSyncAt: new Date(nowMs()).toISOString(), pending: await currentPending() });
     return status;
   } catch {
-    setStatus({ state: 'offline', pending: await outboxCount() });
+    setStatus({ state: 'offline', pending: await currentPending() });
     scheduleRetry(deps);
     return status;
   }
@@ -565,8 +450,12 @@ export type PairNewResult = { kind: 'ok'; code: string } | { kind: 'offline' } |
 
 /** Generates a pairing secret, registers it with the server and enqueues a full encrypted
  * snapshot. Returns the pairing code ONCE for display — it is never stored, only the derived
- * non-extractable keys and base key are. */
-export async function pairNew(deps: SyncDeps = {}): Promise<PairNewResult> {
+ * non-extractable keys and base key are. Runs under the same mutex as syncNow. */
+export function pairNew(deps: SyncDeps = {}): Promise<PairNewResult> {
+  return withSyncMutex(() => doPairNew(deps));
+}
+
+async function doPairNew(deps: SyncDeps): Promise<PairNewResult> {
   const fetchImpl = deps.fetchImpl ?? globalThis.fetch;
   const nowMs = deps.nowMs ?? Date.now;
   try {
@@ -581,12 +470,11 @@ export async function pairNew(deps: SyncDeps = {}): Promise<PairNewResult> {
       return outcome.kind === 'signed-out' ? { kind: 'signed-out' } : { kind: 'offline' };
     }
     const deviceId = randomDeviceId();
-    await db.syncMeta.put({ key: 'pairing', deviceId, secret: baseKey, pairedAt: new Date(nowMs()).toISOString() });
-    await db.syncMeta.put({ key: 'device', deviceId });
+    await setPairing(deviceId, baseKey, new Date(nowMs()).toISOString());
     setDeviceKey(keys.deviceKey);
     await captureExisting(); // before the snapshot, so the snapshot is complete
     await writeFullSnapshot(deviceId, keys, fetchImpl, nowMs);
-    setStatus({ state: 'idle', lastSyncAt: new Date(nowMs()).toISOString(), pending: await outboxCount() });
+    setStatus({ state: 'idle', lastSyncAt: new Date(nowMs()).toISOString(), pending: await currentPending() });
     return { kind: 'ok', code: encodePairingCode(secretBytes) };
   } catch {
     return { kind: 'offline' };
@@ -613,8 +501,13 @@ function failureToPairJoin(failure: Failure): PairJoinResult {
 /** Decodes the pairing code, bootstraps from the server's latest snapshot (falling back to full
  * per-writer logs if there is none, or if `GET snap` 404s up to SNAP_RETRY_MAX times), pulls every
  * writer's log after that cursor, recomputes mastery if sets arrived, then captures this device's
- * own pre-join records so they reach the other side on the next `syncNow`. */
-export async function pairJoin(code: string, deps: SyncDeps = {}): Promise<PairJoinResult> {
+ * own pre-join records so they reach the other side on the next `syncNow`. Runs under the same
+ * mutex as syncNow. */
+export function pairJoin(code: string, deps: SyncDeps = {}): Promise<PairJoinResult> {
+  return withSyncMutex(() => doPairJoin(code, deps));
+}
+
+async function doPairJoin(code: string, deps: SyncDeps): Promise<PairJoinResult> {
   const fetchImpl = deps.fetchImpl ?? globalThis.fetch;
   const nowMs = deps.nowMs ?? Date.now;
   try {
@@ -642,7 +535,7 @@ export async function pairJoin(code: string, deps: SyncDeps = {}): Promise<PairJ
           try {
             bootstrapChanges = JSON.parse(await decryptBatch(keys.encKey, snapOutcome.snap.data)) as SyncChange[];
           } catch {
-            await recordCorruptError(nowMs(), 'sync:pairJoin:snap');
+            await recordSyncError('sync:pairJoin:snap', 'a sync batch failed to decrypt (tampered data or wrong key)', new Date(nowMs()).toISOString());
             return { kind: 'corrupt' };
           }
           cursors = snapOutcome.snap.cursor;
@@ -664,9 +557,8 @@ export async function pairJoin(code: string, deps: SyncDeps = {}): Promise<PairJ
     }
 
     const deviceId = randomDeviceId();
-    await db.syncMeta.put({ key: 'pairing', deviceId, secret: baseKey, pairedAt: new Date(nowMs()).toISOString() });
-    await db.syncMeta.put({ key: 'device', deviceId });
-    await db.syncMeta.put({ key: 'cursors', map: cursors });
+    await setPairing(deviceId, baseKey, new Date(nowMs()).toISOString());
+    await setCursors(cursors);
     setDeviceKey(keys.deviceKey);
 
     if (bootstrapChanges !== null && bootstrapChanges.length > 0) {
@@ -680,9 +572,9 @@ export async function pairJoin(code: string, deps: SyncDeps = {}): Promise<PairJ
     await captureExisting(); // after bootstrap: this device's pre-join records reach A too.
 
     if (pullOutcome.kind !== 'ok') {
-      setStatus({ state: failureToState(pullOutcome), pending: await outboxCount() });
+      setStatus({ state: failureToState(pullOutcome), pending: await currentPending() });
     } else {
-      setStatus({ state: 'idle', lastSyncAt: new Date(nowMs()).toISOString(), pending: await outboxCount() });
+      setStatus({ state: 'idle', lastSyncAt: new Date(nowMs()).toISOString(), pending: await currentPending() });
     }
     return { kind: 'ok' };
   } catch {
@@ -693,14 +585,26 @@ export async function pairJoin(code: string, deps: SyncDeps = {}): Promise<PairJ
 /** Deletes pairing + outbox + cursor (data stays); clears the derived device key. Never throws. */
 export async function unpair(): Promise<void> {
   try {
-    await db.syncOutbox.clear();
-    await db.syncMeta.bulkDelete(['pairing', 'cursors', 'snapStats']);
+    await clearPairingState();
     clearDeviceKey();
     resetBackoff();
     setStatus({ state: 'unpaired', pending: 0, lastSyncAt: undefined });
   } catch {
     // unpair never throws; a partial failure leaves some rows for the next attempt.
   }
+}
+
+/** Test-only: forces an immediate full snapshot write (bypassing the 200-batch/7-day cadence),
+ * under the same mutex as everything else. Never called from production code paths. */
+export async function snapshotNowForTests(deps: SyncDeps = {}): Promise<void> {
+  await withSyncMutex(async () => {
+    const fetchImpl = deps.fetchImpl ?? globalThis.fetch;
+    const nowMs = deps.nowMs ?? Date.now;
+    const pairing = await getPairing();
+    if (pairing === undefined) return;
+    const keys = await deriveKeysFromBaseKey(pairing.secret);
+    await writeFullSnapshot(pairing.deviceId, keys, fetchImpl, nowMs);
+  });
 }
 
 // ---------- triggers ----------

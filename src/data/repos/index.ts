@@ -134,4 +134,12 @@ export { researchRepo } from './research';
 export {
   withSyncCapture, applyRemoteChanges, captureExisting, onSyncOutboxWrite, type CaptureEntry,
 } from './syncCapture';
+// 2.0 M3 (card m3-sync-engine) — the engine's only door into IndexedDB (§6.2): pairing, cursor,
+// clock and outbox reads/writes, plus the full-snapshot builder. src/services/sync.ts imports
+// no `db` directly; it calls these.
+export {
+  buildFullSnapshotChanges, clearPairingState, deleteOutboxRows, getClockHlc, getCursors,
+  getPairing, getSnapStats, nextOutboxBatch, outboxCount, outboxRowsToChanges, recordSyncError,
+  setCursors, setPairing, setSnapStats, type CursorMap, type SyncPairingRecord, type SyncSnapStats,
+} from './syncState';
 export { db, resetDbForTests, SCHEMA_VERSION } from '../db';

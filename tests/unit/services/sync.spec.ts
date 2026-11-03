@@ -443,4 +443,93 @@ describe.skipIf(!fakeAvailable)('sync engine', () => {
     expect(await a.repos.setsRepo.get('keep-me')).toMatchObject({ id: 'keep-me' }); // data stays
     expect(a.sync.getSyncStatus().state).toBe('unpaired');
   });
+
+  it('join after compaction: a fresh snapshot lets a second joiner (B2) get data whose log entry was compacted away', async () => {
+    const server = createServer();
+    const a = await createDevice();
+    const paired = await a.sync.pairNew({ fetchImpl: fetchFor(server) });
+    if (paired.kind !== 'ok') throw new Error('pairNew failed');
+
+    await a.repos.setsRepo.put(matchSet('compact-1'));
+    await a.sync.syncNow({ fetchImpl: fetchFor(server) }); // pushes the log entry for compact-1
+
+    const b1 = await createDevice();
+    const joined1 = await b1.sync.pairJoin(paired.code, { fetchImpl: fetchFor(server) });
+    expect(joined1).toEqual({ kind: 'ok' });
+    expect((await b1.repos.setsRepo.all()).map((s) => s.id)).toContain('compact-1');
+
+    // A fresh snapshot now covers compact-1's hlc; B1's next syncNow acks A past it, and A is the
+    // only other known device, so the server can compact that log entry away.
+    await a.sync.snapshotNowForTests({ fetchImpl: fetchFor(server) });
+    await b1.sync.syncNow({ fetchImpl: fetchFor(server) });
+    const logKeys = [...server.store.data.keys()].filter((key) => key.startsWith('v1/log/'));
+    expect(logKeys).toHaveLength(0); // compacted: the only path left to compact-1 is the snapshot
+
+    const b2 = await createDevice();
+    const joined2 = await b2.sync.pairJoin(paired.code, { fetchImpl: fetchFor(server) });
+    expect(joined2).toEqual({ kind: 'ok' });
+    expect(await b2.repos.setsRepo.get('compact-1')).toMatchObject({ id: 'compact-1' });
+  });
+
+  it("a snapshot's cursor includes writers pulled from other devices, not just the writer itself", async () => {
+    const server = createServer();
+    const a = await createDevice();
+    const paired = await a.sync.pairNew({ fetchImpl: fetchFor(server) });
+    if (paired.kind !== 'ok') throw new Error('pairNew failed');
+    const b = await createDevice();
+    await b.sync.pairJoin(paired.code, { fetchImpl: fetchFor(server) });
+
+    await b.repos.setsRepo.put(matchSet('from-b'));
+    await b.sync.syncNow({ fetchImpl: fetchFor(server) }); // B pushes
+    await a.sync.syncNow({ fetchImpl: fetchFor(server) }); // A pulls B's write, advancing cursors[B]
+    await a.repos.setsRepo.put(matchSet('from-a'));
+
+    await a.sync.snapshotNowForTests({ fetchImpl: fetchFor(server) });
+
+    // Read the snapshot straight off the fake server's store: its snapmeta JSON is the cursor.
+    const snapMetaEntries = [...server.store.data.entries()].filter(([key]) => key.startsWith('v1/snapmeta/'));
+    expect(snapMetaEntries.length).toBeGreaterThan(0);
+    const [, latestMetaJson] = snapMetaEntries[snapMetaEntries.length - 1] as [string, string];
+    const cursor = JSON.parse(latestMetaJson) as Record<string, string>;
+    const aDeviceId = ((await a.db.db.syncMeta.get('device')) as { deviceId: string }).deviceId;
+    const bDeviceId = ((await b.db.db.syncMeta.get('device')) as { deviceId: string }).deviceId;
+    expect(Object.keys(cursor).sort()).toEqual([aDeviceId, bDeviceId].sort());
+  });
+
+  it('GET snap 404 (retention raced pairing) falls back to full per-writer logs once state confirms no snapshot', async () => {
+    const server = createServer();
+    const a = await createDevice();
+    const paired = await a.sync.pairNew({ fetchImpl: fetchFor(server) });
+    if (paired.kind !== 'ok') throw new Error('pairNew failed');
+    await a.repos.setsRepo.put(matchSet('fallback-1'));
+    await a.sync.syncNow({ fetchImpl: fetchFor(server) }); // the log entry survives (nothing compacts it)
+    await a.sync.snapshotNowForTests({ fetchImpl: fetchFor(server) });
+
+    let stateCalls = 0;
+    const aDeviceId = ((await a.db.db.syncMeta.get('device')) as { deviceId: string }).deviceId;
+    const retentionRace: Interceptor = (url, init) => {
+      if (url.includes('/state') && (init === undefined || init.method === undefined || init.method === 'GET')) {
+        stateCalls += 1;
+        if (stateCalls >= 2) {
+          // Second+ GET state: retention has now fully removed the snapshot.
+          return new Response(JSON.stringify({ hasVerifier: true, devices: [{ deviceId: aDeviceId, acked: {} }] }), {
+            status: 200, headers: { 'content-type': 'application/json' },
+          });
+        }
+      }
+      if (url.includes('/snap/')) {
+        return new Response(JSON.stringify({ ok: false, code: 'not-found', error: 'x' }), {
+          status: 404, headers: { 'content-type': 'application/json' },
+        });
+      }
+      return null;
+    };
+
+    const b = await createDevice();
+    const joined = await b.sync.pairJoin(paired.code, { fetchImpl: fetchFor(server, retentionRace) });
+    expect(joined).toEqual({ kind: 'ok' });
+    // Bootstrapped via the full per-writer log (the snapshot path 404'd and state then confirmed
+    // no snapshot remained), not via the (unreachable) snapshot body.
+    expect(await b.repos.setsRepo.get('fallback-1')).toMatchObject({ id: 'fallback-1' });
+  });
 });
