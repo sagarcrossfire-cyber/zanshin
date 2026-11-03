@@ -6,7 +6,7 @@
  * line; research is prose and never becomes frame data. */
 import { PageHeader } from '../../components/layout/PageHeader';
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
 import { Card } from '../../components/base/Card';
 import { SafeModeNote } from '../../components/base/SafeModeNote';
@@ -81,8 +81,8 @@ export function CoachScreen() {
   const pushToast = useAppStore((s) => s.pushToast);
   const safeMode = isSafeMode();
   const params = useParams();
-  const [searchParams] = useSearchParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const tab: CoachTab = TAB_BY_SECTION[params['section'] ?? 'ask'] ?? 'ask';
   const [reviews, setReviews] = useState<CoachMessage[]>([]);
   const [reviewLoading, setReviewLoading] = useState(false);
@@ -92,10 +92,7 @@ export function CoachScreen() {
   const [debriefLoading, setDebriefLoading] = useState<string | null>(null);
   const [messages, setMessages] = useState<CoachMessage[]>([]);
   // "Ask the coach about this" (2.0) arrives as /coach/ask?about=<what>.
-  const [question, setQuestion] = useState(() => {
-    const about = searchParams.get('about');
-    return about === null || about.trim() === '' ? '' : `About ${about.trim().slice(0, 160)}: `;
-  });
+  const [question, setQuestion] = useState('');
   const [asking, setAsking] = useState(false);
   const [askError, setAskError] = useState('');
   const [copyQuestion, setCopyQuestion] = useState('');
@@ -133,6 +130,22 @@ export function CoachScreen() {
     const q = new URLSearchParams(location.search).get('q');
     if (q !== null && q.trim() !== '') setLookupQuestion(q.trim().slice(0, 160));
   }, [location.search]);
+
+  // "Ask the coach about this" (2.0) arrives as /coach/ask?about=<what>;
+  // prefill both the AI question and the no-provider copy-context question
+  // (M3), on mount and whenever the query string changes, then drop the
+  // param from the URL so a back-navigation or refresh never re-fires it.
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const about = params.get('about');
+    if (about === null || about.trim() === '') return;
+    const prefill = `About ${about.trim().slice(0, 160)}: `;
+    setQuestion(prefill);
+    setCopyQuestion(prefill);
+    params.delete('about');
+    const search = params.toString();
+    navigate({ pathname: location.pathname, search: search === '' ? '' : `?${search}` }, { replace: true });
+  }, [location.search, location.pathname, navigate]);
 
   if (!profile || !settings) {
     return (

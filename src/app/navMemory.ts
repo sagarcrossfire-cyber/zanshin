@@ -17,13 +17,20 @@ function readLast(): Partial<Record<HubId, string>> {
   }
 }
 
-/** Remember the route (path + query) as the last one used in its hub. */
+/** Remember the route (path + query) as the last one used in its hub.
+ * `about` (Ask the coach about this) and `q` (Look it up prefill) are
+ * one-shot prefills, not navigation state — stripped before storing so
+ * reopening a hub never re-fires a stale prefill. */
 export function rememberRoute(pathname: string, search = ''): void {
   const hub = hubFor(pathname);
   if (hub === null) return;
   try {
+    const params = new URLSearchParams(search);
+    params.delete('about');
+    params.delete('q');
+    const cleanSearch = params.toString();
     const last = readLast();
-    last[hub.id] = `${pathname}${search}`;
+    last[hub.id] = `${pathname}${cleanSearch === '' ? '' : `?${cleanSearch}`}`;
     window.sessionStorage.setItem(LAST_KEY, JSON.stringify(last));
   } catch {
     // Storage unavailable: hubs open at their root.

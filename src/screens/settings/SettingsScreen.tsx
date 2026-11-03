@@ -455,6 +455,10 @@ export function SettingsScreen() {
         <Button variant="secondary" onClick={resetKpiTargets}>Reset to defaults</Button>
       </Card>
       <Card title="Data">
+        <p className="z-label">
+          <Link to="/diagnostics">Diagnostics</Link> checks storage integrity and the daily snapshot.{' '}
+          <Link to="/baseline">Retake the baseline</Link> to re-measure your starting KPIs.
+        </p>
         <Toggle label="Send error reports to my site so problems can be fixed" checked={telemetryOn}
           onChange={setTelemetry} />
         <p className="z-label">A report carries the error text, the screen and the app version; never your notes, matches, coach chats or keys.</p>

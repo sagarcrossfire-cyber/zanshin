@@ -12,6 +12,10 @@
   background: var(--nav-count-bg); color: var(--nav-count-fg);
   box-shadow: 0 0 0 2px var(--raised);
 }
+/* The badge duplicates a count the parent link's aria-label already speaks
+ * (QA M1); render it as generated content, not a text node, so axe's
+ * label-content-name-mismatch check never sees it as unlabelled text. */
+.z-nav-count::after { content: attr(data-count); }
 
 /* ---------- Phone dock ---------- */
 .z-dock {
@@ -140,6 +144,10 @@
   .z-rail__hub { flex-direction: row; justify-content: flex-start; gap: var(--space-3); min-height: 40px; padding: 0 var(--space-3); font-size: 15px; line-height: 20px; }
   .z-rail__hub-label { flex: 1; }
   .z-rail__kanji { display: inline; font-family: var(--font-display); font-weight: 800; font-size: 13px; color: var(--text-3); }
+  /* The kanji is decorative only (hub.label already names the link); render
+   * it as generated content so axe's label-content-name-mismatch check never
+   * sees it as text the aria-label must repeat. */
+  .z-rail__kanji::after { content: attr(data-kanji); }
   .z-rail__count { position: static; margin-left: var(--space-1); }
   .z-rail__hub--active { background: transparent; }
   .z-rail__hub--active::before { display: none; }
