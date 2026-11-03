@@ -122,7 +122,7 @@ export function CardsScreen() {
       {decks.length === 0 ? (
         <p>No decks yet. Generate the seed cards to start.</p>
       ) : (
-        <ul className="z-cards__decks">
+        <ul className="z-cards__decks z-stagger">
           {decks.map((deck) => (
             <li key={deck.deck}>
               <Card title={deck.deck}>
