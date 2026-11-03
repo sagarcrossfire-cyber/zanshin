@@ -8,5 +8,6 @@
 .z-runner__header { display: flex; flex-direction: column; gap: var(--space-1); }
 .z-runner__timer { font-family: var(--font-mono); font-size: 40px; line-height: 48px; margin: 0; }
 .z-runner__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.z-runner__review-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-4); }
 /* 1.4.0 */
 .z-lab-screen { max-width: 980px; gap: var(--space-5); }
