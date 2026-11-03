@@ -4,6 +4,7 @@ export default defineConfig({
   fullyParallel: false,
   projects: [
     { name: 'phone', use: { ...devices['Pixel 7'], baseURL: 'http://127.0.0.1:4173' } },
+    { name: 'tablet', use: { ...devices['Desktop Chrome'], baseURL: 'http://127.0.0.1:4173', viewport: { height: 1180, width: 820 } } },
     { name: 'desktop', use: { ...devices['Desktop Chrome'], baseURL: 'http://127.0.0.1:4173', viewport: { height: 900, width: 1440 } } },
   ],
   reporter: [['list']],
