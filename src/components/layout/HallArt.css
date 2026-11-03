@@ -1,0 +1,65 @@
+/* 2.0 M6 — hub halls (design.md §D.1, §D.5), for PageHeader and the screens
+ * with their own header (useHubHall). The header becomes a stage: the
+ * text stays top-left on the plain scene; ink ridges, a hub motif and the
+ * hub kanji sit behind it, low in the frame. Tokens only. */
+.z-hall {
+  position: relative; isolation: isolate; overflow: hidden;
+  padding: var(--space-5) var(--space-5) var(--space-8);
+  margin-inline: calc(-1 * var(--space-2));
+  border-radius: var(--radius-card);
+  min-height: 160px;
+}
+@media (min-width: 1024px) { .z-hall { min-height: 220px; } }
+.z-hall > :not(.z-hall__art) { position: relative; z-index: 1; }
+.z-hall__art {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  opacity: calc(var(--scene-art-opacity) * 3.2);
+  background: linear-gradient(135deg, var(--scene-glow-1), transparent 55%, var(--scene-glow-2));
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, transparent 30%, black 72%);
+          mask-image: linear-gradient(90deg, transparent 0%, transparent 30%, black 72%);
+}
+.z-hall__photo {
+  position: absolute; inset: 0;
+  background-size: cover; background-repeat: no-repeat;
+  background-image: var(--hall-photo-fallback-sm);
+  filter: var(--hall-photo-filter);
+  mix-blend-mode: var(--hall-photo-blend);
+  opacity: var(--hall-photo-opacity);
+  /* Stronger than the hall's own mask: the photo stays right of the text column. */
+  -webkit-mask-image: linear-gradient(90deg, transparent 35%, black 80%);
+          mask-image: linear-gradient(90deg, transparent 35%, black 80%);
+}
+/* Phones: the text spans the banner, so the photo only rises from the bottom. */
+@media (max-width: 719px) {
+  .z-hall__photo {
+    -webkit-mask-image: linear-gradient(180deg, transparent 20%, black 100%);
+            mask-image: linear-gradient(180deg, transparent 20%, black 100%);
+  }
+}
+@media (min-width: 1024px) { .z-hall__photo { background-image: var(--hall-photo-fallback-lg); } }
+/* A value from var() that the engine cannot parse does not fall back to the
+ * previous declaration, so image-set(type()) is gated with @supports. */
+@supports (background-image: image-set(url("x.avif") type("image/avif"))) {
+  .z-hall__photo { background-image: var(--hall-photo-sm); }
+  @media (min-width: 1024px) { .z-hall__photo { background-image: var(--hall-photo-lg); } }
+}
+.z-hall__svg { position: absolute; right: 0; bottom: 0; width: 100%; height: 100%; }
+.z-hall__kanji {
+  position: absolute; right: var(--space-5); top: 50%; transform: translateY(-50%);
+  font-family: var(--font-display); font-weight: 800; font-size: 120px; line-height: 1;
+  color: var(--text-1); opacity: 0.07; white-space: nowrap;
+}
+.z-hall__motif { fill: var(--pattern-ink); stroke: var(--pattern-ink); opacity: 0.35; }
+.z-hall__ripples { fill: none; }
+.z-hall__ridge--far  { fill: var(--scene-glow-1); opacity: 0.55; }
+.z-hall__ridge--mid  { fill: var(--scene-top); opacity: 0.85; }
+.z-hall__ridge--near { fill: var(--scene-bottom); }
+/* Slow parallax: nearer ridges move more (scroll written by HallArt). */
+.z-hall__ridge--far  { transform: translateY(calc(var(--hall-scroll, 0) * 0.04px)); }
+.z-hall__ridge--mid  { transform: translateY(calc(var(--hall-scroll, 0) * 0.09px)); }
+.z-hall__ridge--near { transform: translateY(calc(var(--hall-scroll, 0) * 0.15px)); }
+.z-hall__motif { transform-box: fill-box; }
+@media (prefers-reduced-motion: reduce) { .z-hall__ridge--far, .z-hall__ridge--mid, .z-hall__ridge--near { transform: none; } }
+/* Phones: the art scales to the banner's height, which would put the motif and
+ * kanji behind the text; keep only the ridges there. */
+@media (max-width: 719px) { .z-hall__motif, .z-hall__kanji { display: none; } }

@@ -159,3 +159,20 @@ test('Washi Daylight (light theme): axe is clean on the redesigned surfaces', as
     expect(serious, `light ${route}: ${JSON.stringify(serious.map((v) => [v.id, v.nodes.slice(0, 3).map((n) => n.target)]), null, 2)}`).toEqual([]);
   }
 });
+
+test('2.0 M6: every hub root and the screens with their own header stand in a hall; Show art off hides the photo', async ({ page }) => {
+  await completeOnboarding(page);
+  for (const [route, hub] of [['/lab', 'train'], ['/coach/ask', 'coach'], ['/codex/moves', 'study'], ['/matchups', 'study'], ['/path', 'you'], ['/settings', 'you']] as const) {
+    await page.goto(route);
+    const art = page.locator('.z-hall .z-hall__art').first();
+    await expect(art, route).toHaveAttribute('data-hall', hub);
+    await expect(art.locator('.z-hall__photo'), route).toHaveCount(1);
+  }
+  await page.goto('/settings/media');
+  const showArt = page.getByRole('checkbox', { name: 'Show imported art and clips' });
+  await showArt.uncheck();
+  await expect(showArt).not.toBeChecked();
+  await page.goto('/matchups');
+  await expect(page.locator('.z-hall__art')).toHaveCount(1);
+  await expect(page.locator('.z-hall__photo')).toHaveCount(0);
+});

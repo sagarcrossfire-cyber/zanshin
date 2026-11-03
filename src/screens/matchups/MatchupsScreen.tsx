@@ -10,6 +10,7 @@ import { matchSetsRepo, problemMovesRepo } from '../../data/repos';
 import { isDatabaseClosedError } from '../../data/dbErrors';
 import type { MatchSet, ProblemMove } from '../../data/schemas';
 import './Matchups.css';
+import { useHubHall } from '../../components/layout/HallArt';
 
 interface Row { name: string; games: number; wins: number; last: number | null; problemCount: number }
 
@@ -39,6 +40,8 @@ function Tile({ row }: { row: Row }) {
 }
 
 export function MatchupsScreen() {
+  // 2.0 M6: this screen's own header stands in its hub's hall too.
+  const { hallClass, hallArt } = useHubHall();
   const [sets, setSets] = useState<MatchSet[]>([]);
   const [problems, setProblems] = useState<ProblemMove[]>([]);
   const [query, setQuery] = useState('');
@@ -74,7 +77,8 @@ export function MatchupsScreen() {
 
   return (
     <main className="z-matchups">
-      <header className="z-matchups__head">
+      <header className={`z-matchups__head ${hallClass}`.trim()}>
+        {hallArt}
         <p className="z-eyebrow">Know your opponent</p>
         <h1>Matchups</h1>
         <p className="z-matchups__lede">Pick a fighter for your record, problem moves, a matchup primer and notes. <Link to="/playbook">Open the Playbook</Link> for the general counterplay table and game plans.</p>

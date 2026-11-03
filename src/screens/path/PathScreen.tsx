@@ -17,6 +17,7 @@ import type { Mastery } from '../../data/schemas';
 import { createCustomSession } from '../../services/lab';
 import { syncStageStatuses, type StageView } from '../../services/stages';
 import './Path.css';
+import { useHubHall } from '../../components/layout/HallArt';
 
 function ensoState(state: Mastery['state'], stageLocked: boolean): EnsoState {
   if (stageLocked) return 'locked';
@@ -32,6 +33,8 @@ const NODE_STATE_WORDS: Record<string, string> = {
 const ACT_KANJI: Record<string, string> = { shu: '守', ha: '破', ri: '離' };
 
 export function PathScreen() {
+  // 2.0 M6: this screen's own header stands in its hub's hall too.
+  const { hallClass, hallArt } = useHubHall();
   const navigate = useNavigate();
   const [views, setViews] = useState<StageView[]>([]);
   const [mastery, setMastery] = useState<Map<string, Mastery>>(new Map());
@@ -70,7 +73,8 @@ export function PathScreen() {
 
   return (
     <div className="z-path">
-      <header className="z-path__head">
+      <header className={`z-path__head ${hallClass}`.trim()}>
+        {hallArt}
         <p className="z-eyebrow">From controls to Tekken King</p>
         <h2 className="z-page-title">The Path — Shu · Ha · Ri</h2>
         <p className="z-path__lede">Shu: learn the form. Ha: break it to fit you. Ri: leave it behind. Each stage ends in a gate; a passed stage gets its seal and never re-locks.</p>

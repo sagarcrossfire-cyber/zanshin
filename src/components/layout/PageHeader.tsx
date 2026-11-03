@@ -2,9 +2,7 @@
  * accent eyebrow, the title in the display face, one line on what the
  * screen is for, and optional actions. Replaces bare <h1> + <p> openings. */
 import type { ReactNode } from 'react';
-import { useLocation } from 'react-router-dom';
-import { hubFor } from '../../app/hubs';
-import { HallArt } from './HallArt';
+import { useHubHall } from './HallArt';
 import './PageHeader.css';
 
 export interface PageHeaderProps {
@@ -19,10 +17,10 @@ export interface PageHeaderProps {
 export function PageHeader({ eyebrow, title, lede, actions, level = 2 }: PageHeaderProps) {
   const Heading = level === 1 ? 'h1' : 'h2';
   // 2.0 M6: every screen header stands in its hub's "hall" (decorative art behind the text).
-  const hub = hubFor(useLocation().pathname);
+  const { hallClass, hallArt } = useHubHall();
   return (
-    <header className={hub ? 'z-page-header z-hall' : 'z-page-header'}>
-      {hub && <HallArt hub={hub.id} kanji={hub.kanji} />}
+    <header className={`z-page-header ${hallClass}`.trim()}>
+      {hallArt}
       <p className="z-eyebrow">{eyebrow}</p>
       <Heading className="z-page-title">{title}</Heading>
       {lede && <p className="z-page-header__lede">{lede}</p>}
