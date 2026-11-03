@@ -130,6 +130,7 @@ describe('baseline through the interface (AC-ONB-5, G7)', () => {
 
     render(<TestRouter initialEntries={['/']} />);
     await user.click(await screen.findByRole('button', { name: 'Get started' }));
+    await screen.findByText('Your profile'); // wait for step 1 like every later step does (flaked on a cold CI runner)
     await user.click(screen.getByRole('button', { name: 'Continue' })); // Profile → Time
     await screen.findByText('Your time');
     await user.click(screen.getByRole('button', { name: 'Continue' })); // Time → History
