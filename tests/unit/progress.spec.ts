@@ -170,6 +170,37 @@ describe('win rate (AC-PROG-3)', () => {
   });
 });
 
+describe('tallied filter (2.0 M2) — an untallied set changes the record, not per-game KPIs', () => {
+  it('winRateSeries (record) counts an untallied set; matchKpiSeries (per-game) ignores it', () => {
+    const tenTallied = Array.from({ length: 10 }, (_, i) => matchSet(`t${i}`, '2026-10-29', {
+      wins: i < 5 ? 1 : 0, tallies: tallies({ missedPunishes: 2 }),
+    }));
+    const kpisBefore = matchKpiSeries(tenTallied);
+    const recordBefore = winRateSeries(tenTallied);
+    expect(kpisBefore.hiddenReason).toBeNull();
+    expect(kpisBefore.windows[0]?.missedPerGame).toBeCloseTo(2);
+    expect(recordBefore.points[0]?.value).toBe(50);
+
+    // An imported set: games/wins present, zero tallies, tallied:false —
+    // a win should move the record but the KPI consumer must not count it.
+    const untallied: MatchSet = matchSet('ranked-1', '2026-10-30', {
+      games: 1, wins: 1, tallied: false, tallies: tallies(), importRef: '1:a:b',
+    });
+    const withUntallied = [...tenTallied, untallied];
+
+    const recordAfter = winRateSeries(withUntallied);
+    const kpisAfter = matchKpiSeries(withUntallied);
+
+    // Record (win rate) changed: now 6 wins of 11 games.
+    expect(recordAfter.points[0]?.value).not.toBe(recordBefore.points[0]?.value);
+    expect(recordAfter.points[0]?.value).toBeCloseTo((6 / 11) * 100, 1);
+
+    // Per-game KPIs are unaffected by the untallied set (still the same 10-game window).
+    expect(kpisAfter.windows).toEqual(kpisBefore.windows);
+    expect(kpisAfter.finding).toBe(kpisBefore.finding);
+  });
+});
+
 describe('minutes + calendar (AC-PROG-1/2)', () => {
   it('hides minutes with no finished sessions and reports the budget after one', () => {
     expect(minutesSeries([], 300).hiddenReason).toContain('No finished sessions yet');

@@ -10,6 +10,7 @@ import { sessionsRepo } from '../data/repos/sessions';
 import { setsRepo } from '../data/repos/sets';
 import type { Assessment, DrillSet, Mastery, MatchSet, Session } from '../data/schemas';
 import { loadCurriculum } from '../data/packs';
+import { talliedOnly } from '../domain/engine/tallied';
 
 export const MIN_GAMES = 10;
 export const MIN_SETS = 3;
@@ -146,7 +147,7 @@ export interface KpiWindowPoint extends ChartPoint {
 
 /** Rolling 10-game windows, stepped by set boundary (newest window last). */
 export function matchKpiSeries(sets: MatchSet[]): ChartData & { windows: KpiWindowPoint[] } {
-  const ordered = [...sets].sort((a, b) => (a.at < b.at ? -1 : 1));
+  const ordered = talliedOnly(sets).sort((a, b) => (a.at < b.at ? -1 : 1));
   const windows: KpiWindowPoint[] = [];
   for (let end = 0; end < ordered.length; end += 1) {
     let games = 0;

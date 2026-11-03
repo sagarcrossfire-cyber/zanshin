@@ -6,6 +6,7 @@ import {
 } from '../data/repos';
 import type { DataConflict, DrillSet, MatchSet, Session, SessionBlock, VerificationRecord } from '../data/schemas';
 import { computeMastery, type MasteryResult } from '../domain/engine/mastery';
+import { talliedOnly } from '../domain/engine/tallied';
 import type { Plan } from '../domain/engine/plan';
 import { startBlock } from '../domain/lab/timer';
 import { format } from 'date-fns/format';
@@ -197,7 +198,8 @@ export function kpiInputsForNode(
   sets: DrillSet[],
   matchSets: MatchSet[],
 ): KpiInput[] {
-  const ordered = [...matchSets].sort((a, b) => (a.at < b.at ? -1 : 1));
+  // Imported sets without tallies never count as zero-mistake games (2.0 M2).
+  const ordered = talliedOnly(matchSets).sort((a, b) => (a.at < b.at ? -1 : 1));
   const windowSets: typeof ordered = [];
   let games = 0;
   for (let i = ordered.length - 1; i >= 0 && games < 10; i -= 1) {
