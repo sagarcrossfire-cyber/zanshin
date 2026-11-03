@@ -28,6 +28,16 @@ export async function releaseWakeLock(): Promise<void> {
   wakeLock = null;
 }
 
+/** Leave Lab Mode's device state: release the wake lock and exit fullscreen. */
+export async function leaveLabModeDevice(): Promise<void> {
+  await releaseWakeLock();
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+  } catch {
+    // Not fullscreen, or the browser refused: nothing to undo.
+  }
+}
+
 export function playBeep(frequency = 880, durationMs = 120): void {
   try {
     const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;

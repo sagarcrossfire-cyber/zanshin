@@ -12,7 +12,7 @@ import { Toast } from '../components/base/Toast';
 import { isSafeMode, setSafeMode } from '../config/safeMode';
 import { DATA_PATCH, DATA_SOURCE } from '../data/packs';
 import { runIntegrityChecks } from '../services/diagnostics';
-import { releaseWakeLock } from '../services/labMode';
+import { leaveLabModeDevice } from '../services/labMode';
 import { dismissSignInBanner, isSignInBannerVisible, signInAgain, subscribeSiteAccess } from '../services/siteAccess';
 import {
   mayShowUpdateToast,
@@ -262,7 +262,7 @@ export function AppLayout() {
     return (
       <div className="z-shell z-lab">
         <Scene />
-        <LabStrip onExit={() => { setLabMode(false); void releaseWakeLock(); }} />
+        <LabStrip onExit={() => { setLabMode(false); void leaveLabModeDevice(); }} />
         {safeBanner}
         <main className="z-main" id="main">
           <Outlet />
