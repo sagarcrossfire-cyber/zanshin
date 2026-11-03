@@ -26,6 +26,7 @@ import { clearDeviceKey, setDeviceKey } from './deviceKey';
 import { checkSiteNow } from './siteAccess';
 import { APP_VERSION } from './backup';
 import { SYNC_AUTH_HEADER } from '../server/sync/schema';
+import { sha256Hex } from '../server/deviceKey';
 
 export const SYNC_API_URL = '/api/sync';
 const PUSH_BATCH_MAX_CHANGES = 500;
@@ -489,8 +490,13 @@ async function doPairNew(deps: SyncDeps): Promise<PairNewResult> {
     const baseKey = await importBaseKey(secretBytes);
     const keys = await deriveKeysFromBaseKey(baseKey);
     const verifier = await authVerifier(keys.authKey);
+    // Registers this device's key hash at pairing (SSO Option B, card
+    // sso-b-lock) so ranked/intel/diag can lock to it with no manual hash
+    // step or extra deploy. The joiner derives the same device key locally
+    // and never sends anything for this.
+    const deviceKeyHash = await sha256Hex(keys.deviceKey);
     const outcome = await request(fetchImpl, `${SYNC_API_URL}/init`, {
-      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ verifier }),
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ verifier, deviceKeyHash }),
     });
     if (outcome.kind !== 'ok') {
       return outcome.kind === 'signed-out' ? { kind: 'signed-out' } : { kind: 'offline' };

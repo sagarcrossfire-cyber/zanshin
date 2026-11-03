@@ -11,6 +11,8 @@ import {
   setTelemetryEnabled, siteHostsDiag, telemetryEnabled, telemetryKindFor, telemetryQueueForTests, telemetryText, topFrame, uaClassOf,
 } from '../../../src/services/errorReport';
 import { DIAG_TEXT_MAX, diagEventSchema, type DiagEvent } from '../../../src/server/diag/schema';
+import { DEVICE_KEY_HEADER } from '../../../src/server/deviceKey';
+import { clearDeviceKey, setDeviceKey } from '../../../src/services/deviceKey';
 
 function memoryStorage(initial: Record<string, string> = {}) {
   const data = new Map(Object.entries(initial));
@@ -248,12 +250,33 @@ describe('beaconTransport', () => {
     expect(fetchSpy).toHaveBeenCalledWith(DIAG_URL, expect.objectContaining({ keepalive: true, method: 'POST' }));
     fetchSpy.mockResolvedValue(new Response(null, { status: 400 }));
     expect(await beaconTransport('{}')).toBe(true);
-    fetchSpy.mockResolvedValue(new Response(null, { status: 503 }));
-    expect(await beaconTransport('{}')).toBe(false);
-    fetchSpy.mockResolvedValue(new Response(null, { status: 401 }));
+    fetchSpy.mockResolvedValue(new Response(null, { status: 500 }));
     expect(await beaconTransport('{}')).toBe(false);
     fetchSpy.mockRejectedValue(new TypeError('Failed to fetch'));
     expect(await beaconTransport('{}')).toBe(false);
+    Reflect.deleteProperty(navigator, 'sendBeacon');
+  });
+
+  it('a device-key 401 or 503 (SSO Option B) is treated as handled, not retried: diag failures stay silent', async () => {
+    Object.defineProperty(navigator, 'sendBeacon', { configurable: true, value: vi.fn(() => false) });
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(null, { status: 401 }));
+    expect(await beaconTransport('{}')).toBe(true);
+    fetchSpy.mockResolvedValue(new Response(null, { status: 503 }));
+    expect(await beaconTransport('{}')).toBe(true);
+    Reflect.deleteProperty(navigator, 'sendBeacon');
+  });
+
+  it('sends the paired device key via fetch (never sendBeacon, which carries no headers)', async () => {
+    const beacon = vi.fn(() => true);
+    Object.defineProperty(navigator, 'sendBeacon', { configurable: true, value: beacon });
+    expect(setDeviceKey('pc-device-key-0123456789abcdef')).toBe(true);
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(null, { status: 202 }));
+    expect(await beaconTransport('{}')).toBe(true);
+    expect(beacon).not.toHaveBeenCalled();
+    expect(fetchSpy).toHaveBeenCalledWith(DIAG_URL, expect.objectContaining({
+      headers: expect.objectContaining({ [DEVICE_KEY_HEADER]: 'pc-device-key-0123456789abcdef' }),
+    }));
+    clearDeviceKey();
     Reflect.deleteProperty(navigator, 'sendBeacon');
   });
 });

@@ -275,6 +275,23 @@ describe('createRankedHandler', () => {
     expect((await locked(reqNoKey(OWNER_ID))).status).toBe(401);
   });
 
+  it('accepts the paired device key from the sync store alone, with no env var set (SSO Option B)', async () => {
+    const { calls, fetchFn } = routedFetch({ wank: () => new Response(PLAYER_HTML, { status: 200 }) });
+    const syncStore = { get: async () => await sha256Hex(DEVICE_KEY) };
+    const handler = createRankedHandler(await baseDeps({ deviceKeySha256: undefined, fetchFn, maxWindows: 0, syncStore }));
+    expect((await handler(req(OWNER_ID))).status).toBe(200);
+    const wrong = await handler(req(OWNER_ID, {}, 'some-other-devices-key-000000'));
+    expect(wrong.status).toBe(401);
+    expect(calls.length).toBeGreaterThan(0);
+  });
+
+  it('a sync store read failure falls back to the env hash(es) only', async () => {
+    const { fetchFn } = routedFetch({ wank: () => new Response(PLAYER_HTML, { status: 200 }) });
+    const syncStore = { get: async () => { throw new Error('blobs down'); } };
+    const handler = createRankedHandler(await baseDeps({ fetchFn, maxWindows: 0, syncStore }));
+    expect((await handler(req(OWNER_ID))).status).toBe(200);
+  });
+
   it('fetches Wank once per uncached id and caches the result for 10 minutes', async () => {
     const { calls, fetchFn } = routedFetch({ wank: () => new Response(PLAYER_HTML, { status: 200 }) });
     let clock = NOW;
@@ -416,10 +433,10 @@ describe('netlify/functions/ranked.mts', () => {
     expect(fn.config.path).toBe('/api/ranked');
     expect(fn.config.rateLimit).toMatchObject({ windowLimit: 10, windowSize: 60 });
     const response = await fn.default(reqEnrichOff(OWNER_ID), { deploy: { context: 'deploy-preview' } } as never);
-    expect(stores).toEqual(['ranked-deploy-preview']);
+    expect(stores).toEqual(['ranked-deploy-preview', 'sync-deploy-preview']);
     expect(response.status).toBe(200);
     await fn.default(reqEnrichOff(OWNER_ID), { deploy: { context: 'production' } } as never);
-    expect(stores).toEqual(['ranked-deploy-preview', 'ranked']);
+    expect(stores).toEqual(['ranked-deploy-preview', 'sync-deploy-preview', 'ranked', 'sync']);
     warn.mockRestore();
     error.mockRestore();
     vi.doUnmock('@netlify/blobs');

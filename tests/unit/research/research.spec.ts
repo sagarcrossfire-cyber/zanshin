@@ -22,6 +22,8 @@ import { defaultSettings } from '../../../src/data/bootstrap';
 import type { MatchSet, ResearchNote } from '../../../src/data/schemas';
 import { exportBackup, importBackup } from '../../../src/services/backup';
 import { providerFromSettings, testConnection } from '../../../src/services/coach';
+import { clearDeviceKey, setDeviceKey } from '../../../src/services/deviceKey';
+import { DEVICE_KEY_HEADER } from '../../../src/server/deviceKey';
 import { IntelError, formatSpend, intelHealth, matchupPrimer, patchBrief, research } from '../../../src/services/intel';
 import { fetchBrief, fetchPrimer, lookUp, saveNote, storedBrief, storedPrimer } from '../../../src/services/research';
 
@@ -154,6 +156,27 @@ describe('intel client', () => {
     expect(primer).toMatchObject({ cached: true, character: 'Devil Jin', stale: true });
     const brief = await patchBrief({ changes: [], revision: '123' }, { fetchImpl });
     expect(brief).toMatchObject({ cached: false, revision: '123' });
+  });
+
+  it('sends the paired device key (SSO Option B) when one is stored, and nothing when not', async () => {
+    clearDeviceKey();
+    const { calls: noKeyCalls, fetchImpl: noKeyFetch } = fetchMock(() => jsonResponse(RESEARCH_BODY));
+    await research({ question: 'Q' }, { fetchImpl: noKeyFetch });
+    expect((noKeyCalls[0]?.init?.headers as Record<string, string>)[DEVICE_KEY_HEADER]).toBeUndefined();
+
+    expect(setDeviceKey('pc-device-key-0123456789abcdef')).toBe(true);
+    const { calls, fetchImpl } = fetchMock(() => jsonResponse(RESEARCH_BODY));
+    await research({ question: 'Q' }, { fetchImpl });
+    expect((calls[0]?.init?.headers as Record<string, string>)[DEVICE_KEY_HEADER]).toBe('pc-device-key-0123456789abcdef');
+    clearDeviceKey();
+  });
+
+  it('a 401 device-key response is an IntelError whose status is 401', async () => {
+    const { fetchImpl } = fetchMock(() => jsonResponse({ code: 'device-key', error: 'This device has no valid device key.', ok: false }, 401));
+    const error = await research({ question: 'Q' }, { fetchImpl }).catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(IntelError);
+    expect((error as IntelError).status).toBe(401);
+    expect((error as IntelError).message).toMatch(/no valid device key/);
   });
 });
 

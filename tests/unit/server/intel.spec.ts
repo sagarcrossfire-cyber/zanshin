@@ -4,7 +4,7 @@
 // 2.0 M1 — the per-call spend ledger (no lost increments under parallel
 // calls, the old single key still counted), the 45 s provider timeout, and
 // one ZT1 breadcrumb per request that never carries prompt or answer text.
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   INTEL_PROVIDER_TIMEOUT_MS, capStateOf, createIntelHandler as createHandler, transcript, PRIMER_TTL_MS, type IntelDeps,
 } from '../../../src/server/intel/handler';
@@ -12,9 +12,20 @@ import { AGENT_TIMEOUT_MS, callAgent, parseAgentResponse, AGENT_API_URL } from '
 import {
   addUsage, ledgerKey, memoryStore, parseLedgerKey, readUsage, recentUsage, type IntelStore,
 } from '../../../src/server/intel/store';
+import { DEVICE_KEY_HEADER, sha256Hex } from '../../../src/server/deviceKey';
+
+/** Every locked route needs a device key now (SSO Option B, card sso-b-lock);
+ * these tests are about intel's own logic, not the lock (src/server/deviceKey.spec.ts
+ * and src/server/intel.device-key.spec.ts cover that), so every request here
+ * carries a fixed paired device's key by default. */
+const TEST_DEVICE_KEY = 'intel-test-device-key-0123456789';
+let TEST_DEVICE_HASH = '';
+beforeAll(async () => {
+  TEST_DEVICE_HASH = await sha256Hex(TEST_DEVICE_KEY);
+});
 
 /** Handlers in this file stay quiet unless a test collects the breadcrumbs. */
-const createIntelHandler = (deps: IntelDeps) => createHandler({ log: () => undefined, ...deps });
+const createIntelHandler = (deps: IntelDeps) => createHandler({ deviceKeySha256: TEST_DEVICE_HASH, log: () => undefined, ...deps });
 
 afterEach(() => {
   vi.useRealTimers();
@@ -51,8 +62,17 @@ function okJson(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json' }, status });
 }
 
+/** A GET request with the test device key attached, same as the client sends. */
+function get(path: string, init: RequestInit = {}): Request {
+  return new Request(`${BASE}/${path}`, { ...init, headers: { [DEVICE_KEY_HEADER]: TEST_DEVICE_KEY, ...(init.headers ?? {}) } });
+}
+
 function post(path: string, body: unknown): Request {
-  return new Request(`${BASE}/${path}`, { body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' }, method: 'POST' });
+  return new Request(`${BASE}/${path}`, {
+    body: JSON.stringify(body),
+    headers: { 'Content-Type': 'application/json', [DEVICE_KEY_HEADER]: TEST_DEVICE_KEY },
+    method: 'POST',
+  });
 }
 
 describe('parseAgentResponse', () => {
@@ -84,9 +104,9 @@ describe('intel handler', () => {
   it('health and usage work without a key and say the key is missing', async () => {
     const store = memoryStore();
     const handler = createIntelHandler({ apiKey: undefined, capUsd: 3, nowIso: () => NOW, store });
-    const health = await (await handler(new Request(`${BASE}/health`))).json() as { ok: boolean; keyConfigured: boolean; capUsd: number };
+    const health = await (await handler(get('health'))).json() as { ok: boolean; keyConfigured: boolean; capUsd: number };
     expect(health).toMatchObject({ capUsd: 3, keyConfigured: false, ok: true });
-    const usage = await (await handler(new Request(`${BASE}/usage`))).json() as { days: unknown[] };
+    const usage = await (await handler(get('usage'))).json() as { days: unknown[] };
     expect(usage.days).toHaveLength(7);
     const coach = await handler(post('coach', { messages: [{ content: 'hi', role: 'user' }], system: 'sys' }));
     expect(coach.status).toBe(503);
@@ -118,8 +138,8 @@ describe('intel handler', () => {
     const handler = createIntelHandler({ apiKey: 'test-key', capUsd: 3, fetchFn, nowIso: () => NOW, store: memoryStore() });
     expect((await handler(post('coach', { messages: [{ content: 'hi', role: 'user' }], model: 'openai/gpt-99', system: 'sys' }))).status).toBe(400);
     expect((await handler(post('coach', { messages: [], system: 'sys' }))).status).toBe(400);
-    expect((await handler(new Request(`${BASE}/coach`, { body: '{nope', method: 'POST' }))).status).toBe(400);
-    expect((await handler(new Request(`${BASE}/nothing`))).status).toBe(404);
+    expect((await handler(get('coach', { body: '{nope', method: 'POST' }))).status).toBe(400);
+    expect((await handler(get('nothing'))).status).toBe(404);
     expect(calls).toHaveLength(0);
   });
 
@@ -133,7 +153,7 @@ describe('intel handler', () => {
     expect(third.status).toBe(429);
     expect(await third.json()).toMatchObject({ capUsd: 3, todayUsd: 4 });
     expect(calls).toHaveLength(2);
-    const health = await (await handler(new Request(`${BASE}/health`))).json() as { today: { costUsd: number } };
+    const health = await (await handler(get('health'))).json() as { today: { costUsd: number } };
     expect(health.today.costUsd).toBe(4);
   });
 
@@ -163,22 +183,22 @@ describe('intel handler', () => {
     const store = memoryStore();
     let now = NOW;
     const handler = createIntelHandler({ apiKey: 'test-key', capUsd: 3, fetchFn, nowIso: () => now, store });
-    const first = await (await handler(new Request(`${BASE}/primer/Kazuya`))).json() as { cached: boolean; character: string; generatedAt: string; citations: unknown[] };
+    const first = await (await handler(get('primer/Kazuya'))).json() as { cached: boolean; character: string; generatedAt: string; citations: unknown[] };
     expect(first).toMatchObject({ cached: false, character: 'Kazuya', generatedAt: NOW });
     expect(first.citations).toHaveLength(1);
-    const second = await (await handler(new Request(`${BASE}/primer/kazuya`))).json() as { cached: boolean };
+    const second = await (await handler(get('primer/kazuya'))).json() as { cached: boolean };
     expect(second.cached).toBe(true);
     expect(calls).toHaveLength(1);
     now = new Date(Date.parse(NOW) + PRIMER_TTL_MS + 1000).toISOString();
     fail = true;
-    const stale = await handler(new Request(`${BASE}/primer/Kazuya`));
+    const stale = await handler(get('primer/Kazuya'));
     expect(stale.status).toBe(200);
     expect(await stale.json()).toMatchObject({ cached: true, stale: true });
     fail = false;
-    const refreshed = await (await handler(new Request(`${BASE}/primer/Kazuya?refresh=1`))).json() as { cached: boolean; generatedAt: string };
+    const refreshed = await (await handler(get('primer/Kazuya?refresh=1'))).json() as { cached: boolean; generatedAt: string };
     expect(refreshed.cached).toBe(false);
     expect(refreshed.generatedAt).toBe(now);
-    expect((await handler(new Request(`${BASE}/primer/%3Cscript%3E`))).status).toBe(400);
+    expect((await handler(get('primer/%3Cscript%3E'))).status).toBe(400);
   });
 
   it('patch brief: lists the changes for the model and caches by revision', async () => {
@@ -209,6 +229,46 @@ describe('intel handler', () => {
     const late = await timing(post('coach', { messages: [{ content: 'a', role: 'user' }], system: 's' }));
     expect(late.status).toBe(504);
     expect(((await late.json()) as { error: string }).error).toMatch(/too long/);
+  });
+});
+
+describe('intel handler: device-key lock (SSO Option B, card sso-b-lock)', () => {
+  it('503 device-key-unset with no env hash and no sync store', async () => {
+    const handler = createHandler({ apiKey: 'test-key', capUsd: 3, log: () => undefined, nowIso: () => NOW, store: memoryStore() });
+    const response = await handler(get('health'));
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({ code: 'device-key-unset', ok: false });
+  });
+
+  it('401 device-key with no header or the wrong key', async () => {
+    const handler = createIntelHandler({ apiKey: 'test-key', capUsd: 3, store: memoryStore() });
+    expect((await handler(new Request(`${BASE}/health`))).status).toBe(401);
+    const wrong = await handler(get('health', { headers: { [DEVICE_KEY_HEADER]: 'some-other-devices-key-000000' } }));
+    expect(wrong.status).toBe(401);
+    expect(await wrong.json()).toMatchObject({ code: 'device-key', ok: false });
+  });
+
+  it('accepts the paired device key from the sync store alone, with no env var set', async () => {
+    const syncStore = { get: async () => TEST_DEVICE_HASH };
+    const handler = createHandler({ apiKey: 'test-key', capUsd: 3, log: () => undefined, nowIso: () => NOW, store: memoryStore(), syncStore });
+    const response = await handler(get('health'));
+    expect(response.status).toBe(200);
+  });
+
+  it('a sync store read failure falls back to the env hash(es) only', async () => {
+    const syncStore = { get: async () => { throw new Error('blobs down'); } };
+    const handler = createIntelHandler({ apiKey: 'test-key', capUsd: 3, store: memoryStore(), syncStore });
+    expect((await handler(get('health'))).status).toBe(200);
+  });
+
+  it('the existing env-hash path still works', async () => {
+    const otherKey = 'other-paired-device-key-0123456';
+    const otherHash = await sha256Hex(otherKey);
+    const handler = createHandler({
+      apiKey: 'test-key', capUsd: 3, deviceKeySha256: `${TEST_DEVICE_HASH},${otherHash}`, log: () => undefined, nowIso: () => NOW, store: memoryStore(),
+    });
+    expect((await handler(get('health'))).status).toBe(200);
+    expect((await handler(get('health', { headers: { [DEVICE_KEY_HEADER]: otherKey } }))).status).toBe(200);
   });
 });
 
@@ -262,7 +322,7 @@ describe('spend ledger (2.0 M1)', () => {
     expect(((await first.json()) as { usage: { todayUsd: number } }).usage.todayUsd).toBe(3.1);
     expect((await handler(post('coach', { messages: [{ content: 'b', role: 'user' }], system: 's' }))).status).toBe(429);
     expect(calls).toHaveLength(1);
-    const health = await (await handler(new Request(`${BASE}/health`))).json() as { today: { requests: number; costUsd: number } };
+    const health = await (await handler(get('health'))).json() as { today: { requests: number; costUsd: number } };
     expect(health.today).toMatchObject({ costUsd: 3.1, requests: 4 });
   });
 
@@ -322,7 +382,7 @@ describe('ZT1 breadcrumbs (2.0 M1)', () => {
     const { fetchFn } = mockFetch(() => okJson(agentReply('PRIVATE ANSWER TEXT', { cost: 0.02 })));
     let clock = 1000;
     const handler = createHandler({
-      apiKey: 'test-key', capUsd: 3, clockMs: () => (clock += 250), fetchFn, log: sink.log, nowIso: () => NOW, requestId: () => 'req-1', store: memoryStore(),
+      apiKey: 'test-key', capUsd: 3, clockMs: () => (clock += 250), deviceKeySha256: TEST_DEVICE_HASH, fetchFn, log: sink.log, nowIso: () => NOW, requestId: () => 'req-1', store: memoryStore(),
     });
     await handler(post('coach', { messages: [{ content: 'MY PRIVATE QUESTION', role: 'user' }], model: 'anthropic/claude-sonnet-5-5', system: 'SECRET SYSTEM PROMPT' }));
     expect(sink.lines).toHaveLength(1);
@@ -338,11 +398,11 @@ describe('ZT1 breadcrumbs (2.0 M1)', () => {
     const sink = collect();
     const { fetchFn } = mockFetch(() => okJson(agentReply('primer', { cost: 3 })));
     const store = memoryStore();
-    const handler = createHandler({ apiKey: 'test-key', capUsd: 3, fetchFn, log: sink.log, nowIso: () => NOW, store });
-    await handler(new Request(`${BASE}/primer/Kazuya`));
-    await handler(new Request(`${BASE}/primer/Kazuya`));
+    const handler = createHandler({ apiKey: 'test-key', capUsd: 3, deviceKeySha256: TEST_DEVICE_HASH, fetchFn, log: sink.log, nowIso: () => NOW, store });
+    await handler(get('primer/Kazuya'));
+    await handler(get('primer/Kazuya'));
     await handler(post('coach', { messages: [{ content: 'a', role: 'user' }], system: 's' }));
-    await handler(new Request(`${BASE}/%3Cscript%3E`));
+    await handler(get('%3Cscript%3E'));
     const [paid, cached, capped, unknown] = sink.events();
     expect(paid).toMatchObject({ cacheHit: false, capState: 'reached', costUsd: 3, route: 'primer', status: 200 });
     expect(cached).toMatchObject({ cacheHit: true, model: 'perplexity/sonar', route: 'primer', status: 200 });
@@ -350,10 +410,10 @@ describe('ZT1 breadcrumbs (2.0 M1)', () => {
     expect(unknown).toMatchObject({ route: 'unknown', status: 404 });
 
     const broken = createHandler({
-      apiKey: 'test-key', capUsd: 3, fetchFn, log: sink.log, nowIso: () => NOW,
+      apiKey: 'test-key', capUsd: 3, deviceKeySha256: TEST_DEVICE_HASH, fetchFn, log: sink.log, nowIso: () => NOW,
       store: { ...memoryStore(), get: async () => { throw new Error('blobs down'); } },
     });
-    await expect(broken(new Request(`${BASE}/health`))).rejects.toThrow('blobs down');
+    await expect(broken(get('health'))).rejects.toThrow('blobs down');
     expect(sink.events()[4]).toMatchObject({ route: 'health', status: 500 });
   });
 });

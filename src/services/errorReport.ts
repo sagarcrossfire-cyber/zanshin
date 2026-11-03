@@ -24,6 +24,8 @@
 //     self-test is skipped (siteHostsDiag).
 import { errorsRepo } from '../data/repos';
 import { DIAG_TEXT_MAX, diagEventSchema, type DiagEvent, type DiagKind, type IntelHealthState } from '../server/diag/schema';
+import { DEVICE_KEY_HEADER } from '../server/deviceKey';
+import { getDeviceKey } from './deviceKey';
 
 const TOAST_MIN_INTERVAL_MS = 60_000;
 const MAX_MESSAGE_LENGTH = 2000;
@@ -206,27 +208,38 @@ export function siteHostsDiag(loc: Pick<Location, 'protocol' | 'hostname'> | und
 /** Keeps events queued: used where no diag function exists. */
 const offSiteTransport: TelemetryTransport = async () => false;
 
-/** sendBeacon first; fetch keepalive when the beacon is refused or missing. */
+/** sendBeacon first; fetch keepalive when the beacon is refused, missing, or a
+ * device key needs to ride along (sendBeacon carries no custom headers, so a
+ * paired device always uses fetch — SSO Option B, src/server/deviceKey.ts).
+ * A 401/503 device-key failure is treated as handled (dropped, not retried):
+ * diag failures stay silent, this is error reporting about error reporting. */
 export const beaconTransport: TelemetryTransport = async (body) => {
   if (typeof location === 'undefined' || !/^https?:$/.test(location.protocol)) return false;
-  try {
-    if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function'
-      && navigator.sendBeacon(DIAG_URL, new Blob([body], { type: 'application/json' }))) {
-      return true;
+  const deviceKey = getDeviceKey();
+  if (deviceKey === null) {
+    try {
+      if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function'
+        && navigator.sendBeacon(DIAG_URL, new Blob([body], { type: 'application/json' }))) {
+        return true;
+      }
+    } catch {
+      // Fall back to fetch.
     }
-  } catch {
-    // Fall back to fetch.
   }
   try {
     const response = await fetch(DIAG_URL, {
       body,
       credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(deviceKey !== null ? { [DEVICE_KEY_HEADER]: deviceKey } : {}),
+      },
       keepalive: true,
       method: 'POST',
     });
-    // A 400 means the event itself is bad: retrying would not help.
-    return response.ok || response.status === 400 || response.status === 413;
+    // A 400 means the event itself is bad; 401/503 means this device cannot
+    // report right now: retrying would not help either way.
+    return response.ok || response.status === 400 || response.status === 413 || response.status === 401 || response.status === 503;
   } catch {
     return false;
   }

@@ -7,6 +7,12 @@
 // Key layout under the `sync` Blobs store (src/server/storeName.ts scopes the
 // store name per deploy context):
 //   v1/verifier            — SHA-256(authKey) hex, written once at pairing
+//   v1/devicekeyhash        — SHA-256(deviceKey) hex, written once at pairing
+//                             (onlyIfNew, same POST init as the verifier; never
+//                             overwritten). Read by src/server/deviceKey.ts
+//                             (allowedDeviceKeyHashes) so ranked/intel/diag can
+//                             lock to a paired device with no env var and no
+//                             extra deploy — SSO Option B, card sso-b-lock.
 //   v1/log/<deviceId>/<hlc>  — one encrypted batch from writer <deviceId>, write-once
 //   v1/snap/<hlc>           — an encrypted full-state snapshot (ciphertext only)
 //   v1/snapmeta/<hlc>       — that snapshot's per-writer cursor (plaintext JSON,
@@ -36,6 +42,9 @@ export const AUTH_KEY_RE = /^[A-Za-z0-9_-]{16,512}$/;
 
 export const VERIFIER_RE = /^[0-9a-f]{64}$/;
 
+/** SHA-256(deviceKey) hex, the same shape as the verifier (src/server/deviceKey.ts HEX64). */
+export const DEVICE_KEY_HASH_RE = /^[0-9a-f]{64}$/;
+
 export const DEVICE_ID_RE = /^[A-Za-z0-9_-]{8,32}$/;
 
 /** `<13-digit wall ms>-<4-digit counter>-<deviceId>`; mirrors src/domain/sync/hlc.ts formatHlc/tick. */
@@ -54,6 +63,7 @@ export const LOG_PAGE_LIMIT_DEFAULT = 100;
 export const SNAP_RETENTION = 3;
 
 export const V1_VERIFIER_KEY = 'v1/verifier';
+export const V1_DEVICEKEYHASH_KEY = 'v1/devicekeyhash';
 export const V1_LOG_PREFIX = 'v1/log/';
 export const V1_SNAP_PREFIX = 'v1/snap/';
 export const V1_SNAPMETA_PREFIX = 'v1/snapmeta/';
@@ -138,6 +148,10 @@ export function mergeCursorMax(existing: CursorMap, incoming: CursorMap): Cursor
 
 export const initBodySchema = z.object({
   verifier: z.string().regex(VERIFIER_RE),
+  /** SHA-256(deviceKey), sent once by the pairing device (pairNew); the
+   * joiner derives the same device key locally and sends nothing. Stored
+   * onlyIfNew (never overwritten) — see the POST init route. */
+  deviceKeyHash: z.string().regex(DEVICE_KEY_HASH_RE).optional(),
 });
 
 /** `through` is validated as a CursorMap by parseCursorMap, not by zod (arbitrary key set). */

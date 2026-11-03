@@ -45,6 +45,7 @@ import {
 } from './prompts';
 import { addUsage, dayKey, readUsage, recentUsage, type DailyUsage, type IntelStore } from './store';
 import { consoleZt1, zt1Line, type Zt1Logger } from '../diag/zt1';
+import { allowedDeviceKeyHashes, verifyDeviceKey, type DeviceKeyHashStore } from '../deviceKey';
 
 export const PRIMER_TTL_MS = 30 * 86_400_000;
 /** Provider timeout. Netlify's synchronous function limit is 60 s
@@ -90,6 +91,13 @@ export interface IntelDeps {
   log?: Zt1Logger;
   /** Clock for latency. */
   clockMs?: () => number;
+  /** ZANSHIN_DEVICE_KEY_SHA256 (src/server/deviceKey.ts), unioned at request
+   * time with the hash sync pairing registered (SSO Option B, card
+   * sso-b-lock) — see allowedDeviceKeyHashes. */
+  deviceKeySha256?: string;
+  /** The sync store's `v1/devicekeyhash`; null when Blobs is unavailable,
+   * which falls back to the env hash(es) only. */
+  syncStore?: DeviceKeyHashStore | null;
 }
 
 function defaultRequestId(): string {
@@ -153,6 +161,13 @@ function json(body: unknown, status = 200, extraHeaders: Record<string, string> 
 
 function problem(status: number, error: string, extra: Record<string, unknown> = {}): Response {
   return json({ error, ...extra }, status);
+}
+
+/** Same JSON shape as ranked's device-key failures (src/server/ranked/handler.ts
+ * errorBody): `{ok:false, code, error}`, so the client tells this 401 apart
+ * from Netlify's own sign-in 401 the same way everywhere. */
+function deviceKeyProblem(code: 'device-key' | 'device-key-unset', status: 401 | 503, message: string): Response {
+  return json({ ok: false, code, error: message }, status);
 }
 
 function toCitations(results: SearchResult[]): Citation[] {
@@ -388,6 +403,13 @@ export function createIntelHandler(deps: IntelDeps): (request: Request) => Promi
     const meta: CallMeta = {};
     let status = 500;
     try {
+      const hashes = await allowedDeviceKeyHashes(deps.deviceKeySha256, deps.syncStore ?? null);
+      const lock = await verifyDeviceKey(request, hashes);
+      if (!lock.ok) {
+        const response = deviceKeyProblem(lock.code, lock.status, lock.message);
+        status = response.status;
+        return response;
+      }
       const response = await dispatch(request, url, meta, requestId);
       status = response.status;
       return response;

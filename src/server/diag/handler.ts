@@ -13,6 +13,7 @@
 // Nothing outside the schema is logged or stored: no IP, no headers, no body.
 import { DIAG_BODY_MAX, diagEventSchema } from './schema';
 import { consoleZt1, zt1Line, type Zt1Logger } from './zt1';
+import { allowedDeviceKeyHashes, verifyDeviceKey, type DeviceKeyHashStore } from '../deviceKey';
 
 /** About 500 stored events a day; the log line is written either way. */
 export const DIAG_DAILY_CAP = 500;
@@ -59,6 +60,13 @@ export interface DiagDeps {
   nowMs?: () => number;
   randomId?: () => string;
   dailyCap?: number;
+  /** ZANSHIN_DEVICE_KEY_SHA256 (src/server/deviceKey.ts), unioned at request
+   * time with the hash sync pairing registered (SSO Option B, card
+   * sso-b-lock) — see allowedDeviceKeyHashes. */
+  deviceKeySha256?: string;
+  /** The sync store's `v1/devicekeyhash`; null when Blobs is unavailable,
+   * which falls back to the env hash(es) only. */
+  syncStore?: DeviceKeyHashStore | null;
 }
 
 function json(body: unknown, status: number, extraHeaders: Record<string, string> = {}): Response {
@@ -80,6 +88,9 @@ export function createDiagHandler(deps: DiagDeps): (request: Request) => Promise
 
   return async (request: Request): Promise<Response> => {
     if (request.method !== 'POST') return json({ error: 'POST a diag event.' }, 405, { Allow: 'POST' });
+    const hashes = await allowedDeviceKeyHashes(deps.deviceKeySha256, deps.syncStore ?? null);
+    const lock = await verifyDeviceKey(request, hashes);
+    if (!lock.ok) return json({ ok: false, code: lock.code, error: lock.message }, lock.status);
     const declared = Number(request.headers.get('content-length') ?? '0');
     if (Number.isFinite(declared) && declared > DIAG_BODY_MAX) return json({ error: 'Event too large.' }, 413);
     let text: string;

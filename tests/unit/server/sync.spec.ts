@@ -132,6 +132,68 @@ describe('sync: init (pairing)', () => {
     const res = await h.handle(req('POST', 'init', { body: JSON.stringify({ verifier }) }));
     expect(res.status).toBe(201);
   });
+
+  it('stores deviceKeyHash once alongside the verifier, in the same request', async () => {
+    const h = harness();
+    const verifier = await sha256Hex(AUTH_KEY);
+    const deviceKeyHash = await sha256Hex('pc-device-key-0123456789abcdef');
+    const res = await h.handle(req('POST', 'init', { body: JSON.stringify({ verifier, deviceKeyHash }) }));
+    expect(res.status).toBe(201);
+    expect(await body(res)).toMatchObject({ created: true, ok: true });
+    expect(h.store.data.get('v1/devicekeyhash')).toBe(deviceKeyHash);
+  });
+
+  it('never overwrites a stored deviceKeyHash, even from a second pairing device sending its own', async () => {
+    const h = harness();
+    const verifier = await sha256Hex(AUTH_KEY);
+    const firstHash = await sha256Hex('pc-device-key-0123456789abcdef');
+    await h.handle(req('POST', 'init', { body: JSON.stringify({ verifier, deviceKeyHash: firstHash }) }));
+    // A retry of the same verifier (no hash stored yet) would have written it;
+    // a second, different hash must never replace what is already there.
+    const secondHash = await sha256Hex('phone-device-key-9876543210zyx');
+    const res = await h.handle(req('POST', 'init', { body: JSON.stringify({ verifier, deviceKeyHash: secondHash }) }));
+    expect(res.status).toBe(200);
+    expect(h.store.data.get('v1/devicekeyhash')).toBe(firstHash);
+  });
+
+  it('writes the hash on a retry of the same verifier when none was stored yet', async () => {
+    const h = harness();
+    const verifier = await sha256Hex(AUTH_KEY);
+    await h.handle(req('POST', 'init', { body: JSON.stringify({ verifier }) })); // no hash yet
+    expect(h.store.data.has('v1/devicekeyhash')).toBe(false);
+    const hash = await sha256Hex('pc-device-key-0123456789abcdef');
+    const res = await h.handle(req('POST', 'init', { body: JSON.stringify({ verifier, deviceKeyHash: hash }) }));
+    expect(res.status).toBe(200);
+    expect(h.store.data.get('v1/devicekeyhash')).toBe(hash);
+  });
+
+  it('400 on a malformed deviceKeyHash; the response is unchanged otherwise', async () => {
+    const h = harness();
+    const verifier = await sha256Hex(AUTH_KEY);
+    const res = await h.handle(req('POST', 'init', { body: JSON.stringify({ verifier, deviceKeyHash: 'not-64-hex' }) }));
+    expect(res.status).toBe(400);
+    expect(await body(res)).toMatchObject({ code: 'bad-request' });
+    expect(h.store.data.has(V1_VERIFIER_KEY)).toBe(false);
+  });
+
+  it('a conflicting verifier never registers the submitted hash', async () => {
+    const h = harness();
+    await paired(h);
+    const other = await sha256Hex(OTHER_AUTH_KEY);
+    const hash = await sha256Hex('someone-elses-device-key-0123456');
+    const res = await h.handle(req('POST', 'init', { body: JSON.stringify({ verifier: other, deviceKeyHash: hash }) }));
+    expect(res.status).toBe(409);
+    expect(h.store.data.has('v1/devicekeyhash')).toBe(false);
+  });
+
+  it('omitting deviceKeyHash leaves the response and verifier behaviour unchanged', async () => {
+    const h = harness();
+    const verifier = await sha256Hex(AUTH_KEY);
+    const res = await h.handle(req('POST', 'init', { body: JSON.stringify({ verifier }) }));
+    expect(res.status).toBe(201);
+    expect(await body(res)).toMatchObject({ created: true, ok: true });
+    expect(h.store.data.has('v1/devicekeyhash')).toBe(false);
+  });
 });
 
 describe('sync: auth', () => {
