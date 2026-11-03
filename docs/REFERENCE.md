@@ -226,6 +226,7 @@ way; otherwise fix and report after.
 | A Hermes worker branches from old code | Worktrees are cut from the local clone `D:\RUDRA\zanshin`, which goes stale unless fetched | The bridge fetches and fast-forwards `main` every run; compare the worktree `HEAD` with `origin/main` |
 | Hermes card blocked with "exited with code 1" seconds after spawn | The worker profile has no AI provider it can resolve (a model chosen in the chat TUI is not enough) | Put the provider key in the profile's own `.env` (`hermes -p <profile> config set ANTHROPIC_API_KEY …`); prove it with `hermes -p <profile> chat -q`; read `outbox\logs\<profile>-managed-worker.log` for the real error |
 | E3 debrief "Mastery … → …" missing once (desktop, under load) | Open: debrief renders before mastery deltas are computed | Watch; if it recurs, make the debrief wait for the deltas (and test it) |
+| `page.keyboard.press('Tab')` lands on the wrong element once, then passes on retry | Test asserted on a locator (e.g. `#main`) that a loading fallback also renders, so it can resolve before the real shell (skip link, top bar) has committed | Assert on the shell itself (a stable, shell-only element) before the first keyboard interaction, never a fixed sleep |
 
 ## 8. Decisions (and why)
 

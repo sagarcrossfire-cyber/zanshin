@@ -48,7 +48,15 @@ test('QA m4: Settings links to Diagnostics and Retake the baseline', async ({ pa
 test('QA n4: the first Tab on /today focuses Skip to content', async ({ page }) => {
   await completeOnboarding(page);
   await page.goto('/today');
+  // Wait for the shell itself (skip link + top-bar title), not just #main:
+  // #main is also what RequireOnboarding's and Suspense's loading fallback
+  // render while the real shell is still mounting, so asserting on it alone
+  // let the test race the first Tab against the shell's commit (CI flake:
+  // see docs/ops/RCA_LOG.md 2026-11-03).
+  const skipLink = page.getByRole('link', { name: 'Skip to content' });
+  await expect(skipLink).toBeAttached();
+  await expect(page.getByRole('heading', { name: 'Today' })).toBeVisible();
   await expect(page.locator('#main')).toBeVisible();
   await page.keyboard.press('Tab');
-  await expect(page.getByRole('link', { name: 'Skip to content' })).toBeFocused();
+  await expect(skipLink).toBeFocused();
 });
