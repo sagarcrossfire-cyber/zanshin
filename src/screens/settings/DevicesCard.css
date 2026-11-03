@@ -1,0 +1,12 @@
+/* DevicesCard — spec card m3-sync-pairing-ui. The pairing code is shown
+ * large and grouped (as returned by encodePairingCode), mono, to make it
+ * easy to type on the other device. */
+.z-devices__code {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 22px;
+  line-height: 30px;
+  letter-spacing: 0.04em;
+  word-break: break-word;
+  margin: var(--space-2) 0;
+}
