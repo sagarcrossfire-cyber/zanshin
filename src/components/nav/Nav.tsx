@@ -77,9 +77,9 @@ export function Rail({
   const activeSection = sectionFor(pathname);
   return (
     <nav className={`z-rail${collapsed ? ' z-rail--collapsed' : ''}`} aria-label="Primary" id="z-rail">
-      <button type="button" className="z-rail__search" onClick={onSearch} aria-label="Search or jump to… Ctrl K" aria-keyshortcuts="Control+K">
+      <button type="button" className="z-rail__search" onClick={onSearch} aria-label="Search… Ctrl K" aria-keyshortcuts="Control+K">
         <IconSearch size={18} />
-        <span className="z-rail__label">Search or jump to…</span>
+        <span className="z-rail__label">Search…</span>
         <kbd className="z-rail__kbd z-rail__label">Ctrl K</kbd>
       </button>
       <ul className="z-rail__hubs">

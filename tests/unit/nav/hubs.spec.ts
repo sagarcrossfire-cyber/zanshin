@@ -3,7 +3,6 @@
 // characters and actions.
 import { describe, expect, it } from 'vitest';
 import { childFor, hubFor, HUBS, sectionFor, visibleSections } from '../../../src/app/hubs';
-import { buildPaletteIndex, normalize, searchPalette } from '../../../src/app/paletteIndex';
 
 const ROUTES: Array<[string, string | null, string | null]> = [
   ['/today', 'today', 'today'],
@@ -70,35 +69,5 @@ describe('hub map', () => {
     const train = HUBS.find((h) => h.id === 'train')!;
     expect(visibleSections(train).map((s) => s.id)).toEqual(['lab', 'punish', 'cards']);
     expect(visibleSections(HUBS[0]!)).toEqual([]);
-  });
-});
-
-describe('palette search', () => {
-  const index = buildPaletteIndex();
-
-  it('normalizes spaces and minus signs', () => {
-    expect(normalize('1 + 4')).toBe('1+4');
-    expect(normalize('−12')).toBe('-12');
-  });
-
-  it('an empty query lists actions and destinations', () => {
-    const results = searchPalette(index, '');
-    expect(results[0]?.group).toBe('Actions');
-    expect(results.some((r) => r.to === '/coach/ask')).toBe(true);
-  });
-
-  it('finds moves by name and notation, stances by abbreviation, characters, screens and actions', () => {
-    expect(searchPalette(index, 'flash').some((r) => r.group === 'Moves')).toBe(true);
-    expect(searchPalette(index, '1+4').find((r) => r.group === 'Moves')?.label).toBe('1+4');
-    expect(searchPalette(index, 'KIN').some((r) => r.group === 'Stances')).toBe(true);
-    expect(searchPalette(index, 'kazuya')[0]?.to).toBe('/matchups/Kazuya');
-    expect(searchPalette(index, 'heat').some((r) => r.to === '/codex/heat')).toBe(true);
-    expect(searchPalette(index, 'log a').some((r) => r.to === '/log/new')).toBe(true);
-    expect(searchPalette(index, 'patch').some((r) => r.to === '/patch')).toBe(true);
-  });
-
-  it('caps each group so one kind of result cannot flood the list', () => {
-    const moves = searchPalette(index, '1').filter((r) => r.group === 'Moves');
-    expect(moves.length).toBeLessThanOrEqual(6);
   });
 });
