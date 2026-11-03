@@ -1,6 +1,7 @@
 // §6.3/§6.4 — Problem-move and move-note repositories (problemMoves, moveNotes tables).
 import { db } from '../db';
 import { moveNoteSchema, problemMoveSchema, type MoveNote, type ProblemMove } from '../schemas';
+import { withSyncCapture } from './syncCapture';
 
 export const problemMovesRepo = {
   /** Returns the problem move with this id, or undefined. */
@@ -22,12 +23,18 @@ export const problemMovesRepo = {
   /** Validates and upserts a problem move. */
   async put(problemMove: ProblemMove): Promise<ProblemMove> {
     const parsed = problemMoveSchema.parse(problemMove);
-    await db.problemMoves.put(parsed);
+    await withSyncCapture(
+      { table: 'problemMoves', id: parsed.id, op: 'put', value: parsed },
+      () => db.problemMoves.put(parsed),
+    );
     return parsed;
   },
   /** Removes the problem move with this id. */
   async remove(id: string): Promise<void> {
-    await db.problemMoves.delete(id);
+    await withSyncCapture(
+      { table: 'problemMoves', id, op: 'delete' },
+      () => db.problemMoves.delete(id),
+    );
   },
 };
 
@@ -51,11 +58,17 @@ export const moveNotesRepo = {
   /** Validates and upserts a move note (one note per move). */
   async put(note: MoveNote): Promise<MoveNote> {
     const parsed = moveNoteSchema.parse(note);
-    await db.moveNotes.put(parsed);
+    await withSyncCapture(
+      { table: 'moveNotes', id: parsed.moveId, op: 'put', value: parsed },
+      () => db.moveNotes.put(parsed),
+    );
     return parsed;
   },
   /** Removes the note for one move. */
   async remove(moveId: string): Promise<void> {
-    await db.moveNotes.delete(moveId);
+    await withSyncCapture(
+      { table: 'moveNotes', id: moveId, op: 'delete' },
+      () => db.moveNotes.delete(moveId),
+    );
   },
 };

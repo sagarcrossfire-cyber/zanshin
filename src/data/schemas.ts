@@ -707,3 +707,65 @@ export const researchNoteSchema = z.object({
   createdAt: isoDateTimeSchema,
 });
 export type ResearchNote = z.infer<typeof researchNoteSchema>;
+
+// ---------- sync machinery (2.0 M3) ----------
+// The `syncOutbox` and `syncMeta` tables (schema v6). Repositories are the only writers (§6.2);
+// see src/data/repos/syncCapture.ts. Domain classification of which tables are synced, and how
+// they merge, lives in src/domain/sync/{tables,hlc,merge}.ts — these schemas only describe the
+// Dexie rows that carry that bookkeeping.
+
+export const syncOpSchema = z.enum(['put', 'delete']);
+export type SyncOpValue = z.infer<typeof syncOpSchema>;
+
+/** One queued change bound for the sync engine (`syncOutbox` table, `++seq, table, id`). `seq`
+ * is the Dexie auto-increment primary key, absent until the row is written. Put ops carry the
+ * (already device-local-stripped, for settings) record value; deletes carry no value. */
+export const syncOutboxRowSchema = z.object({
+  seq: z.number().int().optional(),
+  table: z.string().min(1),
+  id: z.string().min(1),
+  hlc: z.string().min(1),
+  op: syncOpSchema,
+  value: z.unknown().optional(),
+});
+export type SyncOutboxRow = z.infer<typeof syncOutboxRowSchema>;
+
+/** Per-record HLC metadata, keyed `${table}:${id}` (`syncMeta` table). A tombstone (`deleted:
+ * true`) is kept forever so an older, already-superseded remote `put` can never resurrect a
+ * deleted record. */
+export const syncRecordMetaRowSchema = z.object({
+  key: z.string().min(1),
+  hlc: z.string().min(1),
+  deleted: z.literal(true).optional(),
+});
+export type SyncRecordMetaRow = z.infer<typeof syncRecordMetaRowSchema>;
+
+/** This device's own HLC clock singleton (`syncMeta` row `key: 'clock'`). */
+export const syncClockRowSchema = z.object({ key: z.literal('clock'), hlc: z.string().min(1) });
+export type SyncClockRow = z.infer<typeof syncClockRowSchema>;
+
+/** This device's identity (`syncMeta` row `key: 'device'`), set at pairing (engine card). */
+export const syncDeviceRowSchema = z.object({ key: z.literal('device'), deviceId: z.string().min(1) });
+export type SyncDeviceRow = z.infer<typeof syncDeviceRowSchema>;
+
+/** Per-writer-device pull cursors (`syncMeta` row `key: 'cursors'`) — never a single global
+ * cursor, so every remote device's log is paged independently. */
+export const syncCursorsRowSchema = z.object({
+  key: z.literal('cursors'),
+  map: z.record(z.string(), z.string()),
+});
+export type SyncCursorsRow = z.infer<typeof syncCursorsRowSchema>;
+
+/** Pairing state (`syncMeta` row `key: 'pairing'`); shape reserved for the sync-engine card. Its
+ * mere presence is this card's pairing signal: change capture is off until this row exists. */
+export const syncPairingRowSchema = z.object({ key: z.literal('pairing') }).passthrough();
+export type SyncPairingRow = z.infer<typeof syncPairingRowSchema>;
+
+export const syncMetaRowSchema = z.union([
+  syncClockRowSchema,
+  syncDeviceRowSchema,
+  syncCursorsRowSchema,
+  syncPairingRowSchema,
+  syncRecordMetaRowSchema,
+]);
+export type SyncMetaRow = z.infer<typeof syncMetaRowSchema>;

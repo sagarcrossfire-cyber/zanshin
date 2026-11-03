@@ -5,7 +5,8 @@ import { flushSeed } from './seedState';
 import type {
   Assessment, Card, CardState, CoachMessage, DataConflict, DrillSet, ErrorRecord,
   Mastery, MatchSet, MediaAsset, MediaBlob, MetaRecord, MoveNote, PackRecord, ProblemMove, Profile,
-  ReplayReview, ResearchNote, Session, Settings, Snapshot, StageStatus, VerificationRecord,
+  ReplayReview, ResearchNote, Session, Settings, Snapshot, StageStatus, SyncMetaRow, SyncOutboxRow,
+  VerificationRecord,
 } from './schemas';
 
 /**
@@ -26,10 +27,15 @@ import type {
  * Version 5 (1.3.0): one new table, `research`, for web-sourced notes the
  * site's intel function returned (answers, matchup primers, patch briefs).
  * Additive: no existing table or row changes.
+ * Version 6 (2.0 M3): two new tables for device sync, `syncOutbox`
+ * (`++seq, table, id`, append-only queue of captured writes) and `syncMeta`
+ * (`key`, per-record HLC metadata plus the `clock`/`device`/`cursors`/
+ * `pairing` singletons — see src/data/repos/syncCapture.ts). Additive: no
+ * existing table or row changes; repositories are the only writers (§6.2).
  * Keep NEXT_SCHEMA_VERSION in sync with the highest registered version.
  */
-export const SCHEMA_VERSION = 5;
-export const NEXT_SCHEMA_VERSION = 6;
+export const SCHEMA_VERSION = 6;
+export const NEXT_SCHEMA_VERSION = 7;
 
 /** v1 stores, kept for the v1→v2 migration test. */
 export const V1_STORES: Record<string, string> = {
@@ -77,6 +83,13 @@ export const V5_STORES: Record<string, string> = {
   research: 'id, kind, subjectKey, createdAt',
 };
 
+/** v6 stores: v5 plus the sync outbox and per-record sync metadata (2.0 M3). */
+export const V6_STORES: Record<string, string> = {
+  ...V5_STORES,
+  syncOutbox: '++seq, table, id',
+  syncMeta: 'key',
+};
+
 export class ZanshinDb extends Dexie {
   meta!: Table<MetaRecord, string>;
   profile!: Table<Profile, string>;
@@ -101,6 +114,8 @@ export class ZanshinDb extends Dexie {
   media!: Table<MediaAsset, string>;
   mediaBlobs!: Table<MediaBlob, string>;
   research!: Table<ResearchNote, string>;
+  syncOutbox!: Table<SyncOutboxRow, number>;
+  syncMeta!: Table<SyncMetaRow, string>;
 
   constructor() {
     super('zanshin');
@@ -109,6 +124,7 @@ export class ZanshinDb extends Dexie {
     this.version(3).stores(V3_STORES);
     this.version(4).stores(V4_STORES);
     this.version(5).stores(V5_STORES);
+    this.version(6).stores(V6_STORES);
   }
 }
 

@@ -1,6 +1,7 @@
 // §6.3/§6.4 — Profile repository: the single 'me' profile row.
 import { db } from '../db';
 import { profileSchema, type Profile } from '../schemas';
+import { withSyncCapture } from './syncCapture';
 
 export const profileRepo = {
   /** Returns the profile, or undefined before onboarding completes. */
@@ -10,7 +11,10 @@ export const profileRepo = {
   /** Validates and upserts the profile. */
   async put(profile: Profile): Promise<Profile> {
     const parsed = profileSchema.parse(profile);
-    await db.profile.put(parsed);
+    await withSyncCapture(
+      { table: 'profile', id: parsed.id, op: 'put', value: parsed },
+      () => db.profile.put(parsed),
+    );
     return parsed;
   },
   /** Returns all profile rows (at most one). */
@@ -19,6 +23,9 @@ export const profileRepo = {
   },
   /** Removes the profile row. */
   async remove(): Promise<void> {
-    await db.profile.delete('me');
+    await withSyncCapture(
+      { table: 'profile', id: 'me', op: 'delete' },
+      () => db.profile.delete('me'),
+    );
   },
 };

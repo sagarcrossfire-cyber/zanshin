@@ -1,6 +1,9 @@
 // §6.3/§7.1/§7.2 — Mastery and stage-status repositories (mastery, stageStatus tables).
+// mastery is DERIVED (recomputed from sets after merge) and never captured for sync;
+// stageStatus is a synced LWW table and goes through withSyncCapture.
 import { db } from '../db';
 import { masterySchema, stageStatusSchema, type Mastery, type StageStatus } from '../schemas';
+import { withSyncCapture } from './syncCapture';
 
 export const masteryRepo = {
   /** Returns the mastery row for one node, or undefined. Keyed by nodeId. */
@@ -19,7 +22,8 @@ export const masteryRepo = {
   async allByState(state: Mastery['state']): Promise<Mastery[]> {
     return db.mastery.where('state').equals(state).toArray();
   },
-  /** Validates and upserts a mastery row (engine state is recomputable from history). */
+  /** Validates and upserts a mastery row (engine state is recomputable from history).
+   * Derived, never captured: mastery is recomputed locally after a sync merge, not synced itself. */
   async put(mastery: Mastery): Promise<Mastery> {
     const parsed = masterySchema.parse(mastery);
     await db.mastery.put(parsed);
@@ -51,11 +55,17 @@ export const stageStatusRepo = {
   /** Validates and upserts a stage-status row. */
   async put(status: StageStatus): Promise<StageStatus> {
     const parsed = stageStatusSchema.parse(status);
-    await db.stageStatus.put(parsed);
+    await withSyncCapture(
+      { table: 'stageStatus', id: parsed.stageId, op: 'put', value: parsed },
+      () => db.stageStatus.put(parsed),
+    );
     return parsed;
   },
   /** Removes the status row for one stage. */
   async remove(stageId: string): Promise<void> {
-    await db.stageStatus.delete(stageId);
+    await withSyncCapture(
+      { table: 'stageStatus', id: stageId, op: 'delete' },
+      () => db.stageStatus.delete(stageId),
+    );
   },
 };

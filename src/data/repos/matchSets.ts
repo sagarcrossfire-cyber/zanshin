@@ -1,6 +1,7 @@
 // §6.3/§6.4 — Match-set and replay-review repositories (matchSets, reviews tables).
 import { db } from '../db';
 import { matchSetSchema, replayReviewSchema, type MatchSet, type ReplayReview } from '../schemas';
+import { withSyncCapture } from './syncCapture';
 
 export const matchSetsRepo = {
   /** Returns the match set with this id, or undefined. */
@@ -26,21 +27,31 @@ export const matchSetsRepo = {
   /** Validates and upserts a match set. */
   async put(matchSet: MatchSet): Promise<MatchSet> {
     const parsed = matchSetSchema.parse(matchSet);
-    await db.matchSets.put(parsed);
+    await withSyncCapture(
+      { table: 'matchSets', id: parsed.id, op: 'put', value: parsed },
+      () => db.matchSets.put(parsed),
+    );
     return parsed;
   },
   /** Validates and upserts several match sets in one transaction (2.0 M2: ranked sync writes
-   * new and extended sets together, so a sync never leaves a half-written set). */
+   * new and extended sets together, so a sync never leaves a half-written set). One capture
+   * entry per set, still inside that single transaction. */
   async putMany(matchSets: MatchSet[]): Promise<MatchSet[]> {
     const parsed = matchSets.map((matchSet) => matchSetSchema.parse(matchSet));
-    await db.transaction('rw', db.matchSets, async () => {
-      for (const set of parsed) await db.matchSets.put(set);
-    });
+    await withSyncCapture(
+      parsed.map((matchSet) => ({ table: 'matchSets' as const, id: matchSet.id, op: 'put' as const, value: matchSet })),
+      async () => {
+        for (const set of parsed) await db.matchSets.put(set);
+      },
+    );
     return parsed;
   },
   /** Removes the match set with this id. Its replay reviews are kept. */
   async remove(id: string): Promise<void> {
-    await db.matchSets.delete(id);
+    await withSyncCapture(
+      { table: 'matchSets', id, op: 'delete' },
+      () => db.matchSets.delete(id),
+    );
   },
 };
 
@@ -64,11 +75,17 @@ export const reviewsRepo = {
   /** Validates and upserts a replay review. */
   async put(review: ReplayReview): Promise<ReplayReview> {
     const parsed = replayReviewSchema.parse(review);
-    await db.reviews.put(parsed);
+    await withSyncCapture(
+      { table: 'reviews', id: parsed.id, op: 'put', value: parsed },
+      () => db.reviews.put(parsed),
+    );
     return parsed;
   },
   /** Removes the replay review with this id. */
   async remove(id: string): Promise<void> {
-    await db.reviews.delete(id);
+    await withSyncCapture(
+      { table: 'reviews', id, op: 'delete' },
+      () => db.reviews.delete(id),
+    );
   },
 };

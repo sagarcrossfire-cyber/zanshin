@@ -1,6 +1,7 @@
 // §6.3/§6.4 — Flashcard and card-state repositories (cards, cardStates tables).
 import { db } from '../db';
 import { cardSchema, cardStateSchema, type Card, type CardState } from '../schemas';
+import { withSyncCapture } from './syncCapture';
 
 export const cardsRepo = {
   /** Returns the card with this id, or undefined. */
@@ -22,12 +23,18 @@ export const cardsRepo = {
   /** Validates and upserts a card. */
   async put(card: Card): Promise<Card> {
     const parsed = cardSchema.parse(card);
-    await db.cards.put(parsed);
+    await withSyncCapture(
+      { table: 'cards', id: parsed.id, op: 'put', value: parsed },
+      () => db.cards.put(parsed),
+    );
     return parsed;
   },
   /** Removes the card with this id. Its card state is kept (see cardStatesRepo). */
   async remove(id: string): Promise<void> {
-    await db.cards.delete(id);
+    await withSyncCapture(
+      { table: 'cards', id, op: 'delete' },
+      () => db.cards.delete(id),
+    );
   },
 };
 
@@ -51,11 +58,17 @@ export const cardStatesRepo = {
   /** Validates and upserts a card state. */
   async put(state: CardState): Promise<CardState> {
     const parsed = cardStateSchema.parse(state);
-    await db.cardStates.put(parsed);
+    await withSyncCapture(
+      { table: 'cardStates', id: parsed.cardId, op: 'put', value: parsed },
+      () => db.cardStates.put(parsed),
+    );
     return parsed;
   },
   /** Removes the schedule state for one card. */
   async remove(cardId: string): Promise<void> {
-    await db.cardStates.delete(cardId);
+    await withSyncCapture(
+      { table: 'cardStates', id: cardId, op: 'delete' },
+      () => db.cardStates.delete(cardId),
+    );
   },
 };

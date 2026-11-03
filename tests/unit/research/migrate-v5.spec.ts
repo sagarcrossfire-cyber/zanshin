@@ -26,7 +26,7 @@ function openAt(version: number): Dexie {
 
 describe('schema v5 (research notes)', () => {
   it('is the current schema and only adds the research store', () => {
-    expect(SCHEMA_VERSION).toBe(5);
+    expect(SCHEMA_VERSION).toBeGreaterThanOrEqual(5);
     expect(V5_STORES).toMatchObject(V4_STORES);
     expect(Object.keys(V5_STORES).filter((k) => !(k in V4_STORES))).toEqual(['research']);
   });
