@@ -11,9 +11,10 @@
 import { db } from '../db';
 import { receive, tick } from '../../domain/sync/hlc';
 import { mergeChange, type LocalRecordMeta, type SyncChange } from '../../domain/sync/merge';
-import type { SyncedTable } from '../../domain/sync/tables';
-import type {
-  SyncClockRow, SyncDeviceRow, SyncRecordMetaRow,
+import { DEVICE_LOCAL_SETTINGS_FIELD_PATTERN, stripDeviceLocalSettings, type SyncedTable } from '../../domain/sync/tables';
+import {
+  errorRecordSchema, settingsSchema,
+  type SyncClockRow, type SyncDeviceRow, type SyncRecordMetaRow,
 } from '../schemas';
 
 /** Fallback device id if a write is captured before the (engine-card) pairing flow ever wrote a
@@ -35,6 +36,26 @@ async function getDeviceId(): Promise<string> {
 
 async function getRecordMetaRow(key: string): Promise<SyncRecordMetaRow | undefined> {
   return (await db.syncMeta.get(key)) as SyncRecordMetaRow | undefined;
+}
+
+/** The inverse of `stripDeviceLocalSettings`: the device-local fields only (`aiApiKey` and
+ * anything else matching the same secret-shaped pattern), read off the LOCAL settings row so a
+ * remote change can never overwrite them. */
+function pickDeviceLocalSettings(settings: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const key of Object.keys(settings)) {
+    if (DEVICE_LOCAL_SETTINGS_FIELD_PATTERN.test(key)) out[key] = settings[key];
+  }
+  return out;
+}
+
+function randomSyncErrorId(): string {
+  try {
+    if (typeof globalThis.crypto?.randomUUID === 'function') return `err-sync-${globalThis.crypto.randomUUID()}`;
+  } catch {
+    // Fall through to Math.random below.
+  }
+  return `err-sync-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
 /** One record write to capture into the outbox alongside its table write. */
@@ -92,11 +113,19 @@ export async function withSyncCapture(
  * apply-vs-skip decision per record (idempotent replays, out-of-order delivery, tombstones
  * outranking older puts), and advances the local HLC with `receive` so every later local `tick`
  * stays causally after everything this device has seen from any other device.
+ *
+ * `settings` is special-cased: it carries this device's own local-only fields (`aiApiKey` and
+ * anything else matching the secret-shaped pattern), which the sender already stripped before
+ * writing its outbox row. A remote `settings` put is merged onto the LOCAL row's device-local
+ * fields rather than overwriting the whole row (which would wipe this device's own API key), and
+ * a remote `settings` delete keeps the local row — a settings reset is per-device — recording
+ * only the tombstone in `syncMeta`. An invalid merge (should not normally happen) is skipped and
+ * recorded via `errorsRepo` rather than writing an invalid row.
  */
 export async function applyRemoteChanges(changes: SyncChange[]): Promise<void> {
   if (changes.length === 0) return;
   const tableNames = [...new Set(changes.map((change) => change.table))];
-  await db.transaction('rw', [...tableNames, 'syncMeta'], async () => {
+  await db.transaction('rw', [...tableNames, 'syncMeta', 'errors'], async () => {
     const deviceId = await getDeviceId();
     const nowMs = Date.now();
     const clockRow = await getClockRow();
@@ -114,12 +143,37 @@ export async function applyRemoteChanges(changes: SyncChange[]): Promise<void> {
         localHlc = receive(localHlc, change.hlc, nowMs, deviceId);
         continue;
       }
-      const table = db.table(change.table);
-      if (change.op === 'delete') {
-        await table.delete(change.id);
+
+      if (change.table === 'settings' && change.op === 'delete') {
+        // Keep the local row (and its device-local fields) — only the tombstone is recorded below.
+      } else if (change.table === 'settings') {
+        const localRow = (await db.settings.get(change.id)) as Record<string, unknown> | undefined;
+        const remoteValue = (change.value ?? {}) as Record<string, unknown>;
+        const merged = {
+          ...stripDeviceLocalSettings(remoteValue), // defence in depth: drop any that arrived anyway
+          ...pickDeviceLocalSettings(localRow ?? {}),
+        };
+        const parsedResult = settingsSchema.safeParse(merged);
+        if (!parsedResult.success) {
+          await db.errors.put(errorRecordSchema.parse({
+            id: randomSyncErrorId(),
+            at: new Date(nowMs).toISOString(),
+            where: 'sync:applyRemoteChanges:settings',
+            message: 'skipped an invalid remote settings change',
+          }));
+          localHlc = receive(localHlc, change.hlc, nowMs, deviceId);
+          continue;
+        }
+        await db.settings.put(parsedResult.data);
       } else {
-        await table.put(change.value);
+        const table = db.table(change.table);
+        if (change.op === 'delete') {
+          await table.delete(change.id);
+        } else {
+          await table.put(change.value);
+        }
       }
+
       await db.syncMeta.put({
         key: metaKey,
         hlc: decision.nextMeta.hlc,

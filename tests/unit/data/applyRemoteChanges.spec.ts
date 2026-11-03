@@ -89,4 +89,62 @@ describe.skipIf(!fakeAvailable)('applyRemoteChanges', () => {
     if (repos === null) return;
     await expect(repos.applyRemoteChanges([])).resolves.toBeUndefined();
   });
+
+  it('a remote settings put does not wipe the local aiApiKey', async () => {
+    if (repos === null || dbModule === null || hlcModule === null) return;
+    const localSettings = {
+      id: 'settings' as const, theme: 'dark' as const, labAudioCues: true, labWakeLock: false,
+      repsPerSet: 10, newCardsPerDay: 5, reviewsPerDay: 20, aiProvider: 'zanshin' as const,
+      aiRequestsPerHour: 10, aiApiKey: 'b-key', snapshotsKeptDaily: 7, snapshotsKeptEvent: 7,
+      backupReminderDays: 14, inAppImporterEnabled: true, matchImportEnabled: true,
+      dataPatch: '1.0', dataSource: 'wavu' as const, kpiTargets: {},
+    };
+    await repos.settingsRepo.put(localSettings);
+    const remoteHlc = hlcModule.formatHlc(2000, 0, 'device-b');
+    await repos.applyRemoteChanges([
+      { table: 'settings', id: 'settings', hlc: remoteHlc, op: 'put', value: {
+        ...localSettings, aiApiKey: undefined, theme: 'light', repsPerSet: 12,
+      } },
+    ]);
+    const after = await repos.settingsRepo.get();
+    expect(after).toMatchObject({ theme: 'light', repsPerSet: 12, aiApiKey: 'b-key' });
+  });
+
+  it('an incoming aiApiKey over the wire is ignored, keeping the local value', async () => {
+    if (repos === null || dbModule === null || hlcModule === null) return;
+    const localSettings = {
+      id: 'settings' as const, theme: 'dark' as const, labAudioCues: true, labWakeLock: false,
+      repsPerSet: 10, newCardsPerDay: 5, reviewsPerDay: 20, aiProvider: 'zanshin' as const,
+      aiRequestsPerHour: 10, aiApiKey: 'b-key', snapshotsKeptDaily: 7, snapshotsKeptEvent: 7,
+      backupReminderDays: 14, inAppImporterEnabled: true, matchImportEnabled: true,
+      dataPatch: '1.0', dataSource: 'wavu' as const, kpiTargets: {},
+    };
+    await repos.settingsRepo.put(localSettings);
+    const remoteHlc = hlcModule.formatHlc(2000, 0, 'device-b');
+    await repos.applyRemoteChanges([
+      { table: 'settings', id: 'settings', hlc: remoteHlc, op: 'put', value: { ...localSettings, aiApiKey: 'evil' } },
+    ]);
+    const after = await repos.settingsRepo.get();
+    expect(after?.aiApiKey).toBe('b-key');
+  });
+
+  it('a remote settings delete keeps the local row (and aiApiKey) but writes the tombstone meta', async () => {
+    if (repos === null || dbModule === null || hlcModule === null) return;
+    const localSettings = {
+      id: 'settings' as const, theme: 'dark' as const, labAudioCues: true, labWakeLock: false,
+      repsPerSet: 10, newCardsPerDay: 5, reviewsPerDay: 20, aiProvider: 'zanshin' as const,
+      aiRequestsPerHour: 10, aiApiKey: 'b-key', snapshotsKeptDaily: 7, snapshotsKeptEvent: 7,
+      backupReminderDays: 14, inAppImporterEnabled: true, matchImportEnabled: true,
+      dataPatch: '1.0', dataSource: 'wavu' as const, kpiTargets: {},
+    };
+    await repos.settingsRepo.put(localSettings);
+    const remoteHlc = hlcModule.formatHlc(2000, 0, 'device-b');
+    await repos.applyRemoteChanges([
+      { table: 'settings', id: 'settings', hlc: remoteHlc, op: 'delete' },
+    ]);
+    const after = await repos.settingsRepo.get();
+    expect(after).toMatchObject({ aiApiKey: 'b-key', theme: 'dark' });
+    const meta = await dbModule.db.syncMeta.get('settings:settings');
+    expect(meta).toMatchObject({ deleted: true, hlc: remoteHlc });
+  });
 });
