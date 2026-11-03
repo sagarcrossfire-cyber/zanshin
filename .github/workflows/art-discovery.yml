@@ -1,0 +1,62 @@
+# ZANSHIN — log-only character art discovery (2.0 M6).
+#
+# The build sandbox cannot reach the web; Actions can. Pushing to an art/**
+# branch (or running this by hand) lists candidate Tekken 8 renders for the
+# characters Wavu Wiki has no portrait for. Nothing is downloaded into the
+# site: the log and the JSON artifact are for a human to choose a source.
+name: Art discovery
+
+on:
+  push:
+    branches: ['art/**']
+    paths: ['scripts/discover_character_art.py', 'scripts/official_art_sheet.py', '.github/workflows/art-discovery.yml']
+  workflow_dispatch:
+    inputs:
+      names:
+        description: Comma-separated character names (blank = the nine without a Wavu portrait)
+        required: false
+        default: ''
+
+permissions:
+  contents: write  # commits the contact sheet back to this art/** branch for review
+
+jobs:
+  discover:
+    name: Discover character art (log only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Discover
+        env:
+          NAMES: ${{ github.event.inputs.names }}
+        run: |
+          if [ -n "$NAMES" ]; then
+            python scripts/discover_character_art.py --names "$NAMES" --out art-discovery.json
+          else
+            python scripts/discover_character_art.py --out art-discovery.json
+          fi
+      - name: Official renders contact sheet
+        run: |
+          python -m pip install --quiet pillow
+          python scripts/official_art_sheet.py
+      - name: Commit the contact sheet to this branch (for review by eye)
+        if: startsWith(github.ref, 'refs/heads/art/')
+        run: |
+          mkdir -p art-review
+          cp official-art-sheet.png official-art.json art-review/
+          git config user.name "zanshin-art-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add art-review
+          git diff --cached --quiet || git commit -m "art-review: official renders contact sheet [skip ci]"
+          git push
+      - uses: actions/upload-artifact@v7
+        with:
+          name: art-discovery
+          path: |
+            art-discovery.json
+            official-art.json
+            official-art-sheet.png

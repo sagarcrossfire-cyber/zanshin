@@ -1,7 +1,7 @@
 // Spec §13.8 bundle budgets: shell JS <=200 kB gz, each ROUTE JS chunk
 // <=80 kB (Progress with charts <=140 kB). CSS is reported, not budgeted
 // as a route chunk. Uses gzip of dist assets. Fails verify when over budget.
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
@@ -36,6 +36,21 @@ if (shell > 200 * 1024) failures.push(`shell ${(shell / 1024).toFixed(1)} kB gz 
 const packGz = gz(fileURLToPath(new URL('../src/data/packs/moves.yoshimitsu.json', import.meta.url)));
 console.log(`moves pack: ${(packGz / 1024).toFixed(1)} kB gz (budget 150 kB)`);
 if (packGz > 150 * 1024) failures.push(`moves pack ${(packGz / 1024).toFixed(1)} kB gz > 150 kB`);
+// 2.0 M6: the hall photos (public/art, every width and format) stay under 1.5 MB in all,
+// and the precached 800 px set under 400 kB.
+const ART = join(DIST, 'art');
+let artAll = 0;
+let artSmall = 0;
+if (existsSync(ART)) {
+  for (const entry of readdirSync(ART)) {
+    const size = statSync(join(ART, entry)).size;
+    artAll += size;
+    if (/-800\./.test(entry)) artSmall += size;
+  }
+}
+console.log(`hall art: ${(artAll / 1024).toFixed(0)} kB (budget 1536 kB), 800 px set ${(artSmall / 1024).toFixed(0)} kB (budget 400 kB)`);
+if (artAll > 1536 * 1024) failures.push(`hall art ${(artAll / 1024).toFixed(0)} kB > 1536 kB`);
+if (artSmall > 400 * 1024) failures.push(`hall art 800 px set ${(artSmall / 1024).toFixed(0)} kB > 400 kB`);
 if (failures.length > 0) {
   console.error('BUNDLE BUDGET FAILURES:');
   for (const f of failures) console.error(' ', f);

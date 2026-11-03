@@ -1,0 +1,306 @@
+{
+ "source": "docs/v2/research/design.md §D.3 (Unsplash License, not Unsplash+)",
+ "candidates": [
+  {
+   "n": 1,
+   "id": "EsyRI8Wag40",
+   "photographer": "Adam Wilson",
+   "handle": "@fourcolourblack",
+   "page": "https://unsplash.com/photos/a-corridor-of-red-torii-gates-in-japan-EsyRI8Wag40",
+   "suits": "Onboarding; Path hub",
+   "why": "Fushimi Inari corridor, evening; leading lines = progression; red works raw in Crimson Dojo, tinted elsewhere",
+   "image": "https://images.unsplash.com/photo-1753517457294-2bf4694e3760"
+  },
+  {
+   "n": 2,
+   "id": "UWheXkRpWKI",
+   "photographer": "Masaaki Komori",
+   "handle": "@gaspanik",
+   "page": "https://unsplash.com/photos/UWheXkRpWKI",
+   "suits": "Today hall (dark schemes)",
+   "why": "\"Dark torii gate on a rocky outcrop surrounded by the ocean\"; lone gate, lots of negative space *(photo page fetch blocked; licence from the search listing)*",
+   "image": "https://images.unsplash.com/photo-1651910853503-b77731a6e718"
+  },
+  {
+   "n": 3,
+   "id": "SBK40fdKbAg",
+   "photographer": "Tianshu Liu",
+   "handle": "@tianshu",
+   "page": "https://unsplash.com/photos/SBK40fdKbAg",
+   "suits": "Today hall (Washi Daylight)",
+   "why": "Lake Ashi torii in water; calm morning feel for the light theme",
+   "image": "https://images.unsplash.com/photo-1492571350019-22de08371fd3"
+  },
+  {
+   "n": 4,
+   "id": "2gGPUM_z1XA",
+   "photographer": "Wu Hsien Yu",
+   "handle": "@heyywh",
+   "page": "https://unsplash.com/photos/2gGPUM_z1XA",
+   "suits": "Coach alternative",
+   "why": "Torii in the middle of water; reflection theme",
+   "image": "https://images.unsplash.com/photo-1639056496887-3caaa605609b"
+  },
+  {
+   "n": 5,
+   "id": "tvJX2DTeCiQ",
+   "photographer": "Filip Kvasnak",
+   "handle": "@filipkvasnak",
+   "page": "https://unsplash.com/photos/misty-mountains-shrouded-in-dark-clouds-at-dawn-tvJX2DTeCiQ",
+   "suits": "Path hub; You hub",
+   "why": "\"Moody morning\", tags blue, dark forest, foggy; layered ridges read as ink wash once grayscaled (High Tatras, not Japan, so no landmark clash)",
+   "image": "https://images.unsplash.com/photo-1768684160371-566aadb7785e"
+  },
+  {
+   "n": 6,
+   "id": "N4VkXy69KI4",
+   "photographer": "TOMOKO UJI",
+   "handle": "@ujitomo",
+   "page": "https://unsplash.com/photos/bamboo-forest-canopy-with-green-stalks-N4VkXy69KI4",
+   "suits": "Train hub; desktop rail foot (vertical crop)",
+   "why": "Arashiyama bamboo canopy; vertical rhythm = discipline",
+   "image": "https://images.unsplash.com/photo-1531021713651-fdd4ac075ac1"
+  },
+  {
+   "n": 7,
+   "id": "eouEtrJf844",
+   "photographer": "Vincent Botta",
+   "handle": "@0asa",
+   "page": "https://unsplash.com/photos/eouEtrJf844",
+   "suits": "Coach › Ask background; loading states",
+   "why": "Black ink in clear water; sumi in motion",
+   "image": "https://images.unsplash.com/photo-1531489059546-d0a6612ee42f"
+  },
+  {
+   "n": 8,
+   "id": "zHfhQlQswec",
+   "photographer": "FÍA YANG",
+   "handle": "@fiayang",
+   "page": "https://unsplash.com/photos/black-ink-wash-abstract-zHfhQlQswec",
+   "suits": "Washi Daylight scene; Patch Watch",
+   "why": "Black ink washes bleeding into white paper; literal sumi-on-washi",
+   "image": "https://images.unsplash.com/photo-1642285231665-5cc805daa6de"
+  },
+  {
+   "n": 9,
+   "id": "uhWEGjTfStg",
+   "photographer": "Fons Heijnsbroek",
+   "handle": "@heijnsbroek_abstract_art",
+   "page": "https://unsplash.com/photos/abstract-black-and-white-ink-brush-strokes-uhWEGjTfStg",
+   "suits": "Study hub; Playbook",
+   "why": "Ink drawing on paper, tags calligraphy and ink wash; high contrast takes a tint well",
+   "image": "https://images.unsplash.com/photo-1768408279662-d31ad1a1cda6"
+  },
+  {
+   "n": 10,
+   "id": "3q3O3QftPVo",
+   "photographer": "Katrin Hauf",
+   "handle": "@trine",
+   "page": "https://unsplash.com/photos/white-and-black-smoke-illustration-3q3O3QftPVo",
+   "suits": "Heat (Heat Surge tint); transitions",
+   "why": "Monochrome smoke; turns into violet \"Heat haze\"",
+   "image": "https://images.unsplash.com/photo-1599418978625-1fc805bc068d"
+  },
+  {
+   "n": 11,
+   "id": "2nKcZGDHpEs",
+   "photographer": "360floralflaves",
+   "handle": "@360floralflaves",
+   "page": "https://unsplash.com/photos/2nKcZGDHpEs",
+   "suits": "Flashcard faces; Washi surfaces",
+   "why": "\"Light grey paper texture with fine fibrous strands\" (kozo-like)",
+   "image": "https://images.unsplash.com/photo-1727019820331-dc4b82ea27d2"
+  },
+  {
+   "n": 12,
+   "id": "U2j1u4BWrpM",
+   "photographer": "Bart Wesolek",
+   "handle": "@bartco86",
+   "page": "https://unsplash.com/photos/U2j1u4BWrpM",
+   "suits": "Patch notice panels; light cards",
+   "why": "Flat white paper texture",
+   "image": "https://images.unsplash.com/photo-1691415780202-edc894cdac84"
+  },
+  {
+   "n": 13,
+   "id": "FZBoZOmI9hs",
+   "photographer": "Safwan Thottoli",
+   "handle": "@safwan_thottoli",
+   "page": "https://unsplash.com/photos/FZBoZOmI9hs",
+   "suits": "Washi Daylight scene base (multiply)",
+   "why": "Blank beige parchment; warms `--bg`",
+   "image": "https://images.unsplash.com/photo-1686806372892-6a18b402bcef"
+  },
+  {
+   "n": 14,
+   "id": "6fAgnT3Dhl4",
+   "photographer": "Svetlana Gumerova",
+   "handle": "@bananablackcat",
+   "page": "https://unsplash.com/photos/japanese-lantern-light-during-night-time-6fAgnT3Dhl4",
+   "suits": "Matches empty state; You hub",
+   "why": "A single Japanese lantern at night: \"keep the light on\"",
+   "image": "https://images.unsplash.com/photo-1574060275764-4e3e046ff29c"
+  },
+  {
+   "n": 15,
+   "id": "D68ADLeMh5Q",
+   "photographer": "Denys Nevozhai",
+   "handle": "@dnevozhai",
+   "page": "https://unsplash.com/photos/alleyway-with-red-lanterns-in-tokyo-D68ADLeMh5Q",
+   "suits": "Matchups hub (Crimson Dojo)",
+   "why": "Red-lantern alley = the street of rivals; blur hard because of signage",
+   "image": "https://images.unsplash.com/photo-1573455494060-c5595004fb6c"
+  },
+  {
+   "n": 16,
+   "id": "vTjip4rq7hc",
+   "photographer": "Eddy Boom",
+   "handle": "@eddyboom",
+   "page": "https://unsplash.com/photos/white-paper-lantern-vTjip4rq7hc",
+   "suits": "Coach › Look it up (research notes)",
+   "why": "A white paper lantern = illumination and research",
+   "image": "https://images.unsplash.com/photo-1529486837607-1ebfa5ec00cf"
+  },
+  {
+   "n": 17,
+   "id": "R20NOBAegME",
+   "photographer": "Kristijan Arsov",
+   "handle": "@aarsoph",
+   "page": "https://unsplash.com/photos/ornate-wooden-roof-of-a-traditional-japanese-building-with-trees-R20NOBAegME",
+   "suits": "Study hub (Codex)",
+   "why": "Ginkaku-ji roof detail, Kyoto; temple architecture = a library of knowledge",
+   "image": "https://images.unsplash.com/photo-1785156831484-09d2ba1daf8f"
+  },
+  {
+   "n": 18,
+   "id": "YpeAO8fNJkY",
+   "photographer": "Takashi Miyazaki",
+   "handle": "@miyatankun",
+   "page": "https://unsplash.com/photos/cherry-blossoms-light-up-a-river-at-night-YpeAO8fNJkY",
+   "suits": "Stage gate passed; You hub",
+   "why": "Cherry blossoms lit at night along a river; the reward moment",
+   "image": "https://images.unsplash.com/photo-1744204876894-2591d3b1f42e"
+  },
+  {
+   "n": 19,
+   "id": "0XQJbE548ZI",
+   "photographer": "Takashi Miyazaki",
+   "handle": "@miyatankun",
+   "page": "https://unsplash.com/photos/cherry-blossoms-line-the-trees-along-a-river-at-night-0XQJbE548ZI",
+   "suits": "Alternative to #18",
+   "why": "Same series, different composition",
+   "image": "https://images.unsplash.com/photo-1710216106278-a64505ca2141"
+  },
+  {
+   "n": 20,
+   "id": "yhWkR8yF0tk",
+   "photographer": "Jr Korpa",
+   "handle": "@jrkorpa",
+   "page": "https://unsplash.com/photos/pink-and-brown-cherry-blossom-tree-during-nighttime-yhWkR8yF0tk",
+   "suits": "Heat Surge milestone modal",
+   "why": "Night blossom tree; moody colour (Korpa's work is usually abstract and dark)",
+   "image": "https://images.unsplash.com/photo-1528493695782-15c16f2c42f9"
+  },
+  {
+   "n": 21,
+   "id": "Wknl_fbr-YM",
+   "photographer": "Jeff Pratley",
+   "handle": "@pratjeffley",
+   "page": "https://unsplash.com/photos/a-full-moon-over-a-body-of-water-at-night-Wknl_fbr-YM",
+   "suits": "**Coach hall banner**",
+   "why": "Full moon over water at night (水月)",
+   "image": "https://images.unsplash.com/photo-1727280694045-c8acacc0b36a"
+  },
+  {
+   "n": 22,
+   "id": "DyaIOeGcMUA",
+   "photographer": "Josh Massey",
+   "handle": "@joshuamphotography",
+   "page": "https://unsplash.com/photos/moon-above-body-of-water-DyaIOeGcMUA",
+   "suits": "Coach › Weekly review",
+   "why": "Moon above water; alternative crop",
+   "image": "https://images.unsplash.com/photo-1558531675-feeae25ac81f"
+  },
+  {
+   "n": 23,
+   "id": "D5A-TwxRpUg",
+   "photographer": "Takafumi Yamashita",
+   "handle": "@yamashita0129",
+   "page": "https://unsplash.com/photos/a-large-empty-room-D5A-TwxRpUg",
+   "suits": "Lab hub; \"no sessions yet\"",
+   "why": "An empty hall from the \"dojo\" search; quiet space before practice",
+   "image": "https://images.unsplash.com/photo-1650208532541-572697b3dd40"
+  },
+  {
+   "n": 24,
+   "id": "SkYjyctnC5Q",
+   "photographer": "Simon Dreher",
+   "handle": "@notphotogenic",
+   "page": "https://unsplash.com/photos/people-practicing-kendo-in-a-dojo-SkYjyctnC5Q",
+   "suits": "Train hub alternative",
+   "why": "Kendo in a dojo; masks hide faces (check), keeps the energy of practice",
+   "image": "https://images.unsplash.com/photo-1763905720991-0ce68f551743"
+  },
+  {
+   "n": 25,
+   "id": "NP8GAo1UpBA",
+   "photographer": "Seiya Maeda",
+   "handle": "@seiya_maeda",
+   "page": "https://unsplash.com/photos/a-large-knife-with-a-long-blade-attached-to-it-NP8GAo1UpBA",
+   "suits": "**Punish Trainer** hall",
+   "why": "Long blade from the \"katana\" search; steel = the punish",
+   "image": "https://images.unsplash.com/photo-1671015522549-e7aa41ded44f"
+  },
+  {
+   "n": 26,
+   "id": "e7A4f_gJvaI",
+   "photographer": "True Knife",
+   "handle": "@trueknife1",
+   "page": "https://unsplash.com/photos/a-damascus-steel-knife-with-a-patterned-handle-e7A4f_gJvaI",
+   "suits": "Steel texture strip (Punish ladder header)",
+   "why": "Damascus pattern; **crop to steel only** (the maker's brand account; avoid any mark)",
+   "image": "https://images.unsplash.com/photo-1762514772931-42fe31cecd9d"
+  },
+  {
+   "n": 27,
+   "id": "LDi9F6oGojQ",
+   "photographer": "Pawel Czerwinski",
+   "handle": "@pawel_czerwinski",
+   "page": "https://unsplash.com/photos/burning-coals-LDi9F6oGojQ",
+   "suits": "**Heat** hall",
+   "why": "Burning coals = embers; tints to `--accent-2` / `--heat`",
+   "image": "https://images.unsplash.com/photo-1536096347608-f2d054f64a17"
+  },
+  {
+   "n": 28,
+   "id": "BINLgyrG_fI",
+   "photographer": "Hannah Gibbs",
+   "handle": "@hannahmgibbs",
+   "page": "https://unsplash.com/photos/man-pounding-hammer-on-hot-iron-rod-BINLgyrG_fI",
+   "suits": "Path \"forging\" stage; streak milestones",
+   "why": "Hammer on hot iron = forging skill; crop out the person",
+   "image": "https://images.unsplash.com/photo-1537557209696-c595cc42018d"
+  },
+  {
+   "n": 29,
+   "id": "WGMIlXUyQdc",
+   "photographer": "Ray Wyman Jr",
+   "handle": "@heavypen",
+   "page": "https://unsplash.com/photos/a-rock-garden-with-rocks-and-gravel-WGMIlXUyQdc",
+   "suits": "Codex › Stances; rest-day state",
+   "why": "A karesansui rock garden; raked ripples echo the stance map",
+   "image": "https://images.unsplash.com/photo-1672758688320-685bb6b36846"
+  },
+  {
+   "n": 30,
+   "id": "gQljeKrJTwI",
+   "photographer": "Leon Gao",
+   "handle": "@leongao",
+   "page": "https://unsplash.com/photos/a-rock-garden-in-the-middle-of-a-graveled-area-gQljeKrJTwI",
+   "suits": "Alternative to #29",
+   "why": "A rock garden in a gravel field",
+   "image": "https://images.unsplash.com/photo-1645441420916-52725d699b62"
+  }
+ ],
+ "downloadRoute": "Unsplash connector download_asset (records the download), 2026-11-03; image base URLs below"
+}

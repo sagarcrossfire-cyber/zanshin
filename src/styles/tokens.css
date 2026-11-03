@@ -55,6 +55,9 @@
   --pattern-ink: #9FB8E0;
   --scene-pattern: var(--pattern-seigaiha); --scene-pattern-size: 56px 28px;
   --scene-art-opacity: 0.24;
+  /* 2.0 M6 hall photos: grayscale photo, tinted by the scene glow beneath it */
+  --hall-photo-opacity: 0.5; --hall-photo-blend: luminosity;
+  --hall-photo-filter: grayscale(1) brightness(0.5) contrast(1.15);
   --shadow-overlay: 0 12px 32px rgb(0 0 0 / 0.45);
   --shadow-panel: 0 18px 40px -24px rgb(0 0 0 / 0.75);
   --scrim: rgb(0 0 0 / 0.6);
@@ -107,6 +110,8 @@
   --pattern-ink: #5C4A36;
   --scene-pattern: var(--pattern-seigaiha); --scene-pattern-size: 56px 28px;
   --scene-art-opacity: 0.16;
+  --hall-photo-opacity: 0.3; --hall-photo-blend: multiply;
+  --hall-photo-filter: grayscale(1) brightness(1.3) contrast(0.8);
   --shadow-overlay: 0 12px 32px rgb(40 30 20 / 0.22);
   --shadow-panel: 0 16px 36px -26px rgb(60 40 20 / 0.45);
   --scrim: rgb(20 16 12 / 0.45);

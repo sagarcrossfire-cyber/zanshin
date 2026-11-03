@@ -3,6 +3,8 @@
 // art and clips behave, review what is stored, export it, delete it.
 // Everything stays in this browser; the app never downloads media.
 import { PageHeader } from '../../components/layout/PageHeader';
+import { HALL_PHOTOS } from '../../components/layout/HallArt';
+import { hubById, type HubId } from '../../app/hubs';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
@@ -491,6 +493,21 @@ export function MediaScreen() {
           Rank badges, the logo and key art come from wherever you got them; each item&apos;s source page, when the
           pack recorded one, is listed under What is stored.
         </p>
+        <p className="z-body-l">The photographs behind each hub&apos;s header are from Unsplash (Unsplash License):</p>
+        <ul className="z-media-credits" aria-label="Hub photo credits">
+          {HALL_PHOTOS.map((photo) => (
+            <li key={photo.id}>
+              {hubById(photo.hub as HubId).label}: photo by{' '}
+              <a href={`https://unsplash.com/${photo.handle}?utm_source=zanshin&utm_medium=referral`} target="_blank" rel="noreferrer">
+                {photo.photographer}
+              </a>{' '}
+              on{' '}
+              <a href={`${photo.page}?utm_source=zanshin&utm_medium=referral`} target="_blank" rel="noreferrer">
+                Unsplash
+              </a>
+            </li>
+          ))}
+        </ul>
       </Card>
     </div>
   );

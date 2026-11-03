@@ -1,0 +1,38 @@
+# ZANSHIN — scene-art review sheets (2.0 M6). Pushing to an art/** branch
+# downloads the approved Unsplash candidates (design.md §D.3), grayscales them
+# like the app does, and commits a contact sheet back to the branch so the
+# picks can be reviewed by eye. It also rebuilds public/art for the picks;
+# nothing reaches main except through a reviewed PR.
+name: Art review
+
+on:
+  push:
+    branches: ['art/**']
+    paths: ['scripts/art/**', '.github/workflows/art-review.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write  # commits art-review/ back to this art/** branch
+
+jobs:
+  sheet:
+    name: Unsplash candidates contact sheet
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --quiet pillow
+      - run: python scripts/art/unsplash_sheet.py
+      - name: Build the picked hall art (public/art + src/data/art-credits.json)
+        run: python scripts/art/make_art_pack.py
+      - name: Commit the sheet to this branch
+        if: startsWith(github.ref, 'refs/heads/art/')
+        run: |
+          git config user.name "zanshin-art-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add art-review public/art src/data/art-credits.json
+          git diff --cached --quiet || git commit -m "art: review sheet + picked hall art (generated) [skip ci]"
+          git push

@@ -3,9 +3,53 @@
  * skyline), a small hub motif, and the hub's kanji as a faint watermark.
  * Original SVG, token-coloured, aria-hidden. The ridges drift at different
  * rates as the page scrolls (one shared rAF listener writes --hall-scroll);
- * reduced motion stops the drift, reduced transparency hides the art. */
-import { useEffect } from 'react';
+ * reduced motion stops the drift, reduced transparency hides the art.
+ * Behind the ridges, when "Show art" is on, a grayscale photo of the hub's
+ * place (Unsplash, credited in Settings › Images and clips) tinted by the
+ * scene glow: AVIF with a WebP fallback, 800 px wide, 1600 px on desktops. */
+import { useEffect, type CSSProperties } from 'react';
 import type { HubId } from '../../app/hubs';
+import artCredits from '../../data/art-credits.json';
+import { useMediaPrefs } from '../../services/mediaLibrary';
+
+export interface HallPhotoCredit {
+  hub: string;
+  id: string;
+  photographer: string;
+  handle: string;
+  page: string;
+  position: string;
+  formats: string[];
+  license: string;
+}
+
+export const HALL_PHOTOS: readonly HallPhotoCredit[] = (artCredits as { halls: HallPhotoCredit[] }).halls;
+
+/** The CSS image for one width: image-set() of the formats the pack wrote, best first. */
+export function hallPhotoImage(credit: HallPhotoCredit, width: 800 | 1600): string {
+  const order = ['avif', 'webp'].filter((f) => credit.formats.includes(f));
+  return `image-set(${order.map((f) => `url("/art/${credit.hub}-${width}.${f}") type("image/${f}")`).join(', ')})`;
+}
+
+/** Plain url() of the most compatible format, for engines without image-set(type()). */
+export function hallPhotoFallback(credit: HallPhotoCredit, width: 800 | 1600): string {
+  const f = credit.formats.includes('webp') ? 'webp' : credit.formats[0];
+  return `url("/art/${credit.hub}-${width}.${f}")`;
+}
+
+function HallPhoto({ hub }: { hub: HubId }) {
+  const prefs = useMediaPrefs();
+  const credit = HALL_PHOTOS.find((c) => c.hub === hub);
+  if (!prefs.showArt || !credit) return null;
+  const style = {
+    '--hall-photo-fallback-sm': hallPhotoFallback(credit, 800),
+    '--hall-photo-sm': hallPhotoImage(credit, 800),
+    '--hall-photo-fallback-lg': hallPhotoFallback(credit, 1600),
+    '--hall-photo-lg': hallPhotoImage(credit, 1600),
+    backgroundPosition: credit.position,
+  } as CSSProperties;
+  return <div className="z-hall__photo" data-photo={credit.id} style={style} />;
+}
 
 const W = 1200;
 const H = 220;
@@ -130,6 +174,7 @@ export function HallArt({ hub, kanji }: { hub: HubId; kanji: string }) {
   const seed = SEEDS[hub];
   return (
     <div className="z-hall__art" aria-hidden="true" data-hall={hub}>
+      <HallPhoto hub={hub} />
       <span className="z-hall__kanji" lang="ja">{kanji}</span>
       <svg className="z-hall__svg" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMaxYMax slice" focusable="false">
         <Motif hub={hub} />
