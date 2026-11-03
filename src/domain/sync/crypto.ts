@@ -149,21 +149,34 @@ export interface SyncKeys {
   deviceKey: string;
 }
 
-async function hkdfBits(keyMaterial: CryptoKey, info: string, lengthBits: number): Promise<Uint8Array> {
-  const bits = await subtle().deriveBits(
-    {
-      name: 'HKDF',
-      hash: 'SHA-256',
-      salt: new TextEncoder().encode(HKDF_SALT),
-      info: new TextEncoder().encode(info),
-    },
-    keyMaterial,
-    lengthBits,
+/** Derive the encryption, auth and device keys from an already-imported, non-extractable HKDF
+ * base key (e.g. the one stored in `syncMeta` 'pairing' after pairing — see
+ * src/data/repos/syncState.ts). The sole HKDF derivation path: `deriveKeys` below imports raw
+ * bytes into exactly this kind of base key and then calls this function, so there is never a
+ * second copy of the salt/info/hash parameters to drift out of sync. */
+export async function deriveKeysFromBaseKey(baseKey: CryptoKey): Promise<SyncKeys> {
+  const salt = new TextEncoder().encode(HKDF_SALT);
+  const encKey = await subtle().deriveKey(
+    { name: 'HKDF', hash: 'SHA-256', salt, info: new TextEncoder().encode('enc') },
+    baseKey,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt'],
   );
-  return new Uint8Array(bits);
+  const authBits = await subtle().deriveBits(
+    { name: 'HKDF', hash: 'SHA-256', salt, info: new TextEncoder().encode('auth') },
+    baseKey,
+    256,
+  );
+  const deviceBits = await subtle().deriveBits(
+    { name: 'HKDF', hash: 'SHA-256', salt, info: new TextEncoder().encode('device') },
+    baseKey,
+    256,
+  );
+  return { encKey, authKey: toBase64Url(new Uint8Array(authBits)), deviceKey: toBase64Url(new Uint8Array(deviceBits)) };
 }
 
-/** Derive the encryption, auth and device keys from one pairing secret (HKDF-SHA-256). */
+/** Derive the encryption, auth and device keys from one raw pairing secret (HKDF-SHA-256). */
 export async function deriveKeys(secretBytes: Uint8Array): Promise<SyncKeys> {
   const keyMaterial = await subtle().importKey(
     'raw',
@@ -172,24 +185,7 @@ export async function deriveKeys(secretBytes: Uint8Array): Promise<SyncKeys> {
     false,
     ['deriveKey', 'deriveBits'],
   );
-
-  const encKey = await subtle().deriveKey(
-    {
-      name: 'HKDF',
-      hash: 'SHA-256',
-      salt: new TextEncoder().encode(HKDF_SALT),
-      info: new TextEncoder().encode('enc'),
-    },
-    keyMaterial,
-    { name: 'AES-GCM', length: 256 },
-    false,
-    ['encrypt', 'decrypt'],
-  );
-
-  const authBits = await hkdfBits(keyMaterial, 'auth', 256);
-  const deviceBits = await hkdfBits(keyMaterial, 'device', 256);
-
-  return { encKey, authKey: toBase64Url(authBits), deviceKey: toBase64Url(deviceBits) };
+  return deriveKeysFromBaseKey(keyMaterial);
 }
 
 // ---------- batch encryption ----------

@@ -158,7 +158,9 @@ export const snapBodySchema = z.object({
   data: z.string().min(1),
 });
 
-export const SYNC_ERROR_CODES = ['bad-request', 'sync-auth', 'sync-unpaired', 'conflict', 'too-large', 'sync-store'] as const;
+export const SYNC_ERROR_CODES = [
+  'bad-request', 'sync-auth', 'sync-unpaired', 'conflict', 'too-large', 'sync-store', 'not-found',
+] as const;
 export type SyncErrorCode = (typeof SYNC_ERROR_CODES)[number];
 
 export interface SyncDevice {

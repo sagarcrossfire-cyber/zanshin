@@ -8,6 +8,7 @@ import {
   decodePairingCode,
   decryptBatch,
   deriveKeys,
+  deriveKeysFromBaseKey,
   encodePairingCode,
   encryptBatch,
   generatePairingSecret,
@@ -89,6 +90,18 @@ describe('crypto: deriveKeys', () => {
     expect(encKey.extractable).toBe(false);
     expect(encKey.algorithm.name).toBe('AES-GCM');
     expect(encKey.usages.sort()).toEqual(['decrypt', 'encrypt']);
+  });
+
+  it('parity: deriveKeys(secretBytes) and deriveKeysFromBaseKey(importedKey) derive identical keys for the same secret (the sole HKDF path)', async () => {
+    const secret = fixedSecret();
+    const fromRaw = await deriveKeys(secret);
+    const baseKey = await crypto.subtle.importKey('raw', secret as BufferSource, 'HKDF', false, ['deriveKey', 'deriveBits']);
+    const fromBaseKey = await deriveKeysFromBaseKey(baseKey);
+    expect(fromBaseKey.authKey).toBe(fromRaw.authKey);
+    expect(fromBaseKey.deviceKey).toBe(fromRaw.deviceKey);
+    // Same AES-GCM key material: a batch encrypted with one key decrypts with the other.
+    const blob = await encryptBatch(fromRaw.encKey, JSON.stringify({ ok: true }));
+    expect(await decryptBatch(fromBaseKey.encKey, blob)).toBe(JSON.stringify({ ok: true }));
   });
 });
 

@@ -14,6 +14,7 @@ import { DATA_PATCH, DATA_SOURCE } from '../data/packs';
 import { runIntegrityChecks } from '../services/diagnostics';
 import { leaveLabModeDevice } from '../services/labMode';
 import { dismissSignInBanner, isSignInBannerVisible, signInAgain, subscribeSiteAccess } from '../services/siteAccess';
+import { startSyncTriggers } from '../services/sync';
 import {
   mayShowUpdateToast,
   reloadForUpdate,
@@ -140,6 +141,15 @@ export function AppLayout() {
       window.removeEventListener('offline', onOffline);
     };
   }, [setOnline]);
+
+  // 2.0 M3 — device sync triggers: app start, focus, online, and debounced
+  // after any outbox write (src/services/sync.ts owns the debounce, the
+  // mutex and the 401/offline backoff; this effect only installs/removes
+  // the listeners once the shell is ready).
+  useEffect(() => {
+    if (!ready) return undefined;
+    return startSyncTriggers();
+  }, [ready]);
 
   // Focus the screen title on route change (§4.12): keyboard and screen
   // reader users land on the new screen's heading, not the old content.

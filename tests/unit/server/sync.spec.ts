@@ -420,6 +420,42 @@ describe('sync: snap PUT (onlyIfNew + retention)', () => {
   });
 });
 
+describe('sync: GET snap/<hlc>', () => {
+  it('200 round-trips the ciphertext and cursor of a PUT snap', async () => {
+    const h = harness();
+    await paired(h);
+    const cursor = { [DEVICE_A]: hlcAt(3), [DEVICE_B]: hlcAt(4) };
+    await h.handle(req('PUT', `snap/${hlcAt(1)}`, { auth: AUTH_KEY, body: snapBody('ciphertext', cursor) }));
+    const res = await h.handle(req('GET', `snap/${hlcAt(1)}`, { auth: AUTH_KEY }));
+    expect(res.status).toBe(200);
+    expect(await body(res)).toEqual({ hlc: hlcAt(1), cursor, data: 'ciphertext' });
+    expect(res.headers.get('cache-control')).toBe('no-store');
+  });
+
+  it('404 not-found when the snap key is missing (e.g. retention removed it)', async () => {
+    const h = harness();
+    await paired(h);
+    const res = await h.handle(req('GET', `snap/${hlcAt(1)}`, { auth: AUTH_KEY }));
+    expect(res.status).toBe(404);
+    expect(await body(res)).toMatchObject({ code: 'not-found' });
+  });
+
+  it('401 without auth', async () => {
+    const h = harness();
+    await paired(h);
+    const res = await h.handle(req('GET', `snap/${hlcAt(1)}`));
+    expect(res.status).toBe(401);
+    expect(await body(res)).toMatchObject({ code: 'sync-auth' });
+  });
+
+  it('400 on a malformed hlc', async () => {
+    const h = harness();
+    await paired(h);
+    const res = await h.handle(req('GET', 'snap/not-an-hlc', { auth: AUTH_KEY }));
+    expect(res.status).toBe(400);
+  });
+});
+
 describe('sync: ack + compaction', () => {
   async function writeLog(h: Harness, deviceId: string, i: number, text = `batch-${i}`): Promise<void> {
     const res = await h.handle(req('PUT', `log/${deviceId}/${hlcAt(i)}`, { auth: AUTH_KEY, body: text }));
