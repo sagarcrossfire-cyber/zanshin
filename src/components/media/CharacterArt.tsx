@@ -104,15 +104,38 @@ export function CharacterHero({ name, children, eyebrow, size = 'feature' }: Cha
 }
 
 /** Release 1.4.0: a character's full render for select-screen tiles. The
- * whole figure is shown (contain, bottom-anchored); without art, a large
- * brush initial stands in. Decorative: the tile names the character. */
+ * whole figure is shown (contain, bottom-anchored). Without a render (Wavu
+ * has no Tekken 8 portrait for some characters), the roster icon stands in as
+ * a framed medallion over a blurred, colour-washed copy of itself (2.0 M6);
+ * only with no art at all does the large brush initial remain. Decorative:
+ * the tile names the character. */
 export function CharacterPortrait({ name }: { name: string }) {
   const prefs = useMediaPrefs();
-  const media = useMediaUrl('character-portrait', characterSubject(name), { minWidth: 320 });
-  const show = prefs.showArt && media.status === 'ready';
+  const subject = characterSubject(name);
+  const media = useMediaUrl('character-portrait', subject, { minWidth: 320 });
+  const portraitMissing = media.status === 'none' || media.status === 'error';
+  const icon = useMediaUrl('character-icon', subject, { minWidth: 76, enabled: portraitMissing });
+  const ink = prefs.inkArt ? ' z-art--ink' : '';
+  if (prefs.showArt && media.status === 'ready') {
+    return (
+      <span className={`z-portrait${ink}`} aria-hidden="true" data-media="image">
+        <img src={media.url} alt="" decoding="async" loading="lazy" />
+      </span>
+    );
+  }
+  if (prefs.showArt && portraitMissing && icon.status === 'ready') {
+    return (
+      <span className={`z-portrait z-portrait--medallion${ink}`} aria-hidden="true" data-media="icon">
+        <img className="z-portrait__wash" src={icon.url} alt="" decoding="async" loading="lazy" data-ambient="" />
+        <span className="z-portrait__medallion">
+          <img src={icon.url} alt="" decoding="async" loading="lazy" />
+        </span>
+      </span>
+    );
+  }
   return (
-    <span className={`z-portrait${prefs.inkArt ? ' z-art--ink' : ''}`} aria-hidden="true" data-media={show ? 'image' : 'fallback'}>
-      {show ? <img src={media.url} alt="" decoding="async" loading="lazy" /> : <span className="z-portrait__initial">{name.trim().charAt(0).toUpperCase()}</span>}
+    <span className={`z-portrait${ink}`} aria-hidden="true" data-media="fallback">
+      <span className="z-portrait__initial">{name.trim().charAt(0).toUpperCase()}</span>
     </span>
   );
 }

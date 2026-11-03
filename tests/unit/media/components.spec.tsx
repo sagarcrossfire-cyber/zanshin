@@ -4,7 +4,7 @@
 import 'fake-indexeddb/auto';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { CharacterHero, CharacterIcon } from '../../../src/components/media/CharacterArt';
+import { CharacterHero, CharacterIcon, CharacterPortrait } from '../../../src/components/media/CharacterArt';
 import { MediaImage } from '../../../src/components/media/MediaImage';
 import { ClipBadge, MoveClip, MoveClipCard, MoveClipPicker, stepTime } from '../../../src/components/media/MoveClip';
 import { defaultSettings } from '../../../src/data/bootstrap';
@@ -288,5 +288,30 @@ describe('MoveClipPicker', () => {
   it('renders nothing when none of the moves has a clip', () => {
     const { container } = render(<MoveClipPicker choices={[{ label: '1,2', moveId: 'Yoshimitsu-1,2' }]} />);
     expect(container).toBeEmptyDOMElement();
+  });
+});
+
+describe('CharacterPortrait (2.0 M6: icon medallion when Wavu has no render)', () => {
+  it('shows the render when there is one', async () => {
+    await seed('character-portrait', 'character:Jin');
+    await act(async () => { await refreshMediaIndex(); });
+    const { container } = render(<CharacterPortrait name="Jin" />);
+    await waitFor(() => expect(container.querySelector('[data-media="image"] img')?.getAttribute('src')).toMatch(/^blob:zanshin\//));
+  });
+
+  it('frames the roster icon over a wash of itself when there is an icon but no render', async () => {
+    await seed('character-portrait', 'character:Jin');
+    await seed('character-icon', 'character:Anna');
+    await act(async () => { await refreshMediaIndex(); });
+    const { container } = render(<CharacterPortrait name="Anna" />);
+    await waitFor(() => expect(container.querySelector('[data-media="icon"] .z-portrait__medallion img')?.getAttribute('src')).toMatch(/^blob:zanshin\//));
+    expect(container.querySelector('.z-portrait__wash')).toHaveAttribute('data-ambient');
+    expect(container.querySelector('.z-portrait')).toHaveAttribute('aria-hidden', 'true');
+    expect(container).not.toHaveTextContent('A');
+  });
+
+  it('keeps the brush initial with no art at all', () => {
+    const { container } = render(<CharacterPortrait name="Bob" />);
+    expect(container.querySelector('[data-media="fallback"]')).toHaveTextContent('B');
   });
 });
