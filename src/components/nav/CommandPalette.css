@@ -22,6 +22,7 @@
 .z-palette__input { flex: 1; min-height: 52px; border: 0; background: transparent; color: var(--text-1); font-size: 17px; line-height: 26px; }
 .z-palette__input:focus { outline: none; }
 .z-palette__field:focus-within { box-shadow: inset 0 -2px 0 var(--info); }
+.z-palette__cancel { flex: none; padding-inline: var(--space-4); }
 .z-palette__list { list-style: none; margin: 0; padding: var(--space-2); overflow-y: auto; }
 .z-palette__group { margin: var(--space-3) var(--space-3) var(--space-1); font-size: 11px; line-height: 16px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
 .z-palette__row {

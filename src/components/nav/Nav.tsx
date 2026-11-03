@@ -181,41 +181,92 @@ export function SubNav({ pathname }: { pathname: string }) {
 }
 
 const HOLD_MS = 600;
+// B1 fix: a completed hold does not exit on the timer — it exits on
+// pointerup, after which the next click (the finger-lift click a phone
+// synthesizes, which lands wherever the new top bar now renders under the
+// finger) is swallowed for this long by a one-shot capture-phase listener.
+const CLICK_SWALLOW_MS = 500;
+
+function isTypingTarget(target: EventTarget | null): boolean {
+  const el = target as HTMLElement | null;
+  return el !== null && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName));
+}
 
 /** Lab Mode: nothing but a slim strip with Exit. Exit is press-and-hold, or
- * two presses (keyboard, reduced motion), so a stray tap never ends focus. */
+ * two presses (keyboard, reduced motion), so a stray tap never ends focus.
+ * Escape arms/exits the same way as a press (m2), as long as no text field
+ * has focus. */
 export function LabStrip({ onExit }: { onExit: () => void }) {
   const [armed, setArmed] = useState(false);
   const [holding, setHolding] = useState(false);
   const timer = useRef<number | null>(null);
   const disarm = useRef<number | null>(null);
+  const holdComplete = useRef(false);
   useEffect(() => () => {
     if (timer.current !== null) window.clearTimeout(timer.current);
     if (disarm.current !== null) window.clearTimeout(disarm.current);
   }, []);
+
+  const swallowNextClick = () => {
+    const swallow = (e: MouseEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
+    };
+    window.addEventListener('click', swallow, { capture: true, once: true });
+    window.setTimeout(() => window.removeEventListener('click', swallow, { capture: true }), CLICK_SWALLOW_MS);
+  };
+
   const start = () => {
+    holdComplete.current = false;
     setHolding(true);
     timer.current = window.setTimeout(() => {
       timer.current = null;
-      setHolding(false);
-      onExit();
+      // Hold is done, but do NOT exit yet (B1) — exit on pointerup so the
+      // top bar never appears while the finger is still down on it.
+      holdComplete.current = true;
     }, HOLD_MS);
   };
-  const cancel = () => {
+  const endHold = () => {
     setHolding(false);
     if (timer.current !== null) {
       window.clearTimeout(timer.current);
       timer.current = null;
     }
   };
+  const finishPointer = () => {
+    const completed = holdComplete.current;
+    holdComplete.current = false;
+    endHold();
+    if (completed) {
+      swallowNextClick();
+      onExit();
+    }
+  };
+  const abortHold = () => {
+    holdComplete.current = false;
+    endHold();
+  };
   const press = () => {
     if (armed) {
+      setArmed(false);
       onExit();
       return;
     }
     setArmed(true);
     disarm.current = window.setTimeout(() => setArmed(false), 3000);
   };
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || isTypingTarget(e.target)) return;
+      e.preventDefault();
+      press();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [armed]);
+
   return (
     <div className="z-labstrip">
       <span className="z-labstrip__title">Lab Mode</span>
@@ -224,9 +275,9 @@ export function LabStrip({ onExit }: { onExit: () => void }) {
         type="button"
         className={`z-labstrip__exit${holding ? ' z-labstrip__exit--holding' : ''}`}
         onPointerDown={start}
-        onPointerUp={cancel}
-        onPointerLeave={cancel}
-        onPointerCancel={cancel}
+        onPointerUp={finishPointer}
+        onPointerLeave={abortHold}
+        onPointerCancel={abortHold}
         onClick={press}
         aria-label={armed ? 'Exit Lab Mode: press again to confirm' : 'Exit Lab Mode (hold, or press twice)'}
       >
