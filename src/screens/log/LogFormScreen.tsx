@@ -84,6 +84,10 @@ export function LogFormScreen() {
   const safeMode = isSafeMode();
   const editing = matchSetId !== undefined && matchSetId !== 'new';
   const [loaded, setLoaded] = useState(false);
+  // 2.0 M2: the fields ranked sync writes (ranked, opponentName, importRef)
+  // are not editable here, but saving via this form means Sagar entered the
+  // tallies by hand, so they carry through untouched and tallied flips true.
+  const [existingSet, setExistingSet] = useState<MatchSet | null>(null);
   const [at, setAt] = useState(() => toLocalInput(new Date().toISOString()));
   const [mode, setMode] = useState<MatchSet['mode']>('ranked');
   const [opponentCharacter, setOpponentCharacter] = useState('Kazuya');
@@ -117,6 +121,7 @@ export function LogFormScreen() {
         if (editing && matchSetId !== undefined) {
           const existing = await matchSetsRepo.get(matchSetId);
           if (cancelled || !existing) return;
+          setExistingSet(existing);
           setAt(toLocalInput(existing.at));
           setMode(existing.mode);
           setOpponentCharacter(existing.opponentCharacter);
@@ -188,6 +193,14 @@ export function LogFormScreen() {
       beatBy,
       ...(notes.trim() !== '' ? { notes: notes.trim() } : {}),
       tags: tags.split(',').map((t) => t.trim()).filter((t) => t !== ''),
+      // 2.0 M2: saving through this form means the tallies above were just
+      // entered by hand, so an imported (ranked sync / CSV) set is no longer
+      // `tallied: false` — but its ranked sync detail (importRef, ranked,
+      // opponentName) is not editable here and must carry through untouched.
+      ...(existingSet?.importRef !== undefined ? { importRef: existingSet.importRef } : {}),
+      ...(existingSet?.opponentName !== undefined ? { opponentName: existingSet.opponentName } : {}),
+      ...(existingSet?.ranked !== undefined ? { ranked: existingSet.ranked } : {}),
+      tallied: true,
     };
     await matchSetsRepo.put(record);
     await recomputeAllMastery(nowIso);

@@ -1,5 +1,6 @@
-// Feature flags — spec Appendix A.3. All true except matchImport
-// (false until P7 turns it on; baseline turned on in P8).
+// Feature flags — spec Appendix A.3. All true. The broken 1.4.1
+// matchImport flag (Wank/ewgf adapters) was retired in 2.0 M2: ranked sync
+// (src/services/rankedSync.ts) replaces it; CSV import stays unflagged.
 export const FLAGS = {
   baseline: true,
   coachAI: true,
@@ -9,7 +10,6 @@ export const FLAGS = {
   flashcards: true,
   inAppImporter: true,
   lab: true,
-  matchImport: false,
   matchLog: true,
   patchWatch: true,
   punishTrainer: true,
