@@ -34,10 +34,11 @@ def main():
             with urllib.request.urlopen(req, timeout=60) as resp:
                 data = resp.read()
             img = Image.open(io.BytesIO(data))
-            alpha = img.mode in ("RGBA", "LA") and img.getchannel("A").getextrema()[0] < 255
+            rgba = img.convert("RGBA")  # palette PNGs carry transparency in tRNS
+            alpha = rgba.getchannel("A").getextrema()[0] < 255
             report[name] = {"url": url, "width": img.width, "height": img.height, "mode": img.mode,
                             "transparent": bool(alpha), "bytes": len(data)}
-            thumb = img.convert("RGBA")
+            thumb = rgba.copy()
             thumb.thumbnail((300, 420))
             tiles.append((name, thumb))
         except Exception as err:
