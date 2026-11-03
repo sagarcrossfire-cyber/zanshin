@@ -2,8 +2,13 @@
 // screens never import fetch/Dexie. (ESLint rule covers most; this is a repo-wide grep guard.)
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = new URL('..', import.meta.url).pathname;
+// Use fileURLToPath, not `.pathname` — on Windows `.pathname` keeps the POSIX-style leading
+// slash before the drive letter (e.g. `/D:/...`), and path.join then turns it into a
+// drive-relative path (`\D:\...`) that readdirSync resolves against the wrong drive root,
+// doubling the path and throwing ENOENT. See docs/ops/RCA_LOG.md 2026-11-02.
+const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const violations = [];
 function walk(dir) {
   for (const entry of readdirSync(dir)) {

@@ -5,6 +5,7 @@
 // before a release PR: `npm run doctor`.
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { execFileSync } from 'node:child_process';
 
 const root = process.cwd();
 const problems = [];
@@ -53,6 +54,25 @@ const walk = (dir) => {
 };
 for (const dir of ['src', 'tests', 'scripts', 'netlify', 'docs', 'public']) if (existsSync(join(root, dir))) walk(dir);
 for (const name of readdirSync(root)) if (SCRATCH.test(name)) fail(`scratch file in the repo root: ${name}`, 'move it to the session scratchpad');
+
+// 6. check-no-colors.mjs / check-boundaries.mjs must run to a normal pass/fail, never crash.
+// Regression guard for the Windows `.pathname` drive-letter bug (docs/ops/RCA_LOG.md 2026-11-02):
+// if ROOT is ever computed with `.pathname` again instead of fileURLToPath, these throw ENOENT
+// on Windows instead of printing their usual OK/violation output.
+for (const script of ['scripts/check-no-colors.mjs', 'scripts/check-boundaries.mjs']) {
+  try {
+    execFileSync('node', [script], { cwd: root, encoding: 'utf8' });
+  } catch (err) {
+    const output = `${err.stdout ?? ''}${err.stderr ?? ''}`;
+    const isNormalFailure = /COLOR LITERALS OUTSIDE|BOUNDARY VIOLATIONS:/.test(output);
+    if (!isNormalFailure) {
+      fail(
+        `${script} crashed instead of returning a normal pass/fail: ${output.trim().split('\n')[0] || err.message}`,
+        'check how ROOT is computed — use fileURLToPath(new URL(\'..\', import.meta.url)), not .pathname (breaks on Windows)'
+      );
+    }
+  }
+}
 
 if (problems.length > 0) {
   console.error(`doctor: ${problems.length} problem(s) for version ${version}`);
