@@ -6,6 +6,14 @@
 // reached, key missing, model too slow) so the Coach screen can show them.
 import { DEFAULT_COACH_MODEL, isIntelModel, type IntelModel } from '../../intel/models';
 import { CoachUnavailable, type CoachProvider, type CoachRequest, type CoachResponse } from './index';
+// SSO Option B (src/server/deviceKey.ts) now locks every intel route,
+// including this one, to paired devices. This file already does its own
+// fetch (an IO exception granted to it), so importing the device key here,
+// same as src/services/intel.ts's intelRequest and src/services/rankedSync.ts,
+// is the smallest fix: a device that never paired still sends nothing and
+// gets the same 401 device-key error a wrong key would.
+import { getDeviceKey } from '../../../services/deviceKey';
+import { DEVICE_KEY_HEADER } from '../../../server/deviceKey';
 
 export const ZANSHIN_COACH_URL = '/.netlify/functions/intel/coach';
 /** The function itself gives the provider 45 s; this only covers a dead connection. */
@@ -44,10 +52,14 @@ export class ZanshinProvider implements CoachProvider {
     const onAbort = (): void => controller.abort();
     input.signal.addEventListener('abort', onAbort, { once: true });
     let response: Response;
+    const deviceKey = getDeviceKey();
     try {
       response = await fetchFn(this.config.url ?? ZANSHIN_COACH_URL, {
         body: JSON.stringify({ maxTokens: input.maxTokens, messages: input.messages, model: this.model, system: input.system }),
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(deviceKey !== null ? { [DEVICE_KEY_HEADER]: deviceKey } : {}),
+        },
         method: 'POST',
         signal: controller.signal,
       });
