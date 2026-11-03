@@ -158,6 +158,17 @@ test('Look it up: the daily cap and a missing key are explained in plain words',
   await expect(page.getByRole('alert')).toContainText('PERPLEXITY_API_KEY');
 });
 
+test('Coach: a mocked intel 401 device-key shows the Settings copy and a Settings link (SSO Option B)', async ({ page }) => {
+  await completeOnboarding(page);
+  await page.route(INTEL, (route) => json(route, { code: 'device-key', error: 'This device has no valid device key.', ok: false }, 401));
+  await page.goto('/coach');
+  await page.getByRole('link', { name: 'Look it up', exact: true }).click();
+  await page.getByLabel('What do you want to know?').fill('Anything');
+  await page.getByRole('button', { name: 'Look it up' }).click();
+  await expect(page.getByRole('alert')).toContainText("This device's key is missing or wrong. Fix it in Settings.");
+  await expect(page.getByRole('alert').getByRole('link', { name: 'Open Settings' })).toHaveAttribute('href', '/settings');
+});
+
 test('Matchup primer: fetched once, kept on the device, refreshable', async ({ page }) => {
   const seen: Array<{ url: string; body: unknown }> = [];
   await mockIntel(page, seen);

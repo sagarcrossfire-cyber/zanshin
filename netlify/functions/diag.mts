@@ -7,8 +7,11 @@
 import { getStore } from '@netlify/blobs';
 import type { Config, Context } from '@netlify/functions';
 import { createDiagHandler, diagStoreName, type DiagStore } from '../../src/server/diag/handler';
+import { DEVICE_KEY_ENV, type DeviceKeyHashStore } from '../../src/server/deviceKey';
+import { scopedStoreName } from '../../src/server/storeName';
 
 let warned = false;
+let syncWarned = false;
 
 function blobStore(deployContext: string | undefined): DiagStore | null {
   try {
@@ -32,8 +35,28 @@ function blobStore(deployContext: string | undefined): DiagStore | null {
   }
 }
 
+/** Read-only view of the sync store's `v1/devicekeyhash` (SSO Option B,
+ * src/server/deviceKey.ts allowedDeviceKeyHashes), scoped exactly like
+ * netlify/functions/sync.mts so a preview never reads production's hash. */
+function syncStore(deployContext: string | undefined): DeviceKeyHashStore | null {
+  try {
+    const store = getStore({ consistency: 'strong', name: scopedStoreName('sync', deployContext) });
+    return { async get(key) { return await store.get(key, { type: 'text' }); } };
+  } catch (error) {
+    if (!syncWarned) {
+      syncWarned = true;
+      console.warn(`diag: Netlify Blobs unavailable for the sync store, env hashes only (${error instanceof Error ? error.message : String(error)})`);
+    }
+    return null;
+  }
+}
+
 export default async (request: Request, context: Context): Promise<Response> => {
-  const handler = createDiagHandler({ store: blobStore(context?.deploy?.context) });
+  const handler = createDiagHandler({
+    deviceKeySha256: process.env[DEVICE_KEY_ENV],
+    store: blobStore(context?.deploy?.context),
+    syncStore: syncStore(context?.deploy?.context),
+  });
   try {
     return await handler(request);
   } catch (error) {

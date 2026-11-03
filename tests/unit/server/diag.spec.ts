@@ -6,9 +6,16 @@
 import { describe, expect, it, vi } from 'vitest';
 import { DIAG_DAILY_CAP, createDiagHandler, diagStoreName, memoryDiagStore } from '../../../src/server/diag/handler';
 import { DIAG_TEXT_MAX, diagEventSchema, type DiagEvent } from '../../../src/server/diag/schema';
+import { DEVICE_KEY_HEADER, sha256Hex } from '../../../src/server/deviceKey';
 
 const NOW = Date.parse('2026-11-01T18:30:00.000Z');
 const URL_DIAG = 'https://zanshin.test/api/diag';
+
+/** Every route is locked to paired devices now (SSO Option B, card
+ * sso-b-lock); these tests are about diag's own event handling, so every
+ * request here carries a fixed paired device's key by default. */
+const TEST_DEVICE_KEY = 'diag-test-device-key-0123456789';
+const TEST_DEVICE_HASH = await sha256Hex(TEST_DEVICE_KEY);
 
 function event(overrides: Partial<DiagEvent> = {}): DiagEvent {
   return {
@@ -30,7 +37,7 @@ function event(overrides: Partial<DiagEvent> = {}): DiagEvent {
 function post(body: unknown, headers: Record<string, string> = {}): Request {
   return new Request(URL_DIAG, {
     body: typeof body === 'string' ? body : JSON.stringify(body),
-    headers: { 'Content-Type': 'application/json', ...headers },
+    headers: { 'Content-Type': 'application/json', [DEVICE_KEY_HEADER]: TEST_DEVICE_KEY, ...headers },
     method: 'POST',
   });
 }
@@ -40,6 +47,7 @@ function setup(overrides: Partial<Parameters<typeof createDiagHandler>[0]> = {})
   const store = memoryDiagStore();
   let n = 0;
   const handler = createDiagHandler({
+    deviceKeySha256: TEST_DEVICE_HASH,
     log: (line) => { lines.push(line); },
     nowMs: () => NOW,
     randomId: () => `r${(n += 1)}`,
@@ -130,6 +138,35 @@ describe('diag handler', () => {
   });
 });
 
+describe('diag handler: device-key lock (SSO Option B, card sso-b-lock)', () => {
+  it('503 device-key-unset with no env hash and no sync store', async () => {
+    const { handler } = setup({ deviceKeySha256: undefined });
+    const response = await handler(post(event()));
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({ code: 'device-key-unset', ok: false });
+  });
+
+  it('401 device-key with no header or the wrong key', async () => {
+    const { handler } = setup();
+    expect((await handler(new Request(URL_DIAG, { body: JSON.stringify(event()), headers: { 'Content-Type': 'application/json' }, method: 'POST' }))).status).toBe(401);
+    const wrong = await handler(post(event(), { [DEVICE_KEY_HEADER]: 'some-other-devices-key-000000' }));
+    expect(wrong.status).toBe(401);
+    expect(await wrong.json()).toMatchObject({ code: 'device-key', ok: false });
+  });
+
+  it('accepts the paired device key from the sync store alone, with no env var set', async () => {
+    const syncStore = { get: async () => TEST_DEVICE_HASH };
+    const { handler } = setup({ deviceKeySha256: undefined, syncStore });
+    expect((await handler(post(event()))).status).toBe(202);
+  });
+
+  it('a sync store read failure falls back to the env hash(es) only', async () => {
+    const syncStore = { get: async () => { throw new Error('blobs down'); } };
+    const { handler } = setup({ syncStore });
+    expect((await handler(post(event()))).status).toBe(202);
+  });
+});
+
 describe('diag store name', () => {
   it('keeps production in `diag` and every other context apart', () => {
     expect(diagStoreName('production')).toBe('diag');
@@ -146,10 +183,12 @@ describe('netlify/functions/diag.mts', () => {
     const stores: string[] = [];
     const written: Array<{ key: string; onlyIfNew: unknown }> = [];
     vi.resetModules();
+    vi.stubEnv('ZANSHIN_DEVICE_KEY_SHA256', TEST_DEVICE_HASH);
     vi.doMock('@netlify/blobs', () => ({
       getStore: (options: { name: string }) => {
         stores.push(options.name);
         return {
+          get: async () => null,
           list: async () => ({ blobs: [], directories: [] }),
           setJSON: async (key: string, _value: unknown, opts: { onlyIfNew?: boolean }) => {
             written.push({ key, onlyIfNew: opts.onlyIfNew });
@@ -164,13 +203,14 @@ describe('netlify/functions/diag.mts', () => {
     expect(fn.config.rateLimit).toMatchObject({ windowLimit: 60, windowSize: 60 });
     const response = await fn.default(post(event()), { deploy: { context: 'deploy-preview' } } as never);
     expect(response.status).toBe(202);
-    expect(stores).toEqual(['diag-deploy-preview']);
+    expect(stores).toEqual(['diag-deploy-preview', 'sync-deploy-preview']);
     expect(written[0]?.onlyIfNew).toBe(true);
     expect(written[0]?.key).toMatch(/^\d{4}-\d{2}-\d{2}\/\d+-[0-9a-f]{8}$/);
     expect(error).toHaveBeenCalledWith(expect.stringMatching(/^ZT1 \{/));
     await fn.default(post(event()), { deploy: { context: 'production' } } as never);
-    expect(stores).toEqual(['diag-deploy-preview', 'diag']);
+    expect(stores).toEqual(['diag-deploy-preview', 'sync-deploy-preview', 'diag', 'sync']);
     error.mockRestore();
+    vi.unstubAllEnvs();
     vi.doUnmock('@netlify/blobs');
   });
 });

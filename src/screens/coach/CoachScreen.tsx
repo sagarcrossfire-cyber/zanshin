@@ -100,6 +100,7 @@ export function CoachScreen() {
   const [lookupModel, setLookupModel] = useState<IntelModel>('perplexity/sonar');
   const [lookingUp, setLookingUp] = useState(false);
   const [lookupError, setLookupError] = useState('');
+  const [lookupDeviceKeyError, setLookupDeviceKeyError] = useState(false);
   const [lookupResult, setLookupResult] = useState<LookUpResult | null>(null);
   const [lookupKept, setLookupKept] = useState(false);
   const [notes, setNotes] = useState<ResearchNote[]>([]);
@@ -222,12 +223,16 @@ export function CoachScreen() {
     if (trimmed === '' || lookingUp) return;
     setLookingUp(true);
     setLookupError('');
+    setLookupDeviceKeyError(false);
     setLookupKept(false);
     try {
       const result = await lookUp(trimmed, { model: lookupModel });
       setLookupResult(result);
     } catch (error) {
-      if (error instanceof IntelError && error.capReached) {
+      if (error instanceof IntelError && error.status === 401) {
+        setLookupError("This device's key is missing or wrong. Fix it in Settings.");
+        setLookupDeviceKeyError(true);
+      } else if (error instanceof IntelError && error.capReached) {
         setLookupError(`${error.message} The cap resets at midnight UTC.`);
       } else if (error instanceof IntelError && error.notConfigured) {
         setLookupError('The site has no Perplexity key yet. Set PERPLEXITY_API_KEY in Netlify and redeploy.');
@@ -361,7 +366,12 @@ export function CoachScreen() {
               {lookingUp ? 'Searching…' : 'Look it up'}
             </Button>
           </form>
-          {lookupError !== '' && <p role="alert">{lookupError}</p>}
+          {lookupError !== '' && (
+            <p role="alert">
+              {lookupError}
+              {lookupDeviceKeyError && <> <Link to="/settings">Open Settings</Link></>}
+            </p>
+          )}
           {lookingUp && <p aria-live="polite">Searching the web — up to ten seconds.</p>}
           {lookupResult !== null && !lookingUp && (
             <Card title="Answer" data-testid="lookup-answer">

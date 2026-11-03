@@ -21,7 +21,7 @@
 import { z } from 'zod';
 import type { RankPack } from '../../domain/ranked/ranks';
 import { normalizeRankIndex, rankNameAt } from '../../domain/ranked/ranks';
-import { DEVICE_KEY_HEADER, sha256Hex, verifyDeviceKey } from '../deviceKey';
+import { DEVICE_KEY_HEADER, allowedDeviceKeyHashes, sha256Hex, verifyDeviceKey, type DeviceKeyHashStore } from '../deviceKey';
 import { consoleZt1, zt1Line, type Zt1Logger } from '../diag/zt1';
 import { EWGF_BASE, normalizeEwgfBattles } from './ewgf';
 import { findReplay, parseReplayWindow, planWindows } from './replays';
@@ -64,8 +64,12 @@ export function memoryRankedStore(): RankedStore & { data: Map<string, unknown> 
 export interface RankedDeps {
   /** Null when Blobs is unavailable: every call then reads upstream. */
   store: RankedStore | null;
-  /** ZANSHIN_DEVICE_KEY_SHA256 (src/server/deviceKey.ts). */
+  /** ZANSHIN_DEVICE_KEY_SHA256 (src/server/deviceKey.ts), unioned at request time
+   * with the hash sync pairing registered (allowedDeviceKeyHashes). */
   deviceKeySha256: string | undefined;
+  /** The sync store's `v1/devicekeyhash` (src/server/sync/schema.ts); null when
+   * Blobs is unavailable, which falls back to the env hash(es) only. */
+  syncStore?: DeviceKeyHashStore | null;
   /** EWGF_API_KEY; the fallback is off without it. */
   ewgfApiKey?: string;
   pack: RankPack;
@@ -275,7 +279,8 @@ export function createRankedHandler(deps: RankedDeps): (request: Request) => Pro
     };
 
     if (request.method !== 'GET') return fail('method', 405, { Allow: 'GET' });
-    const lock = await verifyDeviceKey(request, deps.deviceKeySha256);
+    const hashes = await allowedDeviceKeyHashes(deps.deviceKeySha256, deps.syncStore ?? null);
+    const lock = await verifyDeviceKey(request, hashes);
     if (!lock.ok) return fail(lock.code, lock.status);
 
     const url = new URL(request.url);

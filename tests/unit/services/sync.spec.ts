@@ -10,6 +10,7 @@
 // (matches tests/unit/data/syncCapture.spec.ts and tests/unit/data/repos.spec.ts).
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createSyncHandler, memorySyncStore, type SyncStore } from '../../../src/server/sync/handler';
+import { sha256Hex } from '../../../src/server/deviceKey';
 
 const specifier: string = 'fake-indexeddb';
 const fakeModule = await import(specifier).catch(() => null) as Record<string, unknown> | null;
@@ -112,6 +113,21 @@ describe.skipIf(!fakeAvailable)('sync engine', () => {
     expect(a.sync.getSyncStatus().state).toBe('idle');
     expect(a.deviceKey.getDeviceKey()).not.toBeNull();
     expect(a.deviceKey.getDeviceKey()?.length).toBeGreaterThanOrEqual(16);
+  });
+
+  it('pairNew\'s init body carries sha256(deviceKey), never the key itself, and the server registers it (SSO Option B)', async () => {
+    const server = createServer();
+    const a = await createDevice();
+    const result = await a.sync.pairNew({ fetchImpl: fetchFor(server) });
+    expect(result.kind).toBe('ok');
+    const deviceKey = a.deviceKey.getDeviceKey();
+    expect(deviceKey).not.toBeNull();
+    const initBody = server.bodies.map((b) => JSON.parse(b) as Record<string, unknown>).find((b) => 'verifier' in b);
+    expect(initBody).toBeDefined();
+    expect(typeof initBody?.['deviceKeyHash']).toBe('string');
+    expect(initBody?.['deviceKeyHash']).toBe(await sha256Hex(deviceKey as string));
+    for (const b of server.bodies) expect(b).not.toContain(deviceKey as string);
+    expect(server.store.data.get('v1/devicekeyhash')).toBe(initBody?.['deviceKeyHash']);
   });
 
   it('pairJoin with a wrong code (nonsense text) fails to decode as wrong-code', async () => {

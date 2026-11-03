@@ -1,17 +1,23 @@
 // 2.0 (SSO Option B, decided 2026-11-02) — the device-key lock every function
 // uses once the site is public. A paired device sends its key in the
 // `X-Zanshin-Device` header; the function hashes it (SHA-256) and compares the
-// hash with the env var `ZANSHIN_DEVICE_KEY_SHA256` (one hex hash, or several
-// separated by commas — one per device). The key itself never reaches the
-// server's environment, logs or Blobs.
+// hash against the allow-list `allowedDeviceKeyHashes()` builds: the env var
+// `ZANSHIN_DEVICE_KEY_SHA256` (one hex hash, or several separated by commas —
+// one per device) union the hash the sync store learned at pairing
+// (`v1/devicekeyhash`, src/server/sync/schema.ts — sync pairing registers it,
+// so a fresh site needs no manual hash step or extra deploy; see card
+// sso-b-lock). The key itself never reaches the server's environment, logs or
+// Blobs — only its hash.
 //
 //   no hash configured   → 503 { code: 'device-key-unset' }  (fails closed)
 //   header missing/wrong → 401 { code: 'device-key' }
 //
 // The JSON `code` lets the app tell this 401 apart from Netlify's own sign-in
 // 401 (an HTML page): a wrong key points to Settings, an expired sign-in to
-// "Sign in again". First used by `ranked` (M2); `intel`, `diag` and `sync`
-// adopt the same helper before the site goes public.
+// "Sign in again". Used by `ranked`, `intel` and `diag` (sync keeps its own
+// X-Zanshin-Sync auth, unchanged).
+
+import { V1_DEVICEKEYHASH_KEY } from './sync/schema';
 
 export const DEVICE_KEY_HEADER = 'x-zanshin-device';
 export const DEVICE_KEY_ENV = 'ZANSHIN_DEVICE_KEY_SHA256';
@@ -41,8 +47,39 @@ function sameHex(a: string, b: string): boolean {
   return diff === 0;
 }
 
-export async function verifyDeviceKey(request: Request, configured: string | undefined): Promise<DeviceKeyResult> {
-  const hashes = parseDeviceKeyHashes(configured);
+/** Minimal read-only view of the sync store this module needs — just enough
+ * to read `v1/devicekeyhash` (src/server/sync/schema.ts). ranked/intel/diag
+ * pass their sync Blobs store (scoped exactly like netlify/functions/sync.mts). */
+export interface DeviceKeyHashStore {
+  get(key: string): Promise<string | null>;
+}
+
+/**
+ * The allow-list a locked function checks against: the configured env
+ * hashes union the one hash sync pairing registered in the sync store
+ * (`v1/devicekeyhash`, written once, never overwritten — src/server/sync/
+ * handler.ts POST init). A store read failure (or no store at all, e.g.
+ * Blobs unavailable) falls back to env hashes only; a malformed stored value
+ * is ignored rather than trusted.
+ */
+export async function allowedDeviceKeyHashes(
+  envValue: string | undefined,
+  syncStore: DeviceKeyHashStore | null,
+): Promise<string[]> {
+  const envHashes = parseDeviceKeyHashes(envValue);
+  if (syncStore === null) return envHashes;
+  try {
+    const stored = await syncStore.get(V1_DEVICEKEYHASH_KEY);
+    if (stored === null) return envHashes;
+    const hash = stored.trim().toLowerCase();
+    if (!HEX64.test(hash)) return envHashes;
+    return envHashes.includes(hash) ? envHashes : [...envHashes, hash];
+  } catch {
+    return envHashes;
+  }
+}
+
+export async function verifyDeviceKey(request: Request, hashes: string[]): Promise<DeviceKeyResult> {
   if (hashes.length === 0) {
     return {
       ok: false, status: 503, code: 'device-key-unset',

@@ -26,7 +26,7 @@ import {
   logKey, logPrefixFor, logQuerySchema, mergeCursorMax, parseCursorMap, SMALL_BODY_MAX, snapBodySchema,
   SNAP_BODY_MAX, SNAP_RETENTION, snapKey, snapMetaKey, SYNC_AUTH_HEADER, type SyncDevice,
   type SyncErrorCode, type SyncLogEntry, type SyncSnapInfo, type SyncStateOk, V1_ACK_PREFIX,
-  V1_LOG_PREFIX, V1_SNAP_PREFIX, V1_VERIFIER_KEY,
+  V1_DEVICEKEYHASH_KEY, V1_LOG_PREFIX, V1_SNAP_PREFIX, V1_VERIFIER_KEY,
 } from './schema';
 
 export interface SyncStore {
@@ -264,12 +264,31 @@ export function createSyncHandler(deps: SyncDeps): (request: Request) => Promise
       const raw = tryParseJson(body.text);
       const parsed = initBodySchema.safeParse(raw);
       if (!parsed.success) return fail('bad-request', 400);
-      const verifier = parsed.data.verifier;
+      const { verifier, deviceKeyHash } = parsed.data;
+      // Registers the device key's hash at pairing (SSO Option B, card
+      // sso-b-lock): onlyIfNew means it is written once and never
+      // overwritten, whether the verifier write just created the pairing or
+      // this is a retry of the same verifier that has no hash stored yet.
+      // A failure here never changes this route's response.
+      const registerHash = async (): Promise<void> => {
+        if (deviceKeyHash === undefined) return;
+        try {
+          await store.set(V1_DEVICEKEYHASH_KEY, deviceKeyHash, { onlyIfNew: true });
+        } catch {
+          // Best effort: a later paired device's init retries this.
+        }
+      };
       try {
         const result = await store.set(V1_VERIFIER_KEY, verifier, { onlyIfNew: true });
-        if (result.modified) return finish(json({ ok: true, created: true }, 201));
+        if (result.modified) {
+          await registerHash();
+          return finish(json({ ok: true, created: true }, 201));
+        }
         const existing = await store.get(V1_VERIFIER_KEY);
-        if (existing !== null && sameHex(existing, verifier)) return finish(json({ ok: true, created: false }, 200));
+        if (existing !== null && sameHex(existing, verifier)) {
+          await registerHash();
+          return finish(json({ ok: true, created: false }, 200));
+        }
         return fail('conflict', 409);
       } catch {
         return fail('sync-store', 503);

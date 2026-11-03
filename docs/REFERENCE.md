@@ -51,7 +51,7 @@ Current version: **1.4.1** (main `f4d858f`). Next: **2.0** (see `docs/v2/PLAN.md
 | Sagar's PC clone | `D:\RUDRA\zanshin` (device bash: `$HOME/mnt/RUDRA/zanshin`) |
 | Netlify site | `glistening-conkies-c028b3` · id `a72c64e3-9ba6-4ebe-9b66-57509c1fc41a` · https://glistening-conkies-c028b3.netlify.app |
 | Access | Team SSO login required for every request (incl. `sw.js`, functions). The sandbox and PC cannot open the site. |
-| Functions | `netlify/functions/intel.mts` → `/.netlify/functions/intel/*` (health, usage, research, …), spend in Netlify Blobs · `netlify/functions/diag.mts` → `/api/diag` (telemetry, §6) · `netlify/functions/ranked.mts` → `/api/ranked` (Wank/ewgf ranked games, device-key locked, §8) · `netlify/functions/sync.mts` → `/api/sync/*` (encrypted per-device op log in Blobs, `X-Zanshin-Sync` auth key verified against the stored verifier — a separate key from the device-key lock, §8) |
+| Functions | `netlify/functions/intel.mts` → `/.netlify/functions/intel/*` (health, usage, research, …), spend in Netlify Blobs · `netlify/functions/diag.mts` → `/api/diag` (telemetry, §6) · `netlify/functions/ranked.mts` → `/api/ranked` (Wank/ewgf ranked games, device-key locked, §8) · `netlify/functions/sync.mts` → `/api/sync/*` (encrypted per-device op log in Blobs, `X-Zanshin-Sync` auth key verified against the stored verifier — a separate key from the device-key lock, §8). **All of `intel`, `diag` and `ranked` are locked to paired devices** (`src/server/deviceKey.ts`); sync pairing registers the device-key hash itself, so `ZANSHIN_DEVICE_KEY_SHA256` is optional (§6, §8). |
 | CI | `.github/workflows/ci.yml`: `gate` (release gate) · `quick` (types, lint, unit, build, bundle, doctor) → `e2e` (phone+desktop, then Netlify-headers run) · `media` → `deploy` (production, only when the gate says so) · `preview` (every same-repo PR, alias `pr-<n>`); monthly cron `17 9 1 * *`. `e2e`'s `tablet` Playwright project runs only layout/regression specs (`playwright.config.ts` `testMatch`) — 820px is where the phone dock switches to the rail, and a third full pass of every behaviour spec buys nothing but job time. |
 | Netlify plan | Team "Sagar Patel's team" (`6ae4a3d7e593b12138d36fad`), **Free credit plan: 300 credits/month hard cap, site pauses at 0**. Production deploy = 15 credits; previews 0; bandwidth 20/GB; requests 2/10k; compute 10/GB-h. Usage is only visible on the Netlify Usage page (Sagar). |
 | 2.0 plan (for Sagar) | Claude Doc "ZANSHIN 2.0 — Plan": https://claude.ai/artifact/Mdq1Rc4FM8MWZUQj8fWTvk |
@@ -171,14 +171,19 @@ See `docs/ops/INVENTORY.md` for the full map (routes, modules, tables, tests). E
   elsewhere). The Tekken 8 rank ladder is a small bundled pack (`src/data/packs/ranks.json`, pure helpers in
   `src/domain/ranked/ranks.ts`), kept out of `src/data/packs/index.ts` so the function does not bundle the moves data.
 - **Device-key lock (SSO Option B, §8 decisions).** Every request passes `src/server/deviceKey.ts`: header
-  `X-Zanshin-Device`, SHA-256'd and compared against the comma-separated hashes in env `ZANSHIN_DEVICE_KEY_SHA256`
-  (one hash per paired device). **Not set yet** — Sagar sets it once PC and phone are paired; until then the
-  function fails closed (503 `device-key-unset`) rather than opening up. A wrong or missing key is 401
-  `device-key`. The raw key never reaches logs, Blobs or error text.
+  `X-Zanshin-Device`, SHA-256'd and compared against the allow-list `allowedDeviceKeyHashes()` builds — the
+  comma-separated hashes in env `ZANSHIN_DEVICE_KEY_SHA256` (optional, one hash per paired device) union the one
+  hash sync pairing registers in the sync store (`v1/devicekeyhash`, write-once — see "Device sync, server side"
+  below). A fresh site needs no manual hash step or extra deploy: pairing alone unlocks `ranked`, `intel` and
+  `diag` for every paired device. With neither an env hash nor a registered one, the function fails closed (503
+  `device-key-unset`). A wrong or missing key is 401 `device-key`. The raw key never reaches logs, Blobs or
+  error text. `intel.mts` and `diag.mts` use the exact same helper and return the same JSON shape
+  (`{ok:false, code, error}`) for both statuses; `sync` keeps its own `X-Zanshin-Sync` auth (below), unchanged.
 - **Client storage.** The paired device's key lives in `localStorage` only (`zanshin.deviceKey`,
   `src/services/deviceKey.ts`), one key per browser/device — never in IndexedDB, so it can never be swept into a
   backup export, a future device-sync payload or an error report.
-- **Env vars.** `ZANSHIN_DEVICE_KEY_SHA256` (required before the site goes public; unset today) · `EWGF_API_KEY`
+- **Env vars.** `ZANSHIN_DEVICE_KEY_SHA256` (now optional — sync pairing registers a device's hash itself; set
+  it only to add a device-key hash outside of pairing) · `EWGF_API_KEY`
   (optional; without it the ewgf.gg fallback is simply off and a Wank failure is the final answer).
 - **Fixtures.** `tests/fixtures/ranked/player.html` and `replays-window.json` are REAL captures (one GitHub Actions
   run, 2026-11-01, workflow deleted after use; `capture.json` records how), so the parser tests
@@ -194,8 +199,10 @@ See `docs/ops/INVENTORY.md` for the full map (routes, modules, tables, tests). E
   `src/server/storeName.ts`: `sync` in production, `sync-<context>` elsewhere). The server only ever stores
   ciphertext — every `log`/`snap` body is an opaque `v1.<iv>.<ct>` string from the client; nothing here decrypts,
   reads or interprets it.
-- **Routes:** `POST init` {verifier} (no auth — first device pairing, `onlyIfNew` so a second pairing attempt gets
-  200/409 instead of clobbering) · `GET state` (auth-exempt only while unpaired) → `{hasVerifier, devices:
+- **Routes:** `POST init` {verifier, deviceKeyHash?} (no auth — first device pairing, `onlyIfNew` so a second pairing attempt gets
+  200/409 instead of clobbering; `deviceKeyHash` — SHA-256(deviceKey) — is stored `onlyIfNew` at `v1/devicekeyhash`
+  in the same request, write-once, so pairing registers the device-key lock with no manual step, §8 SSO Option B)
+  · `GET state` (auth-exempt only while unpaired) → `{hasVerifier, devices:
   [{deviceId, acked}], latestSnap?: {hlc, cursor}}` · `PUT log/<deviceId>/<hlc>` (`onlyIfNew`, ≤1 MB opaque
   ciphertext) · `GET log?device=<writerId>&after=<hlc>&limit=` → that writer's own entries, ascending, paged under
   a 5 MB response budget, `next` is an hlc to resume with `after` · `PUT snap/<hlc>` body JSON `{cursor, data}`
@@ -277,6 +284,7 @@ way; otherwise fix and report after.
 
 | Date | Decision | Why |
 | --- | --- | --- |
+| 2026-11-03 | SSO Option B shipped: `intel`, `diag` and `ranked` all lock to paired devices; sync pairing registers the device-key hash (`v1/devicekeyhash`, write-once) in the same `POST init` request as the verifier | No manual hash step or extra deploy before the site can go public — pairing alone is enough (card sso-b-lock) |
 | 2026-11-02 | **One-hour SSO: Option B** — make the site public, lock every function to paired devices with a key | Sagar's choice (2026-11-02). Order matters: ship the device-key lock on `intel`, `diag`, `ranked`, `sync` first, verify, *then* switch the Netlify project's visibility; never public before the lock is live |
 | 2026-11-02 | Both Hermes workers run Claude Sonnet on Sagar's own Anthropic API key (Ultra plan credits, $150/month spend limit); Nous Portal stays on the free plan for its tools | Free Nous models left the workers with no resolvable provider, which crashed every worker on spawn; the key lives in each profile's `.env`, never in the repo |
 | 2026-11-02 | Hermes Agent on Sagar's PC (RUDRA) as extra builders: profiles `zanshin-dev`, `zanshin-qa`; Claude leads via cards in `D:\RUDRA\hermes\inbox`, reads `outbox\board.json` (protocol: `D:\RUDRA\hermes\HANDOFF.md`) | Keeps the build moving when Claude's capacity runs out; workers read `AGENTS.md` (not `CLAUDE.md`), open PRs, CI gates them; runs only while RUDRA is on and `hermes gateway` is running |

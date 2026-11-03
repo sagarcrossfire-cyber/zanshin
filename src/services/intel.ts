@@ -5,6 +5,8 @@
 // 'web' badge and saved as research notes, never written into frame data.
 import type { IntelModel } from '../domain/intel/models';
 import type { ResearchCitation } from '../data/schemas';
+import { getDeviceKey } from './deviceKey';
+import { DEVICE_KEY_HEADER } from '../server/deviceKey';
 
 export {
   DEFAULT_COACH_MODEL, DEFAULT_RESEARCH_MODEL, INTEL_MODELS, intelModelOptions, isIntelModel, type IntelModel,
@@ -119,17 +121,27 @@ function toUsage(raw: unknown): IntelUsage {
   };
 }
 
-/** Request to the intel function; throws IntelError with the server's words. */
+/** Request to the intel function; throws IntelError with the server's words.
+ * Carries the paired device's key (SSO Option B, src/server/deviceKey.ts),
+ * exactly like src/services/rankedSync.ts, when one is stored on this
+ * device; a device that never paired sends nothing and gets the same 401
+ * device-key error a wrong key would (the server fails closed either way). */
 export async function intelRequest<T>(route: string, init: RequestInit & { options?: IntelClientOptions } = {}): Promise<T> {
   const { options, ...requestInit } = init;
   const fetchFn = options?.fetchImpl ?? globalThis.fetch;
+  const deviceKey = getDeviceKey();
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), options?.timeoutMs ?? INTEL_TIMEOUT_MS);
   let response: Response;
   try {
     response = await fetchFn(`${options?.baseUrl ?? INTEL_BASE_URL}/${route}`, {
       ...requestInit,
-      headers: { Accept: 'application/json', ...(requestInit.body !== undefined ? { 'Content-Type': 'application/json' } : {}), ...(requestInit.headers ?? {}) },
+      headers: {
+        Accept: 'application/json',
+        ...(requestInit.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+        ...(deviceKey !== null ? { [DEVICE_KEY_HEADER]: deviceKey } : {}),
+        ...(requestInit.headers ?? {}),
+      },
       signal: controller.signal,
     });
   } catch {
