@@ -5,6 +5,7 @@
 // lazy-loaded (§13.8) so Recharts ships only with this route.
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Suspense, lazy, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Card } from '../../components/base/Card';
 import { Skeleton } from '../../components/base/Skeleton';
 import { MediaImage } from '../../components/media/MediaImage';
@@ -60,12 +61,17 @@ export function ProgressScreen() {
         <ProgressCharts data={data} weeklyMinutes={profile.weeklyMinutes} />
       </Suspense>
 
-      <Card title="Rank over time">
-        <p className="z-body-l">{data.rankHiddenReason}</p>
-        <p className="z-label z-rank-line">
+      <Card title="Ranked">
+        <p className="z-rank-line z-label">
           <span className="z-rank-line__item">
-            {profile.currentRank && <MediaImage kind="rank-badge" subjectKey={rankSubject(profile.currentRank)} width={48} />}
-            Current rank: {profile.currentRank ?? 'not set'}
+            {(data.ranked.currentRank ?? profile.currentRank) && (
+              <MediaImage
+                kind="rank-badge"
+                subjectKey={rankSubject((data.ranked.currentRank ?? profile.currentRank) as string)}
+                width={48}
+              />
+            )}
+            <span className="z-display-m">{data.ranked.currentRank ?? profile.currentRank ?? 'not set'}</span>
           </span>
           <span aria-hidden="true">·</span>
           <span className="z-rank-line__item">
@@ -73,6 +79,13 @@ export function ProgressScreen() {
             Target: {profile.targetRank}
           </span>
         </p>
+        {data.ranked.hiddenReason !== null ? (
+          <p className="z-body-l">
+            {data.ranked.hiddenReason} <Link to="/log">Go to Matches</Link>
+          </p>
+        ) : (
+          data.ranked.bandLine && <p className="z-body-l">{data.ranked.bandLine}</p>
+        )}
       </Card>
 
       <Card title="Consistency">

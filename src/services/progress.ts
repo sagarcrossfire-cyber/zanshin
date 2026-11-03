@@ -11,6 +11,8 @@ import { setsRepo } from '../data/repos/sets';
 import type { Assessment, DrillSet, Mastery, MatchSet, Session } from '../data/schemas';
 import { loadCurriculum } from '../data/packs';
 import { talliedOnly } from '../domain/engine/tallied';
+import { bandFor, compareToPath } from '../domain/ranked/milestones';
+import { syncStageStatuses } from './stages';
 
 export const MIN_GAMES = 10;
 export const MIN_SETS = 3;
@@ -294,6 +296,112 @@ export function consistencyCalendar(
   };
 }
 
+export interface RankPoint {
+  at: string;
+  rankIndex?: number;
+  rank?: string;
+  rating?: number;
+}
+
+/** Every synced ranked battle as a rank/rating point, oldest first.
+ * rating = ratingBefore + ratingChange when both are present (2.0 M2). */
+export function rankSeries(sets: MatchSet[]): RankPoint[] {
+  const points: RankPoint[] = [];
+  for (const set of sets) {
+    if (!set.ranked) continue;
+    for (const battle of set.ranked.battles) {
+      const point: RankPoint = { at: battle.at };
+      if (battle.myRankIndex !== undefined) point.rankIndex = battle.myRankIndex;
+      if (battle.myRank !== undefined) point.rank = battle.myRank;
+      if (battle.ratingBefore !== undefined && battle.ratingChange !== undefined) {
+        point.rating = battle.ratingBefore + battle.ratingChange;
+      }
+      points.push(point);
+    }
+  }
+  return points.sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0));
+}
+
+export interface RankedProgress {
+  hiddenReason: string | null;
+  currentRank: string | null;
+  currentRankIndex: number | null;
+  bandLine: string | null;
+  rankChart: ChartData;
+  ratingChart: ChartData;
+}
+
+const NO_SYNC_REASON = 'Sync ranked games from Matches to see your climb.';
+
+/** The Ranked card's data: current rank, the rank band vs. the Path stage
+ * (coach-intel.md §1.5), and the two climb charts. currentStage is the
+ * first not-passed Path stage, or null before any stage status exists. */
+export function rankedProgressData(sets: MatchSet[], currentStage: number | null): RankedProgress {
+  const series = rankSeries(sets);
+  if (series.length === 0) {
+    return {
+      hiddenReason: NO_SYNC_REASON,
+      currentRank: null,
+      currentRankIndex: null,
+      bandLine: null,
+      rankChart: { points: [], finding: '', hiddenReason: NO_SYNC_REASON },
+      ratingChart: { points: [], finding: '', hiddenReason: NO_SYNC_REASON },
+    };
+  }
+
+  const withRank = series.filter(
+    (p): p is RankPoint & { rankIndex: number; rank: string } => p.rankIndex !== undefined && p.rank !== undefined,
+  );
+  const withRating = series.filter((p): p is RankPoint & { rating: number } => p.rating !== undefined);
+
+  const firstRank = withRank[0] ?? null;
+  const latestRank = withRank[withRank.length - 1] ?? null;
+  const currentRank = latestRank?.rank ?? null;
+  const currentRankIndex = latestRank?.rankIndex ?? null;
+
+  let bandLine: string | null = null;
+  const band = bandFor(currentRankIndex);
+  if (band) {
+    const [lo, hi] = band.stages;
+    const stageText = currentStage === null ? 'not yet known' : `Stage ${currentStage}`;
+    const comparison = compareToPath(currentRankIndex, currentStage);
+    const comparisonText = comparison === 'ahead'
+      ? " — you're ahead of the typical pace for this rank."
+      : comparison === 'behind'
+        ? " — you're behind the typical pace for this rank."
+        : comparison === 'on-track'
+          ? ' — on track.'
+          : '';
+    bandLine = `${band.label}: players here usually work on Path Stage ${lo}\u2013${hi}. You're on ${stageText}${comparisonText}`;
+  }
+
+  const rankChart: ChartData = withRank.length === 0
+    ? { points: [], finding: '', hiddenReason: 'No rank is recorded in the synced games yet.' }
+    : {
+        points: withRank.map((p) => ({ label: p.at.slice(5, 10), value: p.rankIndex, sample: p.rank })),
+        finding: firstRank && latestRank
+          ? `Rank from ${firstRank.rank} to ${latestRank.rank}${
+              latestRank.rankIndex === firstRank.rankIndex
+                ? ' (no change)'
+                : latestRank.rankIndex > firstRank.rankIndex
+                  ? `, up ${latestRank.rankIndex - firstRank.rankIndex}`
+                  : `, down ${firstRank.rankIndex - latestRank.rankIndex}`
+            }.`
+          : '',
+        hiddenReason: null,
+      };
+
+  const ratingChart: ChartData = withRating.length === 0
+    ? { points: [], finding: '', hiddenReason: 'No rating is recorded in the synced games yet.' }
+    : {
+        points: withRating.map((p) => ({ label: p.at.slice(5, 10), value: p.rating, sample: `${p.rating}` })),
+        finding: `Rating from ${withRating[0]?.rating} to ${withRating[withRating.length - 1]?.rating}.`,
+        hiddenReason: null,
+      };
+
+  return { hiddenReason: null, currentRank, currentRankIndex, bandLine, rankChart, ratingChart };
+}
+
 export interface ProgressData {
   mastery: ChartData;
   drills: ChartData;
@@ -302,16 +410,17 @@ export interface ProgressData {
   winRate: ChartData & { belowMinimum: { character: string; games: number }[] };
   minutes: ChartData;
   calendar: { days: CalendarDay[]; practicedDays: number; totalDays: number; finding: string };
-  rankHiddenReason: string;
+  ranked: RankedProgress;
 }
 
 export async function loadProgressData(profile: { weeklyMinutes: number }, today: string): Promise<ProgressData> {
-  const [masteryRows, sets, assessments, matchSets, sessions] = await Promise.all([
+  const [masteryRows, sets, assessments, matchSets, sessions, stageViews] = await Promise.all([
     masteryRepo.all(),
     setsRepo.all(),
     assessmentsRepo.all(),
     matchSetsRepo.all(),
     sessionsRepo.all(),
+    syncStageStatuses(),
   ]);
   const curriculum = loadCurriculum();
   const drillTitleById = new Map(curriculum.drills.map((d) => [d.id, d.title]));
@@ -321,6 +430,10 @@ export async function loadProgressData(profile: { weeklyMinutes: number }, today
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3)
     .map(([id]) => id);
+  const firstOpenIndex = stageViews.findIndex((view) => view.state !== 'passed');
+  const currentStage = stageViews.length === 0
+    ? null
+    : firstOpenIndex === -1 ? stageViews.length - 1 : firstOpenIndex;
   return {
     mastery: masteryIndexSeries(masteryRows),
     drills: drillSuccessSeries(sets, (id) => drillTitleById.get(id) ?? id, focusDrillIds),
@@ -329,6 +442,6 @@ export async function loadProgressData(profile: { weeklyMinutes: number }, today
     winRate: winRateSeries(matchSets),
     minutes: minutesSeries(sessions, profile.weeklyMinutes),
     calendar: consistencyCalendar(sessions, sets, today),
-    rankHiddenReason: 'Rank history is not recorded yet. Your current rank lives in Settings; past ranks are not tracked.',
+    ranked: rankedProgressData(matchSets, currentStage),
   };
 }

@@ -11,6 +11,8 @@ import {
   matchKpiSeries,
   minutesSeries,
   punishQuizSeries,
+  rankedProgressData,
+  rankSeries,
   winRateSeries,
 } from '../../src/services/progress';
 import {
@@ -236,7 +238,7 @@ describe('loadProgressData (AC-PROG-1)', () => {
     expect(data.winRate.hiddenReason).not.toBeNull();
     expect(data.minutes.hiddenReason).not.toBeNull();
     expect(data.calendar.days).toHaveLength(56);
-    expect(data.rankHiddenReason).toContain('Rank history is not recorded yet');
+    expect(data.ranked.hiddenReason).toContain('Sync ranked games from Matches');
   });
 
   it('wires seeded rows through every builder', async () => {
@@ -262,5 +264,117 @@ describe('loadProgressData (AC-PROG-1)', () => {
     expect(data.winRate.hiddenReason).toBeNull();
     expect(data.minutes.hiddenReason).toBeNull();
     expect(data.kpis.windows).toHaveLength(1);
+  });
+});
+
+describe('rankSeries (2.0 M2)', () => {
+  const ranked = (overrides: Partial<MatchSet['ranked']> = {}): MatchSet['ranked'] => ({
+    source: 'wank', myCharacter: 'Yoshimitsu',
+    battles: [{ ref: 'r1', at: '2026-10-29T10:00:00.000Z', result: 'win' }],
+    ...overrides,
+  });
+
+  it('orders points from every battle across sets by time, oldest first', () => {
+    const sets: MatchSet[] = [
+      matchSet('m2', '2026-10-30', {
+        ranked: ranked({ battles: [{ ref: 'r3', at: '2026-10-30T10:00:00.000Z', result: 'win', myRank: 'Garyu', myRankIndex: 15 }] }),
+      }),
+      matchSet('m1', '2026-10-29', {
+        ranked: ranked({
+          battles: [
+            { ref: 'r2', at: '2026-10-29T12:00:00.000Z', result: 'loss', myRank: 'Eliminator', myRankIndex: 14 },
+            { ref: 'r1', at: '2026-10-29T10:00:00.000Z', result: 'win', myRank: 'Destroyer', myRankIndex: 13 },
+          ],
+        }),
+      }),
+    ];
+    const series = rankSeries(sets);
+    expect(series.map((p) => p.at)).toEqual([
+      '2026-10-29T10:00:00.000Z', '2026-10-29T12:00:00.000Z', '2026-10-30T10:00:00.000Z',
+    ]);
+    expect(series.map((p) => p.rank)).toEqual(['Destroyer', 'Eliminator', 'Garyu']);
+  });
+
+  it('omits rank/rating fields a battle does not carry, and skips non-ranked sets', () => {
+    const sets: MatchSet[] = [
+      matchSet('m1', '2026-10-29', { mode: 'player', ranked: undefined }),
+      matchSet('m2', '2026-10-29', {
+        ranked: ranked({ battles: [{ ref: 'r1', at: '2026-10-29T10:00:00.000Z', result: 'win' }] }),
+      }),
+    ];
+    const series = rankSeries(sets);
+    expect(series).toHaveLength(1);
+    expect(series[0]?.rankIndex).toBeUndefined();
+    expect(series[0]?.rank).toBeUndefined();
+    expect(series[0]?.rating).toBeUndefined();
+  });
+
+  it('computes rating as ratingBefore + ratingChange only when both are present', () => {
+    const sets: MatchSet[] = [
+      matchSet('m1', '2026-10-29', {
+        ranked: ranked({
+          battles: [
+            { ref: 'r1', at: '2026-10-29T10:00:00.000Z', result: 'win', ratingBefore: 1500, ratingChange: 24 },
+            { ref: 'r2', at: '2026-10-29T11:00:00.000Z', result: 'loss', ratingBefore: 1524 },
+          ],
+        }),
+      }),
+    ];
+    const series = rankSeries(sets);
+    expect(series[0]?.rating).toBe(1524);
+    expect(series[1]?.rating).toBeUndefined();
+  });
+});
+
+describe('rankedProgressData (2.0 M2)', () => {
+  const battle = (overrides: Partial<MatchSet> = {}) => matchSet('r1', '2026-10-29', {
+    ranked: {
+      source: 'wank', myCharacter: 'Yoshimitsu',
+      battles: [{ ref: 'b1', at: '2026-10-29T10:00:00.000Z', result: 'win', myRank: 'Eliminator', myRankIndex: 14, ratingBefore: 1500, ratingChange: 20 }],
+    },
+    ...overrides,
+  });
+
+  it('shows the empty state with no synced ranked games', () => {
+    const data = rankedProgressData([], null);
+    expect(data.hiddenReason).toBe('Sync ranked games from Matches to see your climb.');
+    expect(data.currentRank).toBeNull();
+    expect(data.bandLine).toBeNull();
+  });
+
+  it('reports the latest synced rank, band line and comparison', () => {
+    const sets = [
+      battle(),
+      matchSet('r2', '2026-10-30', {
+        ranked: {
+          source: 'wank', myCharacter: 'Yoshimitsu',
+          battles: [{ ref: 'b2', at: '2026-10-30T10:00:00.000Z', result: 'win', myRank: 'Garyu', myRankIndex: 15, ratingBefore: 1520, ratingChange: 24 }],
+        },
+      }),
+    ];
+    const data = rankedProgressData(sets, 2); // Garyu (band stages 4-5) vs Path stage 2 -> behind
+    expect(data.hiddenReason).toBeNull();
+    expect(data.currentRank).toBe('Garyu');
+    expect(data.currentRankIndex).toBe(15);
+    expect(data.bandLine).toContain('Garyu');
+    expect(data.bandLine).toContain('Path Stage 4–5');
+    expect(data.bandLine).toContain("You're on Stage 2");
+    expect(data.bandLine).toContain('behind the typical pace');
+    expect(data.rankChart.hiddenReason).toBeNull();
+    expect(data.rankChart.finding).toContain('Eliminator to Garyu');
+    expect(data.ratingChart.hiddenReason).toBeNull();
+    expect(data.ratingChart.finding).toBe('Rating from 1520 to 1544.');
+  });
+
+  it('hides the rating chart but keeps the rank chart when no battle has ratings', () => {
+    const sets = [matchSet('r1', '2026-10-29', {
+      ranked: {
+        source: 'wank', myCharacter: 'Yoshimitsu',
+        battles: [{ ref: 'b1', at: '2026-10-29T10:00:00.000Z', result: 'win', myRank: 'Eliminator', myRankIndex: 14 }],
+      },
+    })];
+    const data = rankedProgressData(sets, null);
+    expect(data.rankChart.hiddenReason).toBeNull();
+    expect(data.ratingChart.hiddenReason).toContain('No rating is recorded');
   });
 });
