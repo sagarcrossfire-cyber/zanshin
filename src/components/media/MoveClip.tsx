@@ -82,17 +82,26 @@ export function MoveClip({ moveId, label, context = 'codex', autoPlay = true }: 
     const video = videoRef.current;
     if (!video || !url) return undefined;
     if (!autoPlay || !prefs.autoplay || prefersReducedMotion() || typeof IntersectionObserver === 'undefined') return undefined;
+    // On screen (half or more) and the tab/app in front → play; otherwise pause.
+    // 2.0 M6: a background tab no longer keeps decoding video.
+    let onScreen = false;
+    const sync = (): void => {
+      if (onScreen && document.visibilityState !== 'hidden') safePlay(video);
+      else safePause(video);
+    };
     const observer = new IntersectionObserver(
       (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting && entry.intersectionRatio >= 0.5) safePlay(video);
-          else safePause(video);
-        }
+        for (const entry of entries) onScreen = entry.isIntersecting && entry.intersectionRatio >= 0.5;
+        sync();
       },
       { threshold: [0, 0.5, 1] },
     );
     observer.observe(video);
-    return () => observer.disconnect();
+    document.addEventListener('visibilitychange', sync);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', sync);
+    };
   }, [url, autoPlay, prefs.autoplay]);
 
   if (media.status === 'none' || media.status === 'error') return null;
@@ -176,8 +185,8 @@ export function MoveClip({ moveId, label, context = 'codex', autoPlay = true }: 
             {value}×
           </Button>
         ))}
-        <Button variant="secondary" aria-label="Back one frame" onClick={() => step(-1)} disabled={!url}>−1f</Button>
-        <Button variant="secondary" aria-label="Forward one frame" onClick={() => step(1)} disabled={!url}>+1f</Button>
+        <Button variant="secondary" aria-label="−1f, back one frame" onClick={() => step(-1)} disabled={!url}>−1f</Button>
+        <Button variant="secondary" aria-label="+1f, forward one frame" onClick={() => step(1)} disabled={!url}>+1f</Button>
         <Button variant="secondary" className="z-clip__loop" aria-pressed={loop} onClick={() => setLoop((v) => !v)}>Loop</Button>
       </div>
       <figcaption className="z-label z-clip__caption">{label} · your imported clip</figcaption>

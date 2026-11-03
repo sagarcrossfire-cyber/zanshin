@@ -79,6 +79,7 @@ See `docs/ops/INVENTORY.md` for the full map (routes, modules, tables, tests). E
   Nav colours are the derived `--nav-*` tokens.
 - Kanji render from a 5 kB subset font ("Zanshin Kanji", `scripts/subset-kanji.py`); a unit test fails if `src/`
   uses a kanji the subset lacks.
+- Move of the day (2.0 M6): Today plays one Yoshimitsu clip (`src/components/media/MoveOfTheDay.tsx`, pick in `src/domain/media/moveOfTheDay.ts`): the first of today's drills' Codex moves with a clip, else a daily rotation; absent without clips. Clips autoplay muted/looped at ≥ 50 % visible, pause off-screen and in a background tab, never under reduced motion or with Settings › Images and clips › autoplay off.
 - Motion (2.0 M6): `.z-stagger` / `data-motion="stagger"` (`src/styles/base.css`) brings children in one after another — transform only (never opacity: axe samples mid-fade), 40 ms apart, capped at the 12th; used on Today, the Match Log, the roster and the deck grid. Roster figures step forward on hover/focus. Every motion has a `prefers-reduced-motion` off-switch (the global rule shortens durations but keeps delays, so stagger turns off outright); `tests/e2e/motion-regressions.spec.ts`.
 - Updates: `version.json` (build-emitted, not precached, `no-store`) is probed by `src/services/siteAccess.ts`;
   401/403 → "Sign in again" banner; another version → `registration.update()`. A waiting update on a page nobody

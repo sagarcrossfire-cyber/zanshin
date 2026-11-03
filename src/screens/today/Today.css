@@ -115,3 +115,8 @@
 .z-quick__tile { display: inline-flex; min-height: 44px; padding: var(--space-2) var(--space-4); border-radius: var(--radius-pill); gap: var(--space-2); font-size: 14px; }
 .z-quick__tile > svg:last-child { display: none; }
 .z-quick__tile > svg:first-child { width: 20px; height: 20px; }
+
+/* 2.0 M6: Move of the day — the clip at a readable size, caption beneath. */
+.z-motd .z-clip { max-width: 720px; }
+.z-motd__caption { margin: var(--space-2) 0 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1); }
+.z-motd__caption a { font-weight: 600; }
