@@ -1,46 +1,11 @@
-// Rank list and onboarding pickers — spec §10.3 (37 ranks) and §5.2 / Appendix A.
+// Rank list and onboarding pickers — spec §10.3 and §5.2 / Appendix A.
 import type { Profile } from '../data/schemas';
+import { loadRankPack } from '../data/packs/ranks';
 
-/** The 37 ranks for pickers (§10.3), in order. */
-export const RANKS: string[] = [
-  'Beginner',
-  '1st Dan',
-  '2nd Dan',
-  'Fighter',
-  'Strategist',
-  'Combatant',
-  'Brawler',
-  'Ranger',
-  'Cavalry',
-  'Warrior',
-  'Assailant',
-  'Dominator',
-  'Vanquisher',
-  'Destroyer',
-  'Eliminator',
-  'Garyu',
-  'Shinryu',
-  'Tenryu',
-  'Mighty Ruler',
-  'Flame Ruler',
-  'Battle Ruler',
-  'Fujin',
-  'Raijin',
-  'Kishin',
-  'Bushin',
-  'Tekken King',
-  'Tekken Emperor',
-  'Tekken God',
-  'Tekken God Supreme',
-  'God of Destruction I',
-  'God of Destruction II',
-  'God of Destruction III',
-  'God of Destruction IV',
-  'God of Destruction V',
-  'God of Destruction VI',
-  'God of Destruction VII',
-  'God of Destruction ∞',
-];
+/** The 38 ranks for pickers, in ladder order (0 Beginner … 37 God of
+ * Destruction ∞). 2.0 M2: read from the rank pack, the one source the
+ * ranked importer also uses (1.4.1 had 37 and lacked plain "God of Destruction"). */
+export const RANKS: string[] = loadRankPack().ladder.map((rung) => rung.name);
 
 export const DEFAULT_TARGET_RANK = 'Tekken King';
 
