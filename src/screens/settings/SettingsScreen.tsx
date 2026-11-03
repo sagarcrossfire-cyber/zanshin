@@ -1,7 +1,7 @@
 // Settings — spec §5.2/§5.1. Every onboarding field is editable here
 // (AC-ONB-4), plus theme and glyph mode. Edits are local until Save.
 import { PageHeader } from '../../components/layout/PageHeader';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
 import { Card } from '../../components/base/Card';
@@ -29,8 +29,10 @@ import {
 import { restoreSnapshot, resetWithSnapshot, snapshotPreview, takeSnapshot } from '../../services/snapshots';
 import { clearDeviceKey, getDeviceKey, setDeviceKey } from '../../services/deviceKey';
 import { normalizeTekkenId } from '../../services/rankedSync';
+import { getSyncStatus, subscribeSyncStatus } from '../../services/sync';
 import { BACKUP_EXPORT_KEY } from '../../services/backupPrompt';
 import { metaRepo, snapshotsRepo } from '../../data/repos';
+import { DevicesCard } from './DevicesCard';
 import './Settings.css';
 import type { Snapshot } from '../../data/schemas';
 import { DATA_PATCH, PACK_VERSION } from '../../data/packs';
@@ -68,6 +70,8 @@ export function SettingsScreen() {
   const [deviceKeySuffix, setDeviceKeySuffix] = useState<string | null>(null);
   const [deviceKeyInput, setDeviceKeyInput] = useState('');
   const [deviceKeyError, setDeviceKeyError] = useState<string | null>(null);
+  const syncStatus = useSyncExternalStore(subscribeSyncStatus, getSyncStatus, getSyncStatus);
+  const syncPaired = syncStatus.state !== 'unpaired';
 
   useEffect(() => {
     if (profile && !draft) setDraft(profile);
@@ -117,7 +121,7 @@ export function SettingsScreen() {
   }, [profile, settings, ranked]);
   useEffect(() => {
     setDeviceKeySuffix(getDeviceKey()?.slice(-4) ?? null);
-  }, []);
+  }, [syncStatus.state]);
   useEffect(() => {
     let cancelled = false;
     void snapshotsRepo.all().then((all) => {
@@ -315,11 +319,14 @@ export function SettingsScreen() {
         <TextField id="set-target-date" label="Target date (optional)" type="date" value={draft.targetDate ?? ''}
           onChange={(v) => set({ targetDate: v === '' ? undefined : v })} />
       </Card>
+      <DevicesCard />
       <Card title="Ranked sync">
         <TextField id="set-ranked-tekken-id" label="Tekken ID (optional)" value={ranked.tekkenIdRaw}
           error={tekkenIdError}
           onChange={setTekkenIdRaw} />
-        {deviceKeySuffix === null ? (
+        {syncPaired ? (
+          <p className="z-label">Device key comes from sync pairing (ends …{deviceKeySuffix}).</p>
+        ) : deviceKeySuffix === null ? (
           <>
             <TextField id="set-device-key" label="Device key" type="password" value={deviceKeyInput}
               error={deviceKeyError ?? undefined}
