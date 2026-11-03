@@ -51,7 +51,7 @@ Current version: **1.4.1** (main `f4d858f`). Next: **2.0** (see `docs/v2/PLAN.md
 | Sagar's PC clone | `D:\RUDRA\zanshin` (device bash: `$HOME/mnt/RUDRA/zanshin`) |
 | Netlify site | `glistening-conkies-c028b3` · id `a72c64e3-9ba6-4ebe-9b66-57509c1fc41a` · https://glistening-conkies-c028b3.netlify.app |
 | Access | Team SSO login required for every request (incl. `sw.js`, functions). The sandbox and PC cannot open the site. |
-| Functions | `netlify/functions/intel.mts` → `/.netlify/functions/intel/*` (health, usage, research, …), spend in Netlify Blobs · `netlify/functions/diag.mts` → `/api/diag` (telemetry, §6) |
+| Functions | `netlify/functions/intel.mts` → `/.netlify/functions/intel/*` (health, usage, research, …), spend in Netlify Blobs · `netlify/functions/diag.mts` → `/api/diag` (telemetry, §6) · `netlify/functions/ranked.mts` → `/api/ranked` (M2 ranked sync, §6) |
 | CI | `.github/workflows/ci.yml`: `gate` (release gate) · `quick` (types, lint, unit, build, bundle, doctor) → `e2e` (phone+desktop, then Netlify-headers run) · `media` → `deploy` (production, only when the gate says so) · `preview` (every same-repo PR, alias `pr-<n>`); monthly cron `17 9 1 * *` |
 | Netlify plan | Team "Sagar Patel's team" (`6ae4a3d7e593b12138d36fad`), **Free credit plan: 300 credits/month hard cap, site pauses at 0**. Production deploy = 15 credits; previews 0; bandwidth 20/GB; requests 2/10k; compute 10/GB-h. Usage is only visible on the Netlify Usage page (Sagar). |
 | 2.0 plan (for Sagar) | Claude Doc "ZANSHIN 2.0 — Plan": https://claude.ai/artifact/Mdq1Rc4FM8MWZUQj8fWTvk |
@@ -158,6 +158,30 @@ See `docs/ops/INVENTORY.md` for the full map (routes, modules, tables, tests). E
   planned nightly digest will re-log a 7-day summary as a `ZT1` line.
 - **Spend ledger.** The `intel` store keeps one key per paid call, `usage/<day>/<requestId>~c<µUSD>~i<in>~o<out>`,
   written with `onlyIfNew` and totalled by `list({prefix})`; the 1.3 single `usage/<day>` key is still read and added.
+
+### Ranked Sync, server side (2.0 M2)
+
+- **What it does.** `GET /api/ranked?id=<Tekken ID>[&since=<ISO>]` (`netlify/functions/ranked.mts` →
+  `src/server/ranked/handler.ts`) reads Sagar's ranked games from Wavu Wank (`wank.wavu.wiki/player/<undashed id>`,
+  HTML parsed by `src/server/ranked/wankPage.ts`), optionally enriches the newest battles with in-game ranks from
+  at most 3 `/api/replays?before=<unix>` windows (`src/server/ranked/replays.ts`, strictly sequential, ≥ 1 s apart,
+  descriptive User-Agent), and falls back to ewgf.gg (`src/server/ranked/ewgf.ts`) only when Wank fails and
+  `EWGF_API_KEY` is set. Results are normalised battles (`src/server/ranked/schema.ts`) cached per id for 10
+  minutes in Netlify Blobs (store name from `src/server/storeName.ts`: `ranked` in production, `ranked-<context>`
+  elsewhere). The Tekken 8 rank ladder is a small bundled pack (`src/data/packs/ranks.json`, pure helpers in
+  `src/domain/ranked/ranks.ts`), kept out of `src/data/packs/index.ts` so the function does not bundle the moves data.
+- **Device-key lock (SSO Option B, §8 decisions).** Every request passes `src/server/deviceKey.ts`: header
+  `X-Zanshin-Device`, SHA-256'd and compared against the comma-separated hashes in env `ZANSHIN_DEVICE_KEY_SHA256`
+  (one hash per paired device). **Not set yet** — Sagar sets it once PC and phone are paired; until then the
+  function fails closed (503 `device-key-unset`) rather than opening up. A wrong or missing key is 401
+  `device-key`. The raw key never reaches logs, Blobs or error text.
+- **Env vars.** `ZANSHIN_DEVICE_KEY_SHA256` (required before the site goes public; unset today) · `EWGF_API_KEY`
+  (optional; without it the ewgf.gg fallback is simply off and a Wank failure is the final answer).
+- **Fixtures.** `tests/fixtures/ranked/player.html` and `replays-window.json` are REAL captures (one GitHub Actions
+  run, 2026-11-01, workflow deleted after use; `capture.json` records how), so the parser tests
+  (`tests/unit/server/ranked.spec.ts`) run against the actual page shape instead of a hand-written approximation.
+- **Logging.** One `ZT1` line per request via `src/server/diag/zt1.ts` (route, status, latencyMs, battles,
+  cacheHit, source); the Tekken ID is never logged, only `idHash` (first 10 hex chars of its SHA-256).
 
 ## 7. Root-cause analysis and self-heal protocol
 
