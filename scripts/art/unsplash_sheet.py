@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
 unsplash_sheet.py - REVIEW ONLY (2.0 M6): download each approved Unsplash
-candidate (scripts/art/candidates.json, from design.md §D.3) at 800 px through
-unsplash.com's own download link (which counts the download, as the Unsplash
-License page asks), convert to grayscale the way the app tints them, and lay
+candidate (scripts/art/candidates.json, from design.md §D.3) at 800 px from the
+image URL the Unsplash connector's download_asset returned (that call records
+the download), convert to grayscale the way the app tints them, and lay
 them out on one contact sheet with their numbers. Nothing enters the site.
 Needs Pillow. Runs in GitHub Actions only (the sandbox cannot reach Unsplash).
 """
@@ -30,7 +30,9 @@ def main():
     cands = json.loads((HERE / "candidates.json").read_text(encoding="utf-8"))["candidates"]
     tiles, report = [], {}
     for c in cands:
-        url = "https://unsplash.com/photos/%s/download?force=true&w=800" % c["id"]
+        # The Unsplash connector's download_asset recorded each download and gave these
+        # image URLs (unsplash.com's own download link now needs a login).
+        url = c["image"] + "?ixlib=rb-4.1.0&fm=jpg&q=80&w=800"
         time.sleep(1.0)
         try:
             img = Image.open(io.BytesIO(fetch(url)))
