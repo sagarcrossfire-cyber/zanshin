@@ -258,6 +258,9 @@ def score_art(kind, name, title, info):
             return None  # small and roughly square
         score += 40 if "t8" in lower else 0
         score += 10 if "icon" in lower else 0
+        # Tekken 8 roster icons are ~0.82 wide-to-tall (144x176, 136x164); Fahkumram's is
+        # named "Fahkumram.portrait.png" (160x192) but is the same roster-icon art.
+        score += 20 if 0.78 <= w / max(h, 1) <= 0.86 and 150 <= h <= 220 else 0
         score -= 40 if any(old in lower for old in ("t7", "ttt", "t6", "t5")) else 0
     return score
 
