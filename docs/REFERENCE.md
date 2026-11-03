@@ -80,8 +80,10 @@ See `docs/ops/INVENTORY.md` for the full map (routes, modules, tables, tests). E
 - Kanji render from a 5 kB subset font ("Zanshin Kanji", `scripts/subset-kanji.py`); a unit test fails if `src/`
   uses a kanji the subset lacks.
 - Updates: `version.json` (build-emitted, not precached, `no-store`) is probed by `src/services/siteAccess.ts`;
-  401/403 → "Sign in again" banner; another version → `registration.update()` → "Update available, reload" toast,
-  which never interrupts a Lab session (`src/services/updateGate.ts`).
+  401/403 → "Sign in again" banner; another version → `registration.update()`. A waiting update on a page nobody
+  has touched yet (no pointer, key or touch) and with no Lab session is applied and reloaded at once, at most once a
+  minute, so a plain reload lands on the new release; otherwise the "Update available, reload" toast, which never
+  interrupts a Lab session (`src/services/updateGate.ts`).
 
 ## 5. How to ship (the only path to production)
 
