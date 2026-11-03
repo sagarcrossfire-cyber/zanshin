@@ -1,0 +1,82 @@
+{
+ "Anna": {
+  "url": "https://tk8.tekken-official.jp/images/character/anna/img_01.png",
+  "width": 1220,
+  "height": 1193,
+  "mode": "P",
+  "transparent": true,
+  "bytes": 242007
+ },
+ "Armor King": {
+  "url": "https://tk8.tekken-official.jp/images/character/armor_king/img_01.png",
+  "width": 1220,
+  "height": 1193,
+  "mode": "P",
+  "transparent": true,
+  "bytes": 318556
+ },
+ "Bob": {
+  "url": "https://tk8.tekken-official.jp/images/character/bob/img_01.png",
+  "width": 1180,
+  "height": 1200,
+  "mode": "P",
+  "transparent": true,
+  "bytes": 288855
+ },
+ "Clive": {
+  "url": "https://tk8.tekken-official.jp/images/character/clive/img_01.png",
+  "width": 1220,
+  "height": 1193,
+  "mode": "P",
+  "transparent": true,
+  "bytes": 309075
+ },
+ "Eddy": {
+  "url": "https://tk8.tekken-official.jp/images/character/eddy/img_01.png",
+  "width": 1220,
+  "height": 1193,
+  "mode": "P",
+  "transparent": true,
+  "bytes": 251560
+ },
+ "Fahkumram": {
+  "url": "https://tk8.tekken-official.jp/images/character/fahkumram/img_01.png",
+  "width": 1220,
+  "height": 1193,
+  "mode": "P",
+  "transparent": true,
+  "bytes": 264947
+ },
+ "Heihachi": {
+  "url": "https://tk8.tekken-official.jp/images/character/heihachi/img_01.png",
+  "width": 1220,
+  "height": 1193,
+  "mode": "P",
+  "transparent": true,
+  "bytes": 322257
+ },
+ "Kunimitsu": {
+  "url": "https://tk8.tekken-official.jp/images/character/kunimitsu/img_01.png",
+  "width": 1180,
+  "height": 1200,
+  "mode": "P",
+  "transparent": true,
+  "bytes": 216712
+ },
+ "Miary Zo": {
+  "url": "https://tk8.tekken-official.jp/images/character/miary_zo/img_01.png",
+  "width": 1180,
+  "height": 1200,
+  "mode": "P",
+  "transparent": true,
+  "bytes": 157527
+ },
+ "Yoshimitsu": {
+  "url": "https://tk8.tekken-official.jp/images/character/yoshimitsu/img_01.png",
+  "width": 1220,
+  "height": 1056,
+  "mode": "P",
+  "transparent": true,
+  "bytes": 265399
+ }
+}
