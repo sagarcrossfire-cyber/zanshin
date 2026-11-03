@@ -34,6 +34,7 @@
 //                    all(): Promise<MatchSet[]>
 //                    allByDay(day) / allByCharacter(character): Promise<MatchSet[]>
 //                    put(matchSet: MatchSet): Promise<MatchSet>
+//                    putMany(matchSets: MatchSet[]): Promise<MatchSet[]>  (one transaction)
 //                    remove(id: string): Promise<void>
 //   reviewsRepo:     get(id) / getById(id): Promise<ReplayReview | undefined>
 //                    all(): Promise<ReplayReview[]>
