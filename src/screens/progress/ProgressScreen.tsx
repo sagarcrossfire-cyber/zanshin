@@ -57,6 +57,12 @@ export function ProgressScreen() {
   return (
     <div className="z-progress">
       <PageHeader eyebrow="The long game" title="Progress" lede="Mastery, minutes and match numbers over time. Consistency counts, not streaks." />
+      <p className="z-rank-line z-label">
+        <span className="z-rank-line__item">
+          <MediaImage kind="rank-badge" subjectKey={rankSubject(profile.targetRank)} width={48} />
+          Target: {profile.targetRank}
+        </span>
+      </p>
       <Suspense fallback={<Skeleton label="Loading charts…" />}>
         <ProgressCharts data={data} weeklyMinutes={profile.weeklyMinutes} />
       </Suspense>

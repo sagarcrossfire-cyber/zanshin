@@ -36,7 +36,7 @@ test('AC-PROG-1: Progress renders with an empty DB — every chart hidden with i
   await expect(page.getByText(/10 games logged/)).toBeVisible();
   await expect(page.getByText(/10 games against one character/)).toBeVisible();
   await expect(page.getByText('No finished sessions yet')).toBeVisible();
-  await expect(page.getByText('Rank history is not recorded yet')).toBeVisible();
+  await expect(page.getByText('Sync ranked games from Matches to see your climb.')).toBeVisible();
   await expect(page.getByText('Practiced on 0 of the last 56 days.')).toBeVisible();
 });
 
