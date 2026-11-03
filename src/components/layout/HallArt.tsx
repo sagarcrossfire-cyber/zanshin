@@ -7,10 +7,12 @@
  * Behind the ridges, when "Show art" is on, a grayscale photo of the hub's
  * place (Unsplash, credited in Settings › Images and clips) tinted by the
  * scene glow: AVIF with a WebP fallback, 800 px wide, 1600 px on desktops. */
-import { useEffect, type CSSProperties } from 'react';
-import type { HubId } from '../../app/hubs';
+import { useEffect, type CSSProperties, type ReactNode } from 'react';
+import { useLocation } from 'react-router-dom';
+import { hubFor, type HubId } from '../../app/hubs';
 import artCredits from '../../data/art-credits.json';
 import { useMediaPrefs } from '../../services/mediaLibrary';
+import './HallArt.css';
 
 export interface HallPhotoCredit {
   hub: string;
@@ -120,12 +122,13 @@ function Motif({ hub }: { hub: HubId }) {
           </g>
         </g>
       );
-    case 'study': // three brush strokes
+    case 'study': // three straight brush strokes, heavy at the start and tapering out (not arcs: arcs read as a Wi-Fi icon)
       return (
-        <g className="z-hall__motif" transform="translate(920 52)">
-          <path d="M0 10 Q60 -8 150 8 L148 18 Q60 4 2 20 Z" />
-          <path d="M20 46 Q80 32 130 44 L128 52 Q80 42 22 56 Z" />
-          <path d="M8 82 Q70 66 160 80 L158 90 Q70 78 10 92 Z" />
+        <g className="z-hall__motif" transform="translate(900 40) rotate(-4)">
+          {([[0, 0, 150], [22, 40, 104], [6, 82, 176]] as const).map(([x, y, len]) => (
+            <path key={y} transform={`translate(${x} ${y})`}
+              d={`M0 9 Q4 0 18 2 Q${len * 0.55} 7 ${len} 10 Q${len * 0.55} 14 18 19 Q3 20 0 9 Z`} />
+          ))}
         </g>
       );
     case 'you': // hanko seal
@@ -184,4 +187,13 @@ export function HallArt({ hub, kanji }: { hub: HubId; kanji: string }) {
       </svg>
     </div>
   );
+}
+
+/** For any screen header: the hall class and art for the current route's hub
+ * (none outside a hub). PageHeader uses it; screens with their own header
+ * (Matchups, Moves, Path) add `hallClass` to it and render `hallArt` first. */
+export function useHubHall(): { hallClass: string; hallArt: ReactNode } {
+  const hub = hubFor(useLocation().pathname);
+  if (!hub) return { hallClass: '', hallArt: null };
+  return { hallClass: 'z-hall', hallArt: <HallArt hub={hub.id} kanji={hub.kanji} /> };
 }
