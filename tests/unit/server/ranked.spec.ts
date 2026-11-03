@@ -387,6 +387,10 @@ describe('createRankedHandler', () => {
   });
 });
 
+function reqEnrichOff(id: string): Request {
+  return new Request(`${BASE}?id=${encodeURIComponent(id)}&enrich=0`, { headers: { [DEVICE_KEY_HEADER]: DEVICE_KEY } });
+}
+
 describe('netlify/functions/ranked.mts', () => {
   it('routes /api/ranked with a rate limit, scopes the Blobs store, and reads env for the key and lock', async () => {
     const stores: string[] = [];
@@ -402,19 +406,24 @@ describe('netlify/functions/ranked.mts', () => {
         };
       },
     }));
+    // The function wires the real global fetch; stub it so this stays a fast, offline unit test.
+    // enrich=0 skips the polite replay-window reads (covered with injected timing in the handler
+    // tests above) so this wiring test does not wait on real sleeps.
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(PLAYER_HTML, { status: 200 })));
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const fn = await import('../../../netlify/functions/ranked.mjs');
     expect(fn.config.path).toBe('/api/ranked');
     expect(fn.config.rateLimit).toMatchObject({ windowLimit: 10, windowSize: 60 });
-    const response = await fn.default(req(OWNER_ID), { deploy: { context: 'deploy-preview' } } as never);
+    const response = await fn.default(reqEnrichOff(OWNER_ID), { deploy: { context: 'deploy-preview' } } as never);
     expect(stores).toEqual(['ranked-deploy-preview']);
-    expect(response.status).toBeGreaterThanOrEqual(200);
-    await fn.default(req(OWNER_ID), { deploy: { context: 'production' } } as never);
+    expect(response.status).toBe(200);
+    await fn.default(reqEnrichOff(OWNER_ID), { deploy: { context: 'production' } } as never);
     expect(stores).toEqual(['ranked-deploy-preview', 'ranked']);
     warn.mockRestore();
     error.mockRestore();
     vi.doUnmock('@netlify/blobs');
     vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
   });
 });
