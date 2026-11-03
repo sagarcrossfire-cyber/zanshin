@@ -21,7 +21,7 @@ test.describe('without a service worker', () => {
   test('a signed-in site shows no banner; the version file names this build', async ({ page }) => {
     await completeOnboarding(page);
     const version = await page.evaluate(async () => (await fetch('/version.json', { cache: 'no-store' })).json());
-    expect(version).toEqual({ format: 'zanshin-version', version: expect.stringMatching(/^\d+\.\d+\.\d+$/) });
+    expect(version).toEqual({ format: 'zanshin-version', version: expect.stringMatching(/^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/) });
     if (test.info().project.name === 'netlify-desktop') {
       // Served the way Netlify serves it: never cached by the browser.
       const response = await page.request.get('/version.json');

@@ -8,18 +8,19 @@ is `docs/ops/INVENTORY.md`. Rules and the release path: `docs/REFERENCE.md`.
 
 Inputs from Sagar (2026-11-01): uses **PC and phone** (sync is required) · plays on **PS5** · AI budget about
 **$25/month** · enters his own Tekken ID in Settings · build autonomously, ask only for credentials, money or a
-real either-way decision. Netlify Free plan: **117.5/300 credits left until 2026-11-29**, so **three production
-deploys** for 2.0 (45 credits); everything else is reviewed on free PR previews.
+real either-way decision. Netlify Free plan: **87/300 credits left on 2026-11-03** (resets 2026-11-29), so **three
+production deploys** for 2.0 (45 credits); everything else is reviewed on free PR previews.
 
-Open decision (asked 2026-11-01, section 9 of the doc): **one-hour SSO** — A keep private + one-tap reconnect, or
-B public shell + device-key-locked functions (recommended). Until answered, build so both work: every function
-call carries the device key; reconnect UX handles 401.
+Decided 2026-11-03: **one-hour SSO → B**, public shell + device-key-locked functions. Pairing registers the
+device-key hash on the server (card sso-b-lock, PR #60), so no manual hash step and no extra deploy. Production's
+Netlify visitor access is switched off only after Sagar has paired both devices on the beta.1 deploy; PR previews
+stay behind sign-in.
 
 ## Releases
 
 | Release | Version | Milestones | Production deploys |
 | --- | --- | --- | --- |
-| 1 | 2.0.0-beta.1 | M0 M1 M2 M3 | 1 |
+| 1 | 2.0.0-beta.1 | M0 M1 M2 M3 | 1 (release PR 2026-11-03) |
 | 2 | 2.0.0-beta.2 | M4 M5 M6 | 1 |
 | 3 | 2.0.0 | M7 M8 | 1 |
 

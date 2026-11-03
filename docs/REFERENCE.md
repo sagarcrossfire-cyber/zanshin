@@ -9,7 +9,7 @@ disagree, fix this file in the same PR.
 - A copy of this file is kept in the claude.ai Project "Tekken" (`claude/REFERENCE.md`). Refresh it with
   `Projects` → `project_write` (`local_path`) after each release.
 
-Current version: **1.4.1** (main `f4d858f`). Next: **2.0** (see `docs/v2/PLAN.md`).
+Current version: **2.0.0-beta.1** (Release 1 of 2.0: M0–M3; main `2d824d8` at the release PR). Next: **2.0.0-beta.2** (M4–M6, see `docs/v2/PLAN.md`).
 
 ---
 
