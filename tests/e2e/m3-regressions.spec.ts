@@ -129,7 +129,7 @@ async function logAMatchSet(page: Page) {
 
 /** True iff `body` is one of the four allowed /api/sync protocol shapes:
  *   1. `v1.<base64url>.<base64url>` — PUT log (encrypted op batch)
- *   2. `{"verifier":"<64-hex>"}` — POST init
+ *   2. `{"verifier":"<64-hex>","deviceKeyHash"?:"<64-hex>"}` — POST init
  *   3. `{"cursor":{…},"data":"v1.…"}` — PUT snap
  *   4. `{"deviceId":"…","through":{…}}` — POST ack
  */
@@ -142,11 +142,14 @@ function isAllowedSyncBody(body: string): boolean {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return false;
   const obj = parsed as Record<string, unknown>;
 
-  // Shape 2: {verifier: 64-hex} (no other keys)
+  // Shape 2: {verifier: 64-hex, deviceKeyHash?: 64-hex} (POST init; the optional
+  // hash is SSO Option B's device registration, PR #60 — a hash, never the key)
   if (
-    Object.keys(obj).length === 1
-    && typeof obj['verifier'] === 'string'
+    typeof obj['verifier'] === 'string'
     && /^[0-9a-f]{64}$/.test(obj['verifier'] as string)
+    && Object.keys(obj).every((key) => key === 'verifier' || key === 'deviceKeyHash')
+    && (obj['deviceKeyHash'] === undefined
+      || (typeof obj['deviceKeyHash'] === 'string' && /^[0-9a-f]{64}$/.test(obj['deviceKeyHash'])))
   ) return true;
 
   // Shape 3: {cursor:{…}, data:"v1.…"} (snap)
@@ -391,8 +394,11 @@ test("M3 r5: A writes, B reads; A writes again, B reads again → B has both of 
 
     await pageB.goto('/log');
     await expect(pageB.getByRole('heading', { name: 'Kazuya' })).toBeVisible({ timeout: 15_000 });
-    const countAfterRound1 = await pageB.getByRole('heading', { name: 'Kazuya' }).count();
-    expect(countAfterRound1).toBeGreaterThanOrEqual(1);
+    // /log groups sets by opponent (one "Kazuya" card), so count the set rows
+    // inside it — each row's link reads "<date> — <wins>–<losses> (<mode>)".
+    const setRows = pageB.getByRole('link', { name: / — \d+–\d+ \(\w+\)$/ });
+    await expect(setRows).toHaveCount(1, { timeout: 15_000 });
+    const countAfterRound1 = await setRows.count();
 
     // ── Round 2: A writes a second match set; B reads again ────────────────
     await logAMatchSet(page);
@@ -400,11 +406,8 @@ test("M3 r5: A writes, B reads; A writes again, B reads again → B has both of 
     await syncNowAndWait(pageB);
 
     await pageB.goto('/log');
-    // B must have BOTH of A's match sets — heading count must increase.
-    await expect(pageB.getByRole('heading', { name: 'Kazuya' })).toHaveCount(
-      countAfterRound1 + 1,
-      { timeout: 15_000 },
-    );
+    // B must have BOTH of A's match sets — one more set row than after round 1.
+    await expect(setRows).toHaveCount(countAfterRound1 + 1, { timeout: 15_000 });
   } finally {
     await ctxB.close();
   }
@@ -434,8 +437,11 @@ test("M3 r6: B's aiApiKey is not overwritten when A's later settings win via LWW
     // B sets its own AI API key before joining (HLC = H_B, assigned by settingsRepo.put).
     const B_API_KEY = 'sk-b-device-only-key-must-survive';
     await pageB.goto('/settings');
+    // The API key field only renders for a key-based provider (not none/zanshin/mock).
+    await pageB.getByLabel('AI provider').selectOption('anthropic');
     await pageB.getByLabel('API key').fill(B_API_KEY);
-    await pageB.getByRole('button', { name: /save/i }).first().click();
+    await pageB.getByRole('button', { name: 'Save settings' }).click();
+    await expect(pageB.getByText('Settings saved.')).toBeVisible({ timeout: 15_000 });
 
     // B joins and syncs; aiApiKey is stripped from the outbox by design.
     await joinWithCode(pageB, code);
