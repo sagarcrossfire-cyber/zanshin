@@ -18,7 +18,9 @@ import {
 } from './services/errorReport';
 import { intelHealth } from './services/intel';
 import { startSiteAccessWatch } from './services/siteAccess';
-import { setUpdatePending, setUpdateReloader } from './services/updateGate';
+import {
+  markAutoApplied, setUpdatePending, setUpdateReloader, shouldAutoApplyUpdate, startInteractionWatch,
+} from './services/updateGate';
 import { useAppStore } from './stores/appStore';
 import './styles/tokens.css';
 import './styles/fonts.css';
@@ -87,11 +89,18 @@ async function bootstrap(): Promise<void> {
   // compete with the first paint under throttling (measured +1.4 s LCP).
   // The worker still installs on the first visit, just after first paint.
   if (!isSafeMode()) {
+    startInteractionWatch();
     const register = (): void => {
       let registration: ServiceWorkerRegistration | undefined;
       const updateSW = registerSW({
         onNeedRefresh() {
           setUpdatePending(true);
+          // Untouched page, no Lab session: apply now, so a plain reload
+          // lands on the new release (src/services/updateGate.ts).
+          if (shouldAutoApplyUpdate()) {
+            markAutoApplied();
+            void updateSW(true);
+          }
         },
         onRegisteredSW(_url, registered) {
           registration = registered;
