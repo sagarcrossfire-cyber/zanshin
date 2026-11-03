@@ -190,6 +190,97 @@ def resolve_files(fetcher, titles):
     return result
 
 
+# --- 2.0 (M6 prep): find character art whose file name breaks the convention ----
+# Most characters follow "File:<Name>T8.png" (icon) and "File:<Name> portrait.png",
+# but several (Anna, Armor King, Bob, Clive, Eddy, Heihachi, Kunimitsu, Miary Zo,
+# Fahkumram) do not, and they shipped as letter placeholders in 2.0.0-beta.1.
+# On a miss we ask the wiki which images exist for that character and pick the
+# best-scoring one. Every choice is logged so a human can audit it in CI.
+
+IMAGE_MIMES = {"image/png", "image/webp", "image/jpeg", "image/gif"}
+
+
+def character_candidates(fetcher, name):
+    """File: titles plausibly showing this character: images on its pages plus a name-prefix search."""
+    titles = set()
+    for page in (name, name + " movelist"):
+        try:
+            data = fetcher.api_get({"action": "query", "prop": "images", "titles": page,
+                                    "imlimit": "max", "formatversion": "2"})
+        except Exception as err:  # a missing page is fine; keep looking
+            log("  art search: %s page images failed (%s)" % (page, err))
+            continue
+        for p in data.get("query", {}).get("pages", []):
+            for img in p.get("images", []) or []:
+                titles.add(img.get("title"))
+    prefixes = {name, name.split(" ")[0], name.replace(" ", "_")}
+    for prefix in prefixes:
+        try:
+            data = fetcher.api_get({"action": "query", "list": "allimages", "aiprefix": prefix,
+                                    "ailimit": "100", "formatversion": "2"})
+        except Exception as err:
+            log("  art search: prefix %r failed (%s)" % (prefix, err))
+            continue
+        for img in data.get("query", {}).get("allimages", []):
+            titles.add(img.get("title") or ("File:" + img.get("name", "")))
+    return sorted(t for t in titles if t)
+
+
+def _norm(text):
+    return re.sub(r"[^a-z0-9]", "", text.lower())
+
+
+def score_art(kind, name, title, info):
+    """Higher is better; None means unusable for this kind."""
+    if not info or (info.get("mime") or "") not in IMAGE_MIMES:
+        return None
+    w, h = info.get("width") or 0, info.get("height") or 0
+    base = title.split(":", 1)[-1]
+    lower = base.lower()
+    if _norm(name) not in _norm(base):
+        return None  # must name the character
+    if any(bad in lower for bad in ("logo", "stage", "rage", "heat", "icon_", "flag", "costume")):
+        return None
+    score = 0
+    if kind == "character-portrait":
+        if h < 500 or h <= w:
+            return None  # tall, full-body art only
+        score += 50 if "portrait" in lower else 0
+        score += 30 if "render" in lower else 0
+        score += 15 if "full" in lower else 0
+        score += 10 if "t8" in lower else 0
+        score += min(h, 2400) // 100
+        score -= 40 if any(old in lower for old in ("t7", "ttt", "t6", "t5")) else 0
+    else:  # character-icon
+        if not (32 <= w <= 512 and 32 <= h <= 512) or abs(w - h) > max(w, h) * 0.25:
+            return None  # small and roughly square
+        score += 40 if "t8" in lower else 0
+        score += 10 if "icon" in lower else 0
+        score -= 40 if any(old in lower for old in ("t7", "ttt", "t6", "t5")) else 0
+    return score
+
+
+def find_character_art(fetcher, kind, name):
+    """Best (title, info) for a character's icon or portrait, or (None, None)."""
+    titles = character_candidates(fetcher, name)
+    if not titles:
+        return None, None
+    infos = resolve_files(fetcher, titles)
+    ranked = []
+    for title in titles:
+        sc = score_art(kind, name, title, infos.get(title))
+        if sc is not None:
+            ranked.append((sc, title))
+    ranked.sort(key=lambda pair: (-pair[0], pair[1]))
+    if not ranked:
+        log("  art search: no usable %s for %s among %d files" % (kind, name, len(titles)))
+        return None, None
+    best = ranked[0][1]
+    log("  art search: %s for %s -> %s (score %d; next: %s)" % (
+        kind, name, best, ranked[0][0], ", ".join(t for _, t in ranked[1:3]) or "none"))
+    return best, infos[best]
+
+
 def slug(text):
     return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-") or "item"
 
@@ -404,6 +495,15 @@ def main(argv=None):
 
     log("Resolving %d files..." % len({w[3] for w in wanted}))
     infos = resolve_files(fetcher, [w[3] for w in wanted])
+
+    # Character art whose file name breaks the convention: search the wiki for it.
+    for i, (pack_id, kind, subject, title, folder) in enumerate(wanted):
+        if infos.get(title) is not None or kind not in ("character-icon", "character-portrait"):
+            continue
+        found_title, found_info = find_character_art(fetcher, kind, subject.split(":", 1)[1])
+        if found_title is not None:
+            wanted[i] = (pack_id, kind, subject, found_title, folder)
+            infos[found_title] = found_info
 
     packs = {"core": {"items": [], "payloads": {}, "misses": []},
              "opponents": {"items": [], "payloads": {}, "misses": []}}
