@@ -41,9 +41,9 @@ export function KatanaDivider({ className = '' }: { className?: string }) {
 }
 
 /** A hanko seal bearing 残 (zan): the ZANSHIN mark. */
-export function Hanko({ className = '', size = 36 }: { className?: string; size?: number }) {
+export function Hanko({ className = '', size = 36, glyph = '残' }: { className?: string; size?: number; glyph?: string }) {
   return (
-    <span className={`z-orn-hanko ${className}`} style={{ width: size, height: size, fontSize: size * 0.62 }} aria-hidden="true">残</span>
+    <span className={`z-orn-hanko ${className}`} style={{ width: size, height: size, fontSize: size * 0.62 }} aria-hidden="true">{glyph}</span>
   );
 }
 
