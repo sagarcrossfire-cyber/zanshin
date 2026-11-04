@@ -19,6 +19,7 @@ import {
 } from '../../domain/ranked/protocol';
 import { syncRanked, type RankedSyncResult } from '../../services/rankedSync';
 import './Log.css';
+import { EmptyNote } from '../../components/decor/EmptyArt';
 
 const RANKED_ACK_KEY = 'zanshin.rankedAck';
 const RANKED_SESSION_SEEN_KEY = 'zanshin.rankedSessionSeen';
@@ -229,7 +230,7 @@ export function LogListScreen() {
 
       {opponents.length === 0 && (
         <Card title="No logged sets yet">
-          <p>Log your first set after a ranked session, sync ranked, or import a CSV file.</p>
+          <EmptyNote scene="lantern"><p>Log your first set after a ranked session, sync ranked, or import a CSV file.</p></EmptyNote>
         </Card>
       )}
       {opponents.map(([character, charSets]) => {

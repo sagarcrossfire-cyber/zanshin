@@ -27,6 +27,7 @@ import {
 import type { MoveTag } from '../../data/schemas';
 import { useAppStore } from '../../stores/appStore';
 import './Codex.css';
+import { useHubHall } from '../../components/layout/HallArt';
 
 const HIT_LEVELS = [
   { value: 'H', label: 'High' },
@@ -106,6 +107,8 @@ function writeLegendOpen(open: boolean): void {
 }
 
 export function MoveExplorerScreen() {
+  // 2.0 M6: this screen's own header stands in its hub's hall too.
+  const { hallClass, hallArt } = useHubHall();
   const profile = useAppStore((s) => s.profile);
   const glyphMode = profile?.glyphMode ?? 'playstation';
   const [query, setQuery] = useState('');
@@ -152,7 +155,8 @@ export function MoveExplorerScreen() {
 
   return (
     <div className="z-codex z-moves">
-      <header className="z-moves__head">
+      <header className={`z-moves__head ${hallClass}`.trim()}>
+        {hallArt}
         <p className="z-eyebrow">Codex · Yoshimitsu</p>
         <h2 className="z-page-title">Moves</h2>
         <p className="z-moves__lede">Every move with its startup, what happens on block and on hit, and how sure the number is.</p>

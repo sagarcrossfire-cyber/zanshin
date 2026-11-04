@@ -1,0 +1,23 @@
+/* 2.0 M6 — illustrated empty states. Tokens only. */
+.z-empty { display: flex; align-items: center; gap: var(--space-4); }
+.z-empty__text { flex: 1; min-width: 0; }
+.z-empty__text > :first-child { margin-top: 0; }
+.z-empty__text > :last-child { margin-bottom: 0; }
+.z-empty-art { flex: none; width: 112px; height: 70px; overflow: visible; }
+@media (max-width: 479px) { .z-empty-art { width: 84px; height: 53px; } }
+.z-empty-art__line { stroke: var(--pattern-ink); stroke-width: 1.5; fill: none; opacity: 0.7; }
+.z-empty-art__floor { stroke: var(--scene-glow-1); stroke-width: 1.5; }
+.z-empty-art__rake { stroke: var(--pattern-ink); stroke-width: 1.5; fill: none; opacity: 0.55; stroke-linecap: round; }
+.z-empty-art__ink { fill: var(--pattern-ink); opacity: 0.6; }
+.z-empty-art__paper { fill: var(--scene-glow-1); stroke: var(--pattern-ink); stroke-width: 1.5; }
+.z-empty-art__paper--back { opacity: 0.55; }
+.z-empty-art__glow { fill: var(--seal); opacity: 0.14; }
+[data-scene="lantern"] .z-empty-art__paper { fill: var(--seal); opacity: 0.8; }
+[data-scene="dojo"] .z-empty-art__ink { opacity: 0.3; }
+[data-scene="moon"] .z-empty-art__paper { fill: var(--mastery); stroke: none; opacity: 0.75; }
+/* The lantern sways on its cord; the moon's ripples drift. Transform only. */
+.z-empty-art__sway { transform-box: view-box; transform-origin: 80px 0; animation: z-lantern-sway 6s ease-in-out infinite; }
+.z-empty-art__ripples { animation: z-ripple-drift 8s ease-in-out infinite; }
+@keyframes z-lantern-sway { 0%, 100% { transform: rotate(-2.5deg); } 50% { transform: rotate(2.5deg); } }
+@keyframes z-ripple-drift { 0%, 100% { transform: translateX(-3px); } 50% { transform: translateX(3px); } }
+@media (prefers-reduced-motion: reduce) { .z-empty-art__sway, .z-empty-art__ripples { animation: none; } }

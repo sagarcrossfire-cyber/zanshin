@@ -15,6 +15,7 @@ import {
 } from '../../services/cards';
 import { useAppStore } from '../../stores/appStore';
 import './Cards.css';
+import { EmptyNote } from '../../components/decor/EmptyArt';
 
 interface DeckSummary {
   deck: string;
@@ -120,7 +121,7 @@ export function CardsScreen() {
       <p id="cards-review-hint">{reviewReason}</p>
       {status !== '' && <p role="status">{status}</p>}
       {decks.length === 0 ? (
-        <p>No decks yet. Generate the seed cards to start.</p>
+        <EmptyNote scene="washi"><p>No decks yet. Generate the seed cards to start.</p></EmptyNote>
       ) : (
         <ul className="z-cards__decks z-stagger">
           {decks.map((deck) => (

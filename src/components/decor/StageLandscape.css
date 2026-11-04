@@ -1,0 +1,23 @@
+/* 2.0 M6 — Path stage landscapes. A strip across the top of a stage card,
+ * behind its title, faded in from the left like the hub halls. Tokens only;
+ * --scene-art-opacity drives it, so reduced transparency hides it. */
+.z-stage-land {
+  position: absolute; left: 0; right: 0; top: 0; height: 120px; z-index: 0; pointer-events: none;
+  opacity: calc(var(--scene-art-opacity) * 4);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, transparent 35%, black 75%), linear-gradient(180deg, black 85%, transparent 100%);
+          mask-image: linear-gradient(90deg, transparent 0%, transparent 35%, black 75%), linear-gradient(180deg, black 85%, transparent 100%);
+  -webkit-mask-composite: source-in;
+          mask-composite: intersect;
+}
+.z-stage-land svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.z-stage-land__ridge--far  { fill: var(--scene-glow-1); opacity: 0.55; }
+.z-stage-land__ridge--mid  { fill: var(--scene-top); opacity: 0.9; }
+.z-stage-land__ridge--near { fill: var(--scene-bottom); }
+.z-stage-land__mark { fill: var(--pattern-ink); stroke: var(--pattern-ink); opacity: 0.4; }
+.z-stage-land__ripples { fill: none; }
+.z-stage-land__mist { fill: var(--text-1); opacity: 0.07; }
+.z-stage-land__sun { fill: var(--seal); opacity: 0.85; }
+.z-path__stage--open .z-stage-land__ridge--far { fill: var(--accent); opacity: 0.3; }
+.z-path__stage--locked .z-stage-land { filter: grayscale(1); }
+/* Phones: the strip sits behind the goal text, so only the ridges (and a passed stage's sun) stay. */
+@media (max-width: 719px) { .z-stage-land__mark, .z-stage-land__mist { display: none; } }

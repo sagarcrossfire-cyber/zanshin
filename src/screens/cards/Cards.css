@@ -53,3 +53,23 @@
 .z-cards__decks { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-3); }
 .z-cards__decks .z-card { height: 100%; border-top: 3px solid var(--heat); }
 .z-cards__front { font-family: var(--font-display); font-size: 24px; line-height: 32px; }
+
+/* 2.0 M6 (design.md §D.2): the card face is paper. Washi Daylight shows kozo
+ * fibres and grain on warm paper; the dark schemes a deep lacquer with one soft
+ * highlight. Texture sits under the content; the back rises in on reveal. */
+.z-cards__face { isolation: isolate; overflow: hidden; }
+.z-cards__face::after {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: inherit;
+  background-image:
+    radial-gradient(120% 80% at 15% 0%, var(--face-sheen), transparent 60%),
+    var(--pattern-grain);
+  background-size: auto, 180px 180px;
+  opacity: 0.35; mix-blend-mode: soft-light;
+}
+[data-theme="light"] .z-cards__face::after {
+  background-image: var(--pattern-washi), var(--pattern-grain);
+  background-size: 340px 230px, 180px 180px;
+  opacity: 0.065; mix-blend-mode: multiply;
+}
+.z-cards__back { animation: z-rise var(--dur-sheet) var(--ease-enter) backwards; }
+@media (prefers-reduced-motion: reduce) { .z-cards__back { animation: none; } }
