@@ -172,7 +172,13 @@ test('2.0 M6: every hub root and the screens with their own header stand in a ha
   const showArt = page.getByRole('checkbox', { name: 'Show imported art and clips' });
   await showArt.uncheck();
   await expect(showArt).not.toBeChecked();
-  await page.goto('/matchups');
+  // The toggle is optimistic and the settings write is async: navigate inside
+  // the app first (a page.goto right away can abort the write, as it did on the
+  // CI tablet run), then reload to prove the choice persisted.
+  await page.evaluate(() => { history.pushState({}, '', '/matchups'); dispatchEvent(new PopStateEvent('popstate')); });
+  await expect(page.locator('.z-hall__art')).toHaveCount(1);
+  await expect(page.locator('.z-hall__photo')).toHaveCount(0);
+  await page.reload();
   await expect(page.locator('.z-hall__art')).toHaveCount(1);
   await expect(page.locator('.z-hall__photo')).toHaveCount(0);
 });
