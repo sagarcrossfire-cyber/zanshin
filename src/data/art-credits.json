@@ -64,6 +64,34 @@
     "webp"
    ],
    "license": "Unsplash License"
+  },
+  {
+   "hub": "study",
+   "section": "heat",
+   "id": "LDi9F6oGojQ",
+   "photographer": "Pawel Czerwinski",
+   "handle": "@pawel_czerwinski",
+   "page": "https://unsplash.com/photos/burning-coals-LDi9F6oGojQ",
+   "position": "50% 50%",
+   "formats": [
+    "avif",
+    "webp"
+   ],
+   "license": "Unsplash License"
+  },
+  {
+   "hub": "train",
+   "section": "punish",
+   "id": "NP8GAo1UpBA",
+   "photographer": "Seiya Maeda",
+   "handle": "@seiya_maeda",
+   "page": "https://unsplash.com/photos/a-large-knife-with-a-long-blade-attached-to-it-NP8GAo1UpBA",
+   "position": "50% 50%",
+   "formats": [
+    "avif",
+    "webp"
+   ],
+   "license": "Unsplash License"
   }
  ]
 }
