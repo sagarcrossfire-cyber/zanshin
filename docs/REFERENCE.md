@@ -271,6 +271,7 @@ way; otherwise fix and report after.
 | `page.evaluate`: execution context destroyed after a click that reloads | `waitForLoadState` resolved on the old document | Register `page.waitForEvent('load')` before the click, await it after |
 | axe colour-contrast fails on a button only in one run | Sampled mid opacity transition | No opacity transitions on buttons; wait for enabled before axe |
 | Hero "inside stage" check fails | Measured during the entrance slide | Scale entrance with right-bottom origin; test waits 500 ms |
+| A size check fails by 0.00004 px ("expected 480, received 479.99996") | Exact `toBe` on `boundingBox()` floats; any relayout re-rounds fractional boxes | `toBeCloseTo(value, 1)` (0.05 px); keep a CLS check for real shifts |
 | `getByText` matches text in a collapsed panel | Hidden content rendered in the DOM | Render collapsible content lazily |
 | Frame tier wrong for `−12` | Unicode minus (U+2212) in data | ASCII `-` in data and samples |
 | ESLint `no-color-literals` flags `'&#039;'` in tests | Rule matches `#` + hex-like text in strings | Build such strings with `[...].join('#')` / `\u0023` |
