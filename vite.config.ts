@@ -132,7 +132,9 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,webp,avif,woff,woff2,json}'],
         // Bundled media (1.2.0) is seeded into IndexedDB by the app, not
         // precached: tens of megabytes do not belong in the service worker.
-        globIgnores: ['media/**', 'version.json'],
+        // 2.0 M6 hall photos: the 800 px set (phones, ~240 kB for both formats) is
+        // precached for offline; the 1600 px desktop set is cached on first use.
+        globIgnores: ['media/**', 'version.json', 'art/*-1600.*'],
         navigateFallback: 'index.html',
         // Netlify's own paths (functions, the login) always reach the site.
         navigateFallbackDenylist: [/^\/\.netlify\//],
@@ -140,8 +142,16 @@ export default defineConfig({
         // last-known state for Patch Watch and the importer, and a stale
         // cached API answer offline would make "Check for updates" claim the
         // data is current. Requests the worker does not handle are made by
-        // the page itself, which also keeps them visible to tests.
-        runtimeCaching: [],
+        // the page itself, which also keeps them visible to tests. The only
+        // runtime route is the site's own hall photos: served from the cache,
+        // refreshed in the background (a 304 when unchanged) so a replaced photo lands.
+        runtimeCaching: [
+          {
+            urlPattern: ({ sameOrigin, url }) => sameOrigin && url.pathname.startsWith('/art/'),
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'zanshin-art', expiration: { maxEntries: 24 } },
+          },
+        ],
       },
     }),
   ],

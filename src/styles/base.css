@@ -45,6 +45,8 @@ img, svg { display: block; max-width: 100%; }
 .z-display-m { font-family: var(--font-display); font-weight: 700; font-size: 28px; line-height: 36px; }
 .z-title { font-family: var(--font-sans); font-weight: 600; font-size: 20px; line-height: 28px; }
 .z-body-l { font-size: 17px; line-height: 26px; }
+/* Settings › Images and clips › Credits: one line per hub photo (2.0 M6). */
+.z-media-credits { margin: var(--space-2) 0 0; padding-left: var(--space-5); display: grid; gap: var(--space-2); font-size: 17px; line-height: 26px; color: var(--text-2); }
 .z-body { font-size: 15px; line-height: 22px; }
 .z-label { font-size: 13px; line-height: 18px; font-weight: 500; letter-spacing: 0.02em; }
 .z-caption { font-size: 12px; line-height: 16px; color: var(--text-2); }

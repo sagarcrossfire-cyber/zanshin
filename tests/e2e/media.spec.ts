@@ -116,8 +116,11 @@ test('media pack: import, art across the app, stable layout, art off', async ({ 
   await expect(hero.locator('.z-hero__plate')).toBeVisible();
   await page.waitForTimeout(500);
   const heroAfter = await hero.boundingBox();
-  expect(heroAfter?.height, 'hero height after the image loaded').toBe(heroBefore?.height);
-  expect(heroAfter?.width, 'hero width after the image loaded').toBe(heroBefore?.width);
+  // Sub-pixel tolerance: layout boxes are fractional and can re-round by
+  // 0.00004 px between frames; "nothing moved" means under 0.05 px, not
+  // float equality (docs/ops/RCA_LOG.md 2026-11-03, PR #72).
+  expect(heroAfter?.height ?? 0, 'hero height after the image loaded').toBeCloseTo(heroBefore?.height ?? -1, 1);
+  expect(heroAfter?.width ?? 0, 'hero width after the image loaded').toBeCloseTo(heroBefore?.width ?? -1, 1);
   expect(await mediaShift(page), 'Today layout shift from media').toBeLessThanOrEqual(0.05);
   const axeToday = await new AxeBuilder({ page: page as never }).analyze();
   expect(axeToday.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')).toEqual([]);

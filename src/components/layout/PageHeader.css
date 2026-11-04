@@ -23,6 +23,31 @@
   -webkit-mask-image: linear-gradient(90deg, transparent 0%, transparent 30%, black 72%);
           mask-image: linear-gradient(90deg, transparent 0%, transparent 30%, black 72%);
 }
+.z-hall__photo {
+  position: absolute; inset: 0;
+  background-size: cover; background-repeat: no-repeat;
+  background-image: var(--hall-photo-fallback-sm);
+  filter: var(--hall-photo-filter);
+  mix-blend-mode: var(--hall-photo-blend);
+  opacity: var(--hall-photo-opacity);
+  /* Stronger than the hall's own mask: the photo stays right of the text column. */
+  -webkit-mask-image: linear-gradient(90deg, transparent 35%, black 80%);
+          mask-image: linear-gradient(90deg, transparent 35%, black 80%);
+}
+/* Phones: the text spans the banner, so the photo only rises from the bottom. */
+@media (max-width: 719px) {
+  .z-hall__photo {
+    -webkit-mask-image: linear-gradient(180deg, transparent 20%, black 100%);
+            mask-image: linear-gradient(180deg, transparent 20%, black 100%);
+  }
+}
+@media (min-width: 1024px) { .z-hall__photo { background-image: var(--hall-photo-fallback-lg); } }
+/* A value from var() that the engine cannot parse does not fall back to the
+ * previous declaration, so image-set(type()) is gated with @supports. */
+@supports (background-image: image-set(url("x.avif") type("image/avif"))) {
+  .z-hall__photo { background-image: var(--hall-photo-sm); }
+  @media (min-width: 1024px) { .z-hall__photo { background-image: var(--hall-photo-lg); } }
+}
 .z-hall__svg { position: absolute; right: 0; bottom: 0; width: 100%; height: 100%; }
 .z-hall__kanji {
   position: absolute; right: var(--space-5); top: 50%; transform: translateY(-50%);
