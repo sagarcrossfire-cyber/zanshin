@@ -1,10 +1,12 @@
 {
-  "note": "Reviewed by eye on art-review/unsplash-sheet.png, 2026-11-03. One photo per hub hall (design.md §D.2). Rejected: #14 #15 #16 (legible signage), #24 (people), #26 (maker's product), #28 (a person's hand).",
+  "note": "Reviewed by eye on art-review/unsplash-sheet.png, 2026-11-03. One photo per hub hall, plus Heat (#27 coals) and Punish Trainer (#25 blade) section halls (design.md §D.2). Rejected: #14 #15 #16 (legible signage), #24 (people), #26 (maker's product), #28 (a person's hand).",
   "halls": {
     "today": { "id": "UWheXkRpWKI", "position": "50% 60%" },
     "train": { "id": "D5A-TwxRpUg", "position": "50% 55%" },
     "coach": { "id": "Wknl_fbr-YM", "position": "50% 22%" },
     "study": { "id": "zHfhQlQswec", "position": "50% 45%" },
-    "you":   { "id": "EsyRI8Wag40", "position": "50% 50%" }
+    "you":   { "id": "EsyRI8Wag40", "position": "50% 50%" },
+    "heat":   { "id": "LDi9F6oGojQ", "position": "50% 50%", "hub": "study" },
+    "punish": { "id": "NP8GAo1UpBA", "position": "50% 50%", "hub": "train" }
   }
 }

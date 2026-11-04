@@ -4,8 +4,9 @@ make_art_pack.py - 2.0 M6 scene art. Downloads the picked Unsplash photos
 (scripts/art/picks.json; image URLs from candidates.json, obtained through the
 Unsplash connector's download_asset, which records each download), turns them
 grayscale (the app tints them per colour scheme), and writes
-public/art/<hub>-<w>.{avif,webp} at 800 and 1600 px wide plus
-src/data/art-credits.json. Runs in GitHub Actions (the sandbox cannot reach
+public/art/<hall>-<w>.{avif,webp} at 800 and 1600 px wide plus
+src/data/art-credits.json. A hall is a hub, or a section inside one that gets
+its own photo (picks entries with a "hub" field: Heat, Punish Trainer). Runs in GitHub Actions (the sandbox cannot reach
 Unsplash); the art-review workflow commits the output to the art/** branch.
 Needs Pillow; AVIF is written when this Pillow build supports it.
 """
@@ -55,7 +56,7 @@ def main():
                 total += len(buf.getvalue())
         print("%-6s %-12s %s" % (hub, c["id"], json.dumps(files)), flush=True)
         credits.append({
-            "hub": hub, "id": c["id"], "photographer": c["photographer"], "handle": c["handle"],
+            **({"hub": pick["hub"], "section": hub} if "hub" in pick else {"hub": hub}), "id": c["id"], "photographer": c["photographer"], "handle": c["handle"],
             "page": c["page"].split("?")[0], "position": pick["position"],
             "formats": ["avif", "webp"] if avif else ["webp"], "license": "Unsplash License",
         })
