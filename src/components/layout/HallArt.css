@@ -43,6 +43,8 @@
   .z-hall__photo { background-image: var(--hall-photo-sm); }
   @media (min-width: 1024px) { .z-hall__photo { background-image: var(--hall-photo-lg); } }
 }
+/* Heat's hall glows with the Heat colours: the coals photo tints violet and ember (design.md §D.2). */
+.z-hall__art[data-section="heat"] { background: linear-gradient(135deg, var(--heat), transparent 55%, var(--accent-2)); }
 .z-hall__svg { position: absolute; right: 0; bottom: 0; width: 100%; height: 100%; }
 .z-hall__kanji {
   position: absolute; right: var(--space-5); top: 50%; transform: translateY(-50%);

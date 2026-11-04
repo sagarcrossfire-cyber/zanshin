@@ -3,8 +3,7 @@
 // art and clips behave, review what is stored, export it, delete it.
 // Everything stays in this browser; the app never downloads media.
 import { PageHeader } from '../../components/layout/PageHeader';
-import { HALL_PHOTOS } from '../../components/layout/HallArt';
-import { hubById, type HubId } from '../../app/hubs';
+import { HALL_PHOTOS, hallLabel } from '../../components/layout/HallArt';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
@@ -497,7 +496,7 @@ export function MediaScreen() {
         <ul className="z-media-credits" aria-label="Hub photo credits">
           {HALL_PHOTOS.map((photo) => (
             <li key={photo.id}>
-              {hubById(photo.hub as HubId).label}: photo by{' '}
+              {hallLabel(photo)}: photo by{' '}
               <a href={`https://unsplash.com/${photo.handle}?utm_source=zanshin&utm_medium=referral`} target="_blank" rel="noreferrer">
                 {photo.photographer}
               </a>{' '}
