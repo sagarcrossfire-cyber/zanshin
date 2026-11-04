@@ -180,7 +180,7 @@ export function CardReviewScreen() {
       <p>
         {index + 1} of {queue.length}
       </p>
-      <Card title={current.deck}>
+      <Card title={current.deck} className="z-cards__face">
         <div className="z-cards__front">
           {showInputString ? (
             <InputString input={current.front} glyphMode={glyphMode} size="large" />
