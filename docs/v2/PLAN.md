@@ -21,8 +21,11 @@ stay behind sign-in.
 | Release | Version | Milestones | Production deploys |
 | --- | --- | --- | --- |
 | 1 | 2.0.0-beta.1 | M0 M1 M2 M3 | 1 (release PR 2026-11-03) |
-| 2 | 2.0.0-beta.2 | M4 M5 M6 | 1 |
-| 3 | 2.0.0 | M7 M8 | 1 |
+| 2 | 2.0.0-beta.2 | M6 | 1 (release PR 2026-11-03) |
+| 3 | 2.0.0 | M4 M5 M7 M8 | 1 |
+
+Changed 2026-11-03: Sagar asked for art and motion throughout the site first, so M6 shipped on its own as Release 2
+and M4 and M5 moved into Release 3 (still three production deploys; 72 → 57 credits after Release 2).
 
 Milestones merge to `main` without a version bump (no deploy); the release PR bumps `package.json`,
 `APP_VERSION`, README, `docs/RELEASE_<v>.md`, `docs/REFERENCE.md` (doctor enforces it).
@@ -116,7 +119,7 @@ Accept: a docs-only merge to `main` logs "version unchanged … no production de
   `src/data/art-credits.json`; a workflow on `art/**` branches pushes a contact sheet so Claude can review images
   by eye before use. Hub halls (`.z-hall`), Path stage landscapes, empty states, washi card faces, SVG ornaments
   (design.md §D.5); art budget ≤ 1.5 MB precached in `check-bundle.mjs`; Settings › Credits.
-- **Release 2: 2.0.0-beta.2** (production deploy 2/3).
+- **Release 2: 2.0.0-beta.2** (production deploy 2/3; M6 only, see the Releases table).
 
 ## M7 Intelligence (F7, F10, morning brief)
 
