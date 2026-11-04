@@ -19,7 +19,7 @@
   font-family: var(--font-display); font-weight: 800; font-size: 140px; line-height: 1; color: var(--text-1); opacity: 0.05;
 }
 .z-path__stage--open .z-path__kanji { color: var(--accent); opacity: 0.1; }
-.z-path__stage > :not(.z-path__kanji) { position: relative; z-index: 1; }
+.z-path__stage > :not(.z-path__kanji):not(.z-stage-land) { position: relative; z-index: 1; }
 .z-path__lock { color: var(--text-3); display: inline-flex; }
 .z-path__open { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--on-accent); background: var(--accent); padding: 3px 10px; border-radius: var(--radius-pill); }
 .z-path__nodes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }

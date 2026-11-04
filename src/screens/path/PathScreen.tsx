@@ -6,6 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/base/Button';
 import { Card } from '../../components/base/Card';
 import { Hanko } from '../../components/decor/Ornaments';
+import { StageLandscape } from '../../components/decor/StageLandscape';
 import { IconLock } from '../../components/icons';
 import { criteriaText } from '../../domain/engine/criteriaLabels';
 import { Chip } from '../../components/base/Chip';
@@ -31,6 +32,9 @@ const NODE_STATE_WORDS: Record<string, string> = {
 };
 
 const ACT_KANJI: Record<string, string> = { shu: '守', ha: '破', ri: '離' };
+
+// 2.0 M6: a passed stage's seal carries its place on the climb, first to tenth.
+const STAGE_NUMERALS = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
 
 export function PathScreen() {
   // 2.0 M6: this screen's own header stands in its hub's hall too.
@@ -83,7 +87,8 @@ export function PathScreen() {
         {views.map((view) => (
           <Card key={view.stageId} className={`z-path__stage z-path__stage--${view.state}`} data-act={view.act}
             title={`${view.act.toUpperCase()} · Stage ${view.index}: ${view.title}`}
-            headerAction={view.state === 'passed' ? <Hanko size={40} /> : view.state === 'locked' ? <span className="z-path__lock"><IconLock size={20} /></span> : <span className="z-path__open">Open</span>}>
+            headerAction={view.state === 'passed' ? <Hanko size={40} glyph={STAGE_NUMERALS[view.index] ?? '残'} /> : view.state === 'locked' ? <span className="z-path__lock"><IconLock size={20} /></span> : <span className="z-path__open">Open</span>}>
+            <StageLandscape index={view.index} total={views.length} passed={view.state === 'passed'} />
             <span className="z-path__kanji" aria-hidden="true">{ACT_KANJI[view.act] ?? ''}</span>
             <p className="z-body-l">{view.goal}</p>
             <p className="z-label">
