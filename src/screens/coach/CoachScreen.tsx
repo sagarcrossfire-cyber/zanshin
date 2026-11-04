@@ -31,6 +31,7 @@ import {
 import { useAppStore } from '../../stores/appStore';
 import { renderSafeMarkdown } from '../../components/coach/markdown';
 import './CoachScreen.css';
+import { EmptyNote } from '../../components/decor/EmptyArt';
 
 type CoachTab = 'review' | 'debriefs' | 'ask' | 'lookup';
 
@@ -304,13 +305,13 @@ export function CoachScreen() {
                 ))}
             </div>
           )}
-          {reviews.length === 0 && <p>No reviews yet. Generate one to see your week in plain numbers.</p>}
+          {reviews.length === 0 && <EmptyNote scene="moon"><p>No reviews yet. Generate one to see your week in plain numbers.</p></EmptyNote>}
         </section>
       )}
 
       {tab === 'debriefs' && (
         <section aria-label="Debriefs">
-          {sessions.length === 0 && <p>No finished sessions yet. Debriefs appear after your first Lab session.</p>}
+          {sessions.length === 0 && <EmptyNote scene="dojo"><p>No finished sessions yet. Debriefs appear after your first Lab session.</p></EmptyNote>}
           <ul className="z-coach__sessions">
             {sessions.map((session) => (
               <li key={session.id}>

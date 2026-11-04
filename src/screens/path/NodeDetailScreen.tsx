@@ -18,6 +18,7 @@ import { createCustomSession } from '../../services/lab';
 import { dueCardsByDeck, syncStageStatuses } from '../../services/stages';
 import { todayIso } from '../../app/planState';
 import './Path.css';
+import { EmptyNote } from '../../components/decor/EmptyArt';
 
 const NodeMasteryChart = lazy(() => import('./NodeMasteryChart'));
 
@@ -119,7 +120,7 @@ export function NodeDetailScreen() {
 
       <Card title="Mastery over time">
         {chartData.length === 0 ? (
-          <p className="z-body-l">No practice days yet. The trend line starts with your first logged set.</p>
+          <EmptyNote scene="gravel"><p className="z-body-l">No practice days yet. The trend line starts with your first logged set.</p></EmptyNote>
         ) : (
           <>
             <Suspense fallback={<Skeleton label="Loading chart…" />}>
